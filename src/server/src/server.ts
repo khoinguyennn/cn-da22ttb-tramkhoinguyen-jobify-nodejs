@@ -46,9 +46,11 @@ class Server {
     this.app.use('/uploads', express.static('uploads', {
       maxAge: '1d', // Cache 1 ngày
       setHeaders: (res, path) => {
-        // Set proper headers cho images
-        if (path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.png')) {
-          res.setHeader('Content-Type', 'image/*');
+        // Set proper headers cho JPG và PNG images
+        if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+          res.setHeader('Content-Type', 'image/jpeg');
+        } else if (path.endsWith('.png')) {
+          res.setHeader('Content-Type', 'image/png');
         }
       }
     }));

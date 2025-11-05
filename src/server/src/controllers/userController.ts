@@ -208,7 +208,7 @@ export class UserController {
    *               avatar:
    *                 type: string
    *                 format: binary
-   *                 description: File ảnh đại diện (JPG, PNG, GIF, WEBP - Max 5MB)
+   *                 description: File ảnh đại diện (chỉ JPG và PNG - Max 5MB)
    *     responses:
    *       200:
    *         description: Upload ảnh đại diện thành công

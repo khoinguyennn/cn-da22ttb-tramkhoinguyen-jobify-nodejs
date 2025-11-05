@@ -59,11 +59,11 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
   // Chỉ chấp nhận hình ảnh cho avatar/logo
   if (file.fieldname === 'avatar' || file.fieldname === 'logo') {
     if (file.mimetype.startsWith('image/')) {
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const allowedTypes = ['image/jpeg', 'image/png'];
       if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
       } else {
-        cb(new AppError('Chỉ chấp nhận file ảnh định dạng JPG, PNG, GIF, WEBP', 400));
+        cb(new AppError('Chỉ chấp nhận file ảnh định dạng JPG và PNG', 400));
       }
     } else {
       cb(new AppError('Chỉ chấp nhận file hình ảnh', 400));

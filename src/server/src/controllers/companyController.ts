@@ -255,7 +255,7 @@ export class CompanyController {
    *               avatar:
    *                 type: string
    *                 format: binary
-   *                 description: File logo công ty (JPG, PNG, GIF, WEBP - Max 5MB)
+   *                 description: File logo công ty (chỉ JPG và PNG - Max 5MB)
    *     responses:
    *       200:
    *         description: Upload logo công ty thành công
