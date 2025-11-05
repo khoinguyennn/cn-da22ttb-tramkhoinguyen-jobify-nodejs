@@ -272,10 +272,10 @@ export class CompanyController {
    *                   properties:
    *                     logoUrl:
    *                       type: string
-   *                       example: "http://localhost:5000/uploads/logos/avatar-1-1699123456-123456789.jpg"
+   *                       example: "http://localhost:5000/uploads/logos/avatar-2-550e8400-e29b-41d4-a716-446655440000.png"
    *                     fileName:
    *                       type: string
-   *                       example: "logos/avatar-1-1699123456-123456789.jpg"
+   *                       example: "logos/avatar-2-550e8400-e29b-41d4-a716-446655440000.png"
    *                 message:
    *                   type: string
    *                   example: "Upload logo công ty thành công"

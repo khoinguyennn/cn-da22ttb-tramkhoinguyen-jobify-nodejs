@@ -3,6 +3,7 @@ import path from 'path';
 import { Request } from 'express';
 import { AppError } from './errorHandler';
 import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 
 // Tạo thư mục upload nếu chưa tồn tại
 const ensureDirectoryExists = (dirPath: string): void => {
@@ -41,14 +42,14 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
   filename: (req: Request, file, cb) => {
-    // Tạo tên file unique với timestamp và random số
+    // Tạo tên file unique với UUID
     const userId = req.params.id || 'unknown';
-    const timestamp = Date.now();
-    const randomNum = Math.round(Math.random() * 1E9);
+    const uuid = uuidv4();
     const extension = path.extname(file.originalname);
     
-    // Format: user-{id}-{timestamp}-{random}.{ext}
-    const uniqueName = `${file.fieldname}-${userId}-${timestamp}-${randomNum}${extension}`;
+    // Format: {fieldname}-{userId}-{uuid}.{ext}
+    // VD: avatar-1-550e8400-e29b-41d4-a716-446655440000.jpg
+    const uniqueName = `${file.fieldname}-${userId}-${uuid}${extension}`;
     cb(null, uniqueName);
   }
 });

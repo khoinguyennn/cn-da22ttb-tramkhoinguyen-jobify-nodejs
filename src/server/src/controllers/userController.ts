@@ -225,10 +225,10 @@ export class UserController {
    *                   properties:
    *                     avatarUrl:
    *                       type: string
-   *                       example: "http://localhost:5000/uploads/avatars/avatar-1-1699123456-123456789.jpg"
+   *                       example: "http://localhost:5000/uploads/avatars/avatar-1-550e8400-e29b-41d4-a716-446655440000.jpg"
    *                     fileName:
    *                       type: string
-   *                       example: "avatars/avatar-1-1699123456-123456789.jpg"
+   *                       example: "avatars/avatar-1-550e8400-e29b-41d4-a716-446655440000.jpg"
    *                 message:
    *                   type: string
    *                   example: "Upload ảnh đại diện thành công"
