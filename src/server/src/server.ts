@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { testConnection } from '@/config/database';
 import { setupSwagger } from '@/config/swagger';
 import { errorHandler, notFound } from '@/middlewares/errorHandler';
+import { handleUploadError } from '@/middlewares/upload';
 import { ResponseUtil } from '@/utils/response';
 
 // Import routes
@@ -39,6 +40,17 @@ class Server {
     this.app.use(cors({
       origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
       credentials: true,
+    }));
+
+    // Static files serving (cho uploaded images)
+    this.app.use('/uploads', express.static('uploads', {
+      maxAge: '1d', // Cache 1 ngày
+      setHeaders: (res, path) => {
+        // Set proper headers cho images
+        if (path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.png')) {
+          res.setHeader('Content-Type', 'image/*');
+        }
+      }
     }));
 
     // Body parsing middleware
@@ -94,6 +106,9 @@ class Server {
   }
 
   private initializeErrorHandling(): void {
+    // Handle multer upload errors
+    this.app.use(handleUploadError);
+    
     // Handle 404 routes
     this.app.use(notFound);
     

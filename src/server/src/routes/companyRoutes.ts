@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { CompanyController } from '@/controllers/companyController';
 import { authenticate } from '@/middlewares/auth';
+import { uploadCompanyLogo, handleUploadError } from '@/middlewares/upload';
 
 const router = Router();
 const companyController = new CompanyController();
@@ -22,11 +23,11 @@ router.put('/companies/:id', authenticate, companyController.updateCompany);
 
 /**
  * Company Sub-resources (RESTful nested resources)
- * PUT /companies/:id/intro - Update company introduction
- * PUT /companies/:id/avatar - Update company avatar/logo
+ * PUT /companies/:id/intro - Update company introduction  
+ * PUT /companies/:id/avatar - Upload company logo (multipart/form-data)
  */
 router.put('/companies/:id/intro', authenticate, companyController.updateCompanyIntro);
-router.put('/companies/:id/avatar', authenticate, companyController.updateCompanyAvatar);
+router.put('/companies/:id/avatar', authenticate, uploadCompanyLogo, handleUploadError, companyController.updateCompanyAvatar);
 
 // Note: Password change is in authRoutes as PUT /companies/:id/password
 // Note: Company registration is in authRoutes as POST /companies

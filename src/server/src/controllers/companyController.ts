@@ -235,43 +235,94 @@ export class CompanyController {
    * /companies/{id}/avatar:
    *   put:
    *     tags: [Nhà tuyển dụng]
-   *     summary: Cập nhật logo công ty
+   *     summary: Upload logo công ty
    *     security:
    *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID của công ty
    *     requestBody:
    *       required: true
    *       content:
-   *         application/json:
+   *         multipart/form-data:
    *           schema:
    *             type: object
-   *             required:
-   *               - avatarPic
    *             properties:
-   *               avatarPic:
+   *               avatar:
    *                 type: string
-   *                 example: logo-company-123.jpg
+   *                 format: binary
+   *                 description: File logo công ty (JPG, PNG, GIF, WEBP - Max 5MB)
    *     responses:
    *       200:
-   *         description: Cập nhật logo công ty thành công
+   *         description: Upload logo công ty thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     logoUrl:
+   *                       type: string
+   *                       example: "http://localhost:5000/uploads/logos/avatar-1-1699123456-123456789.jpg"
+   *                     fileName:
+   *                       type: string
+   *                       example: "logos/avatar-1-1699123456-123456789.jpg"
+   *                 message:
+   *                   type: string
+   *                   example: "Upload logo công ty thành công"
+   *       400:
+   *         description: File không hợp lệ hoặc quá lớn
    *       401:
    *         description: Chưa xác thực
    *       403:
-   *         description: Không có quyền truy cập
+   *         description: Không có quyền cập nhật company này
    */
   updateCompanyAvatar = catchAsync(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     if (!req.user || req.user.userType !== 'company') {
       return ResponseUtil.error(res, 'Không có quyền truy cập', 403);
     }
 
-    const { avatarPic } = req.body;
+    const companyId = parseInt(req.params.id);
     
-    if (!avatarPic) {
-      return ResponseUtil.error(res, 'Tên file logo là bắt buộc', 400);
+    // Kiểm tra ownership (company chỉ có thể update logo của chính mình)
+    if (Number(req.user.id) !== companyId) {
+      return ResponseUtil.error(res, 'Bạn chỉ có thể cập nhật logo của công ty mình', 403);
     }
 
-    await this.companyService.updateCompanyAvatar(req.user.id, avatarPic);
+    if (!req.file) {
+      return ResponseUtil.error(res, 'Vui lòng chọn file logo để upload', 400);
+    }
 
-    ResponseUtil.success(res, null, 'Cập nhật logo công ty thành công');
+    // Xóa logo cũ nếu có
+    const currentCompany = await this.companyService.getCompanyById(companyId);
+    if (currentCompany.avatarPic) {
+      const { deleteOldFile } = await import('@/middlewares/upload');
+      deleteOldFile(currentCompany.avatarPic);
+    }
+
+    // Tạo relative path để lưu vào database
+    const relativePath = `logos/${req.file.filename}`;
+    
+    // Update company với path mới
+    await this.companyService.updateCompanyAvatar(companyId, relativePath);
+
+    // Tạo full URL để trả về cho client
+    const { getFileUrl } = await import('@/middlewares/upload');
+    const logoUrl = getFileUrl(relativePath);
+
+    ResponseUtil.success(res, {
+      logoUrl,
+      fileName: relativePath
+    }, 'Upload logo công ty thành công');
   });
 }
 

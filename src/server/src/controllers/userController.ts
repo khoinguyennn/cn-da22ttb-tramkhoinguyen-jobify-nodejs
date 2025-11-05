@@ -188,41 +188,95 @@ export class UserController {
    * /users/{id}/avatar:
    *   put:
    *     tags: [Người tìm việc]
-   *     summary: Cập nhật ảnh đại diện người dùng
+   *     summary: Upload ảnh đại diện người dùng
    *     security:
    *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID của người dùng
    *     requestBody:
    *       required: true
    *       content:
-   *         application/json:
+   *         multipart/form-data:
    *           schema:
    *             type: object
-   *             required:
-   *               - avatarPic
    *             properties:
-   *               avatarPic:
+   *               avatar:
    *                 type: string
-   *                 example: avatar-123.jpg
+   *                 format: binary
+   *                 description: File ảnh đại diện (JPG, PNG, GIF, WEBP - Max 5MB)
    *     responses:
    *       200:
-   *         description: Cập nhật ảnh đại diện thành công
+   *         description: Upload ảnh đại diện thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     avatarUrl:
+   *                       type: string
+   *                       example: "http://localhost:5000/uploads/avatars/avatar-1-1699123456-123456789.jpg"
+   *                     fileName:
+   *                       type: string
+   *                       example: "avatars/avatar-1-1699123456-123456789.jpg"
+   *                 message:
+   *                   type: string
+   *                   example: "Upload ảnh đại diện thành công"
+   *       400:
+   *         description: File không hợp lệ hoặc quá lớn
    *       401:
    *         description: Chưa xác thực
+   *       403:
+   *         description: Không có quyền cập nhật user này
    */
   updateUserAvatar = catchAsync(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     if (!req.user || req.user.userType !== 'user') {
       return ResponseUtil.error(res, 'Không có quyền truy cập', 403);
     }
 
-    const { avatarPic } = req.body;
+    const userId = parseInt(req.params.id);
     
-    if (!avatarPic) {
-      return ResponseUtil.error(res, 'Tên file ảnh là bắt buộc', 400);
+    // Kiểm tra ownership (user chỉ có thể update avatar của chính mình)
+    if (Number(req.user.id) !== userId) {
+      return ResponseUtil.error(res, 'Bạn chỉ có thể cập nhật ảnh đại diện của chính mình', 403);
     }
 
-    await this.userService.updateUserAvatar(req.user.id, avatarPic);
+    if (!req.file) {
+      return ResponseUtil.error(res, 'Vui lòng chọn file ảnh để upload', 400);
+    }
 
-    ResponseUtil.success(res, null, 'Cập nhật ảnh đại diện thành công');
+    // Xóa ảnh cũ nếu có
+    const currentUser = await this.userService.getUserById(userId);
+    if (currentUser.avatarPic) {
+      const { deleteOldFile } = await import('@/middlewares/upload');
+      deleteOldFile(currentUser.avatarPic);
+    }
+
+    // Tạo relative path để lưu vào database
+    const relativePath = `avatars/${req.file.filename}`;
+    
+    // Update user với path mới  
+    const updatedUser = await this.userService.updateUserAvatar(userId, relativePath);
+
+    // Tạo full URL để trả về cho client
+    const { getFileUrl } = await import('@/middlewares/upload');
+    const avatarUrl = getFileUrl(relativePath);
+
+    ResponseUtil.success(res, {
+      user: updatedUser,
+      avatarUrl,
+      fileName: relativePath
+    }, 'Upload ảnh đại diện thành công');
   });
 }
 
