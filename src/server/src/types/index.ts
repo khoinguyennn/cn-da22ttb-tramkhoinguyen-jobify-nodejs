@@ -113,7 +113,6 @@ export interface SaveJob {
   idUser: number;
   idJob: number;
   createdAt: Date;
-  deletedAt?: Date;
 }
 
 export interface FollowCompany {
@@ -121,7 +120,6 @@ export interface FollowCompany {
   idUser: number;
   idCompany: number;
   createdAt: Date;
-  deletedAt?: Date;
 }
 
 export interface Notification {
@@ -222,6 +220,35 @@ export interface ApplyJobDTO {
   cv?: string;
 }
 
+export interface CreateSaveJobDTO {
+  idUser: number;
+  idJob: number;
+}
+
+export interface SaveJobQueryParams {
+  page?: number;
+  limit?: number;
+  idField?: number;
+  idProvince?: number;
+  search?: string;
+  sortBy?: 'createdAt' | 'nameJob';
+  sortOrder?: 'ASC' | 'DESC';
+}
+
+export interface CreateFollowCompanyDTO {
+  idUser: number;
+  idCompany: number;
+}
+
+export interface FollowCompanyQueryParams {
+  page?: number;
+  limit?: number;
+  idProvince?: number;
+  search?: string;
+  sortBy?: 'createdAt' | 'nameCompany';
+  sortOrder?: 'ASC' | 'DESC';
+}
+
 // Query interfaces
 export interface JobQueryParams {
   page?: number;
@@ -261,6 +288,14 @@ export interface CompanyWithDetails extends Company {
   province?: Province;
   jobCount?: number;
   isFollowed?: boolean;
+}
+
+export interface SaveJobWithDetails extends SaveJob {
+  job?: JobWithDetails;
+}
+
+export interface FollowCompanyWithDetails extends FollowCompany {
+  company?: CompanyWithDetails;
 }
 
 // Enum types

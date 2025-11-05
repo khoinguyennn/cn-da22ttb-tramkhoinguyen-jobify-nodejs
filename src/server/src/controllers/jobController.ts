@@ -359,48 +359,6 @@ export class JobController {
     }
   };
 
-  /**
-   * @swagger
-   * /users/me/saved-jobs:
-   *   get:
-   *     tags: [Jobs]
-   *     summary: Lấy danh sách công việc đã lưu của user hiện tại
-   *     security:
-   *       - bearerAuth: []
-   *     parameters:
-   *       - in: query
-   *         name: page
-   *         schema:
-   *           type: integer
-   *           default: 1
-   *       - in: query
-   *         name: limit
-   *         schema:
-   *           type: integer
-   *           default: 20
-   *     responses:
-   *       200:
-   *         description: Lấy danh sách công việc đã lưu thành công
-   *       401:
-   *         description: Chưa đăng nhập
-   */
-  getSavedJobs = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      if (!req.user || req.user.userType !== 'user') {
-        throw new AppError('Chỉ user mới có thể xem công việc đã lưu', 403);
-      }
-
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 20;
-
-      const queryParams: JobQueryParams = { page, limit };
-      const result = await this.jobService.getSavedJobs(req.user.id, queryParams);
-
-      ResponseUtil.success(res, result, 'Lấy danh sách công việc đã lưu thành công');
-    } catch (error) {
-      next(error);
-    }
-  };
 
   /**
    * @swagger

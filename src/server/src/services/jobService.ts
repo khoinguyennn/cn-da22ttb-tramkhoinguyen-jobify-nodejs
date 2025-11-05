@@ -76,9 +76,6 @@ export class JobService {
     return await this.jobRepository.findByCompany(companyId, params);
   }
 
-  async getSavedJobs(userId: number, params: JobQueryParams): Promise<PaginatedResponse<JobWithDetails>> {
-    return await this.jobRepository.findSavedJobs(userId, params);
-  }
 
   async getJobStats(): Promise<{
     totalJobs: number;

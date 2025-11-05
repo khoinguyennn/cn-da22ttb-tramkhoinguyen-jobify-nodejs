@@ -99,6 +99,5 @@ export class CompanyRepository {
   }
 }
 
-
-
+export const companyRepository = new CompanyRepository();
 

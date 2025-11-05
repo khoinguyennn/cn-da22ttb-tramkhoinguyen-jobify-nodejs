@@ -31,10 +31,8 @@ router.delete('/jobs/:id', authenticate, jobController.deleteJob);
 
 /**
  * GET /companies/:id/jobs - Lấy danh sách jobs của company
- * GET /users/me/saved-jobs - Lấy danh sách jobs đã lưu của user hiện tại
  */
 router.get('/companies/:id/jobs', jobController.getJobsByCompany);
-router.get('/users/me/saved-jobs', authenticate, jobController.getSavedJobs);
 
 export default router;
 

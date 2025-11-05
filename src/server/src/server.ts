@@ -15,6 +15,8 @@ import referenceRoutes from '@/routes/referenceRoutes';
 import userRoutes from '@/routes/userRoutes';
 import companyRoutes from '@/routes/companyRoutes';
 import jobRoutes from '@/routes/jobRoutes';
+import jobSaveRoutes from '@/routes/jobSaveRoutes';
+import followCompanyRoutes from '@/routes/followCompanyRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -88,6 +90,8 @@ class Server {
     this.app.use(apiPrefix, userRoutes);
     this.app.use(apiPrefix, companyRoutes);
     this.app.use(apiPrefix, jobRoutes);
+    this.app.use(`${apiPrefix}/saved-jobs`, jobSaveRoutes);
+    this.app.use(`${apiPrefix}/followed-companies`, followCompanyRoutes);
 
     // Test route
     this.app.get(`${apiPrefix}/test`, (req, res) => {

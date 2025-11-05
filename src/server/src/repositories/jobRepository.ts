@@ -253,7 +253,7 @@ export class JobRepository {
     query += ` LIMIT ? OFFSET ?`;
     queryParams.push(limit, offset);
 
-    const [rows] = await pool.execute<RowDataPacket[]>(query, queryParams);
+    const [rows] = await pool.query<RowDataPacket[]>(query, queryParams);
 
     const jobs = rows.map(row => {
       const job = JobModel.fromRow(row);
@@ -312,7 +312,7 @@ export class JobRepository {
     const limit = params.limit || 20;
     const offset = (page - 1) * limit;
 
-    const [rows] = await pool.execute<RowDataPacket[]>(
+    const [rows] = await pool.query<RowDataPacket[]>(
       `SELECT 
         j.*,
         c.nameCompany, c.avatarPic as companyAvatar, c.scale, c.web,
@@ -365,80 +365,6 @@ export class JobRepository {
     };
   }
 
-  // Lấy jobs đã lưu của user
-  async findSavedJobs(userId: number, params: JobQueryParams): Promise<PaginatedResponse<JobWithDetails>> {
-    const page = params.page || 1;
-    const limit = params.limit || 20;
-    const offset = (page - 1) * limit;
-
-    // Count total
-    const [countRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT COUNT(*) as total 
-       FROM save_job sj
-       INNER JOIN jobs j ON sj.idJob = j.id 
-       WHERE sj.idUser = ? AND sj.deletedAt IS NULL AND j.deletedAt IS NULL`,
-      [userId]
-    );
-    const total = countRows[0].total;
-
-    // Get data
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 
-        j.*,
-        c.nameCompany, c.avatarPic as companyAvatar, c.scale, c.web,
-        f.name as fieldName, f.typeField,
-        p.name as provinceName, p.nameWithType as provinceFullName,
-        sj.createdAt as savedAt,
-        TRUE as isSaved,
-        CASE WHEN aj.id IS NOT NULL THEN TRUE ELSE FALSE END as isApplied
-       FROM save_job sj
-       INNER JOIN jobs j ON sj.idJob = j.id
-       LEFT JOIN companies c ON j.idCompany = c.id
-       LEFT JOIN fields f ON j.idField = f.id
-       LEFT JOIN provinces p ON j.idProvince = p.id
-       LEFT JOIN apply_job aj ON j.id = aj.idJob AND aj.idUser = ? AND aj.deletedAt IS NULL
-       WHERE sj.idUser = ? AND sj.deletedAt IS NULL AND j.deletedAt IS NULL
-       ORDER BY sj.createdAt DESC
-       LIMIT ? OFFSET ?`,
-      [userId, userId, limit, offset]
-    );
-
-    const jobs = rows.map(row => {
-      const job = JobModel.fromRow(row);
-      return {
-        ...job,
-        company: {
-          id: row.idCompany,
-          nameCompany: row.nameCompany,
-          avatarPic: row.companyAvatar,
-          scale: row.scale,
-          web: row.web
-        },
-        field: {
-          id: row.idField,
-          name: row.fieldName,
-          typeField: row.typeField
-        },
-        province: {
-          id: row.idProvince,
-          name: row.provinceName,
-          nameWithType: row.provinceFullName
-        },
-        isSaved: true,
-        isApplied: Boolean(row.isApplied)
-      } as JobWithDetails;
-    });
-
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data: jobs,
-      total,
-      page,
-      limit,
-      totalPages
-    };
-  }
 
   // Lấy thống kê jobs
   async getStats(): Promise<{
@@ -504,4 +430,4 @@ export class JobRepository {
   }
 }
 
-
+export const jobRepository = new JobRepository();
