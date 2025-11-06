@@ -54,8 +54,12 @@ export function NavBar() {
           </nav>
           
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" className="hover:bg-primary/10">Đăng nhập</Button>
-            <Button className="bg-primary hover:bg-primary/90">Nhà tuyển dụng</Button>
+            <Button variant="ghost" className="hover:bg-primary/10" asChild>
+              <Link href="/login">Đăng nhập</Link>
+            </Button>
+            <Button className="bg-primary hover:bg-primary/90" asChild>
+              <Link href="/employer/login">Nhà tuyển dụng</Link>
+            </Button>
           </div>
         </div>
       </div>

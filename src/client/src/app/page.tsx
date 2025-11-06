@@ -63,13 +63,13 @@ export default function Home() {
                     <span className="font-semibold text-orange-600">VNG</span>
                   </div>
                   <div className="bg-card px-3 py-1 rounded shadow-sm border">
-                    <span className="font-semibold text-green-600">vietjet</span>
+                    <span className="font-semibold text-green-600">GHTK</span>
                   </div>
                   <div className="bg-card px-3 py-1 rounded shadow-sm border">
                     <span className="font-semibold text-red-600">viettel</span>
                   </div>
                   <div className="bg-card px-3 py-1 rounded shadow-sm border">
-                    <span className="font-semibold text-red-600">FPT</span>
+                    <span className="font-semibold text-orange-600">FPT</span>
                   </div>
                 </div>
               </div>
@@ -390,24 +390,33 @@ export default function Home() {
             {[
               {
                 step: "1",
+                stepImage: "/1.svg",
                 title: "Tạo tài khoản",
                 description: "Đăng ký tài khoản miễn phí để truy cập hàng ngàn cơ hội việc làm"
               },
               {
                 step: "2", 
+                stepImage: "/2.svg",
                 title: "Cập nhật hồ sơ",
                 description: "Hoàn thiện hồ sơ của bạn để tăng cơ hội được nhà tuyển dụng chú ý"
               },
               {
                 step: "3",
+                stepImage: "/3.svg",
                 title: "Ứng tuyển",
                 description: "Tìm kiếm và ứng tuyển vào những vị trí phù hợp với bạn"
               }
             ].map((item, index) => (
               <Card key={index} className="text-center p-6">
                 <CardContent className="space-y-4">
-                  <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xl font-bold mx-auto">
-                    {item.step}
+                  <div className="w-20 h-20 mx-auto flex items-center justify-center">
+                    <Image
+                      src={item.stepImage}
+                      alt={`Bước ${item.step}`}
+                      width={80}
+                      height={80}
+                      className="object-contain"
+                    />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground">{item.title}</h3>
                   <p className="text-muted-foreground">{item.description}</p>
