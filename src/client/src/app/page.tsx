@@ -10,33 +10,9 @@ import { Badge } from "@/components/ui/badge";
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Header Navigation */}
-      <header className="border-b bg-white">
-        <div className="container mx-auto px-8 lg:px-16 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Image src="/logo.png" alt="Jobify Logo" width={32} height={32} className="object-contain" />
-              <span className="text-2xl font-bold text-primary">Jobify</span>
-            </div>
-            
-            <nav className="hidden md:flex items-center space-x-6">
-              <a href="#" className="text-muted-foreground hover:text-primary">Trang chủ</a>
-              <a href="#" className="text-muted-foreground hover:text-primary">Ngành nghề/Địa điểm</a>
-              <a href="#" className="text-muted-foreground hover:text-primary">Tìm kiếm</a>
-              <a href="#" className="text-muted-foreground hover:text-primary">Công ty</a>
-            </nav>
-            
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" className="hover:bg-primary/10">Đăng nhập</Button>
-              <Button className="bg-primary hover:bg-primary/90">Nhà tuyển dụng</Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-secondary/30 to-accent/30 py-16">
-        <div className="container mx-auto px-8 lg:px-16">
+        <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
             <div className="space-y-6 pr-0 lg:pr-8">
               <h1 className="text-3xl lg:text-4xl font-bold text-foreground leading-tight">
@@ -88,14 +64,14 @@ export default function Home() {
 
             {/* Hero Illustration */}
             <div className="relative flex justify-center">
-              <Image 
+        <Image
                 src="/hero-illustration.svg" 
                 alt="Cơ hội việc làm" 
                 width={400} 
                 height={300} 
                 className="object-contain w-full h-auto max-w-lg"
-                priority
-              />
+          priority
+        />
             </div>
           </div>
         </div>
@@ -103,7 +79,7 @@ export default function Home() {
 
       {/* Popular Industries */}
       <section className="py-16 bg-secondary/30">
-        <div className="container mx-auto px-8 lg:px-16">
+        <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold text-foreground">Ngành nghề phổ biến</h2>
             <a href="#" className="text-primary hover:text-primary/80">Xem tất cả &gt;</a>
@@ -141,7 +117,7 @@ export default function Home() {
 
       {/* Company Info Section */}
       <section className="py-16 bg-background">
-        <div className="container mx-auto px-8 lg:px-16">
+        <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="relative">
               <div className="bg-gradient-to-br from-secondary/30 to-primary/20 rounded-lg p-8">
@@ -168,7 +144,7 @@ export default function Home() {
 
       {/* Top Companies */}
       <section className="py-16 bg-secondary/30">
-        <div className="container mx-auto px-8 lg:px-16">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">Công ty hàng đầu</h2>
           </div>
@@ -199,7 +175,7 @@ export default function Home() {
 
       {/* Application Process */}
       <section className="py-16 bg-primary/5">
-        <div className="container mx-auto px-8 lg:px-16">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">Quy trình ứng tuyển</h2>
           </div>
@@ -238,7 +214,7 @@ export default function Home() {
 
       {/* Latest Jobs */}
       <section className="py-16 bg-background">
-        <div className="container mx-auto px-8 lg:px-16">
+        <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold text-foreground">Việc làm mới nhất</h2>
           </div>
@@ -319,59 +295,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-muted py-12">
-        <div className="container mx-auto px-8 lg:px-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Image src="/logo.png" alt="Jobify Logo" width={32} height={32} className="object-contain" />
-                <span className="text-2xl font-bold text-primary">Jobify</span>
-              </div>
-              <p className="text-muted-foreground">
-                Kết nối tài năng với cơ hội. Tìm kiếm công việc mơ ước của bạn.
-              </p>
-              <div className="flex space-x-4">
-                <a href="#" className="text-muted-foreground hover:text-foreground">📧</a>
-                <a href="#" className="text-muted-foreground hover:text-foreground">📱</a>
-                <a href="#" className="text-muted-foreground hover:text-foreground">🐦</a>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4 text-foreground">Dành cho ứng viên</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">Tìm việc làm</a></li>
-                <li><a href="#" className="hover:text-foreground">Công ty</a></li>
-                <li><a href="#" className="hover:text-foreground">Cẩm nang nghề nghiệp</a></li>
-                <li><a href="#" className="hover:text-foreground">Công cụ tính lương</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4 text-foreground">Dành cho nhà tuyển dụng</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">Đăng tin tuyển dụng</a></li>
-                <li><a href="#" className="hover:text-foreground">Tìm hồ sơ</a></li>
-                <li><a href="#" className="hover:text-foreground">Báo cáo thị trường</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4 text-foreground">Liên hệ</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>📍 Hà Nội, Việt Nam</li>
-                <li>📞 +84 123 456 789</li>
-                <li>✉️ info@jobquest.vn</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-border mt-8 pt-8 text-center text-muted-foreground">
-            <p>&copy; 2025 Jobify. Đây là đồ án chuyên ngành của Trầm Khôi Nguyên.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
