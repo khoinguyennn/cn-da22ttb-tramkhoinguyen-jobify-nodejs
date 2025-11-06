@@ -3,7 +3,7 @@ import { Roboto } from "next/font/google";
 import Image from "next/image";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
-import { Button } from "@/components/ui/button";
+import { NavBar } from "@/components/NavBar";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -29,28 +29,7 @@ export default function RootLayout({
         <QueryProvider>
           <div className="px-8 lg:px-16">
             {/* Header Navigation */}
-            <header className="border-b bg-white -mx-8 lg:-mx-16">
-              <div className="container mx-auto px-12 lg:px-20 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Image src="/logo.png" alt="Jobify Logo" width={32} height={32} className="object-contain" />
-                    <span className="text-2xl font-bold text-primary">Jobify</span>
-                  </div>
-                  
-                  <nav className="hidden md:flex items-center space-x-6">
-                    <a href="#" className="text-muted-foreground hover:text-primary">Trang chủ</a>
-                    <a href="#" className="text-muted-foreground hover:text-primary">Ngành nghề hàng đầu</a>
-                    <a href="#" className="text-muted-foreground hover:text-primary">Tin tức</a>
-                    <a href="#" className="text-muted-foreground hover:text-primary">Công ty</a>
-                  </nav>
-                  
-                  <div className="flex items-center space-x-3">
-                    <Button variant="ghost" className="hover:bg-primary/10">Đăng nhập</Button>
-                    <Button className="bg-primary hover:bg-primary/90">Nhà tuyển dụng</Button>
-                  </div>
-                </div>
-              </div>
-            </header>
+            <NavBar />
 
             {/* Main Content */}
             <main>

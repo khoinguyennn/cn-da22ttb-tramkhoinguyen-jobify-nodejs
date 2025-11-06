@@ -1,11 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { Search, MapPin, Users, Shield, Calculator, Building, Heart, Star, HandCoins } from "lucide-react";
+import { 
+  Search, MapPin, Users, Shield, Calculator, Building, Heart, Star, HandCoins,
+  TrendingUp, Package, Megaphone, Shirt, Target, MessageCircle, 
+  CheckCircle, Truck, Globe, Code, Stethoscope, Headphones, ArrowLeft, ArrowRight
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export default function Home() {
   return (
@@ -85,33 +96,85 @@ export default function Home() {
             <a href="#" className="text-primary hover:text-primary/80">Xem tất cả &gt;</a>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { icon: Users, title: "Dịch vụ khách hàng", color: "bg-primary/10 text-primary" },
-              { icon: Building, title: "Giáo dục / Đào tạo / Thư viện", color: "bg-primary/10 text-primary" },
-              { icon: Shield, title: "Bảo hiểm", color: "bg-primary/10 text-primary" },
-              { icon: Calculator, title: "Kế toán / Kiểm toán", color: "bg-primary/10 text-primary" },
-              { icon: Building, title: "Ngân hàng / Chứng khoán", color: "bg-primary/10 text-primary" },
-              { icon: HandCoins, title: "Tài chính / Đầu tư", color: "bg-primary/10 text-primary" },
-              { icon: HandCoins, title: "Tài chính / Đầu tư", color: "bg-primary/10 text-primary" }
-            ].map((item, index) => (
-              <Card key={index} className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="flex flex-col items-center space-y-3">
-                  <div className={`p-3 rounded-lg ${item.color}`}>
-                    <item.icon className="w-6 h-6" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground">{item.title}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Carousel
+            opts={{
+              align: "start",
+            }}
+            className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-6xl mx-auto"
+          >
+            <CarouselContent>
+              {/* Slide 1: Ngành nghề 1-6 */}
+              <CarouselItem>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 px-2">
+                  {[
+                    { icon: Users, title: "Dịch vụ khách hàng", color: "bg-primary/10 text-primary" },
+                    { icon: Building, title: "Giáo dục / Đào tạo / Thư viện", color: "bg-primary/10 text-primary" },
+                    { icon: Shield, title: "Bảo hiểm", color: "bg-primary/10 text-primary" },
+                    { icon: Calculator, title: "Kế toán / Kiểm toán", color: "bg-primary/10 text-primary" },
+                    { icon: Building, title: "Ngân hàng / Chứng khoán", color: "bg-primary/10 text-primary" },
+                    { icon: HandCoins, title: "Tài chính / Đầu tư", color: "bg-primary/10 text-primary" }
+                  ].map((item, index) => (
+                    <Card key={index} className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer">
+                      <CardContent className="flex flex-col items-center space-y-3">
+                        <div className={`p-3 rounded-lg ${item.color}`}>
+                          <item.icon className="w-6 h-6" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground">{item.title}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CarouselItem>
 
-          {/* Pagination dots */}
-          <div className="flex justify-center space-x-2 mt-8">
-            <div className="w-2 h-2 bg-primary rounded-full"></div>
-            <div className="w-2 h-2 bg-muted rounded-full"></div>
-            <div className="w-2 h-2 bg-muted rounded-full"></div>
-          </div>
+              {/* Slide 2: Ngành nghề 7-12 */}
+              <CarouselItem>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 px-2">
+                  {[
+                    { icon: TrendingUp, title: "Bán hàng / Kinh doanh", color: "bg-primary/10 text-primary" },
+                    { icon: Package, title: "Hàng gia dụng", color: "bg-primary/10 text-primary" },
+                    { icon: Megaphone, title: "Quảng cáo / Đối ngoại", color: "bg-primary/10 text-primary" },
+                    { icon: Shirt, title: "Thời trang", color: "bg-primary/10 text-primary" },
+                    { icon: Target, title: "Tiếp thị", color: "bg-primary/10 text-primary" },
+                    { icon: MessageCircle, title: "Tư vấn", color: "bg-primary/10 text-primary" }
+                  ].map((item, index) => (
+                    <Card key={index} className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer">
+                      <CardContent className="flex flex-col items-center space-y-3">
+                        <div className={`p-3 rounded-lg ${item.color}`}>
+                          <item.icon className="w-6 h-6" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground">{item.title}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CarouselItem>
+
+              {/* Slide 3: Ngành nghề 13-18 */}
+              <CarouselItem>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 px-2">
+                  {[
+                    { icon: CheckCircle, title: "Quản lý chất lượng", color: "bg-primary/10 text-primary" },
+                    { icon: Truck, title: "Vận chuyển / Giao hàng / Kho bãi", color: "bg-primary/10 text-primary" },
+                    { icon: Globe, title: "Xuất nhập khẩu / Ngoại thương", color: "bg-primary/10 text-primary" },
+                    { icon: Code, title: "CNTT - Phần mềm", color: "bg-primary/10 text-primary" },
+                    { icon: Stethoscope, title: "Chăm sóc sức khỏe / Y tế", color: "bg-primary/10 text-primary" },
+                    { icon: Headphones, title: "Dịch vụ khách hàng", color: "bg-primary/10 text-primary" }
+                  ].map((item, index) => (
+                    <Card key={index} className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer">
+                      <CardContent className="flex flex-col items-center space-y-3">
+                        <div className={`p-3 rounded-lg ${item.color}`}>
+                          <item.icon className="w-6 h-6" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground">{item.title}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CarouselItem>
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         </div>
       </section>
 
