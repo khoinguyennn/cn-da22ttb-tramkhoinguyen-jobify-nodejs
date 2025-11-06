@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { 
   Search, MapPin, Users, Shield, Calculator, Building, Heart, Star, HandCoins,
@@ -16,9 +17,27 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 
 export default function Home() {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -41,10 +60,16 @@ export default function Home() {
                 <span className="text-sm text-muted-foreground">Đối tác của chúng tôi:</span>
                 <div className="flex items-center space-x-3">
                   <div className="bg-card px-3 py-1 rounded shadow-sm border">
-                    <span className="font-semibold text-orange-600">UNG</span>
+                    <span className="font-semibold text-orange-600">VNG</span>
                   </div>
                   <div className="bg-card px-3 py-1 rounded shadow-sm border">
                     <span className="font-semibold text-green-600">vietjet</span>
+                  </div>
+                  <div className="bg-card px-3 py-1 rounded shadow-sm border">
+                    <span className="font-semibold text-red-600">viettel</span>
+                  </div>
+                  <div className="bg-card px-3 py-1 rounded shadow-sm border">
+                    <span className="font-semibold text-red-600">FPT</span>
                   </div>
                 </div>
               </div>
@@ -97,6 +122,7 @@ export default function Home() {
           </div>
           
           <Carousel
+            setApi={setApi}
             opts={{
               align: "start",
             }}
@@ -175,6 +201,22 @@ export default function Home() {
             <CarouselPrevious />
             <CarouselNext />
           </Carousel>
+          
+          {/* Pagination Dots */}
+          <div className="flex justify-center space-x-2 mt-4">
+            {Array.from({ length: count }, (_, index) => (
+              <button
+                key={index}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  index + 1 === current 
+                    ? 'bg-primary' 
+                    : 'bg-muted-foreground/30'
+                }`}
+                onClick={() => api?.scrollTo(index)}
+                aria-label={`Đi đến slide ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -183,23 +225,33 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="relative">
-              <div className="bg-gradient-to-br from-secondary/30 to-primary/20 rounded-lg p-8">
-                <div className="bg-card rounded-lg p-4 w-fit mx-auto border">
-                  <Building className="w-16 h-16 text-primary" />
-                </div>
+              <div className="flex items-center justify-center">
+                <Image
+                  src="/undraw_hiring_8szx.svg"
+                  alt="Hiring illustration"
+                  width={350}
+                  height={300}
+                  className="object-contain w-full h-auto max-w-md"
+                  priority
+                />
               </div>
             </div>
             <div className="space-y-6">
               <h2 className="text-3xl font-bold text-foreground">
-                Công thông tin việc làm đáng tin cậy và phổ biến
+                Cổng thông tin việc làm đáng tin cậy và phổ biến
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
                 Hơn 10 năm kinh nghiệm trong lĩnh vực tuyển dụng, chúng tôi tự hào mang đến cho bạn 
                 những cơ hội việc làm chất lượng cao từ các doanh nghiệp uy tín hàng đầu Việt Nam.
               </p>
-              <Button className="bg-primary hover:bg-primary/90">
-                Tìm việc ngay
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button className="bg-primary hover:bg-primary/90">
+                  Tìm việc ngay
+                </Button>
+                <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                  Đăng việc làm
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -212,26 +264,117 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-foreground mb-4">Công ty hàng đầu</h2>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { name: "Facebook", logo: "🔵", bg: "bg-primary" },
-              { name: "Microsoft", logo: "🪟", bg: "bg-secondary" },
-              { name: "Apple", logo: "🍎", bg: "bg-muted" },
-              { name: "Starbucks", logo: "☕", bg: "bg-accent" },
-              { name: "NVIDIA", logo: "💚", bg: "bg-primary/80" },
-              { name: "LEGO", logo: "🔴", bg: "bg-destructive" },
-              { name: "FPT", logo: "🔶", bg: "bg-secondary/80" },
-              { name: "Netflix", logo: "🔴", bg: "bg-destructive/80" }
+              { 
+                name: "Facebook", 
+                logo: "/companies/facebook-logo.png", 
+                location: "Hồ Chí Minh", 
+                jobs: "5 việc làm",
+                color: "text-blue-600"
+              },
+              { 
+                name: "Microsoft", 
+                logo: "/companies/microsoft-logo.png", 
+                location: "Trà Vinh", 
+                jobs: "1 việc làm",
+                color: "text-blue-600"
+              },
+              { 
+                name: "Apple", 
+                logo: "/companies/apple-logo.png", 
+                location: "Hà Nội", 
+                jobs: "1 việc làm",
+                color: "text-blue-600"
+              },
+              { 
+                name: "Starbucks", 
+                logo: "/companies/starbucks-logo.png", 
+                location: "Trà Vinh", 
+                jobs: "0 việc làm",
+                color: "text-blue-600"
+              },
+              { 
+                name: "NVIDIA", 
+                logo: "/companies/nvidia-logo.png", 
+                location: "Hà Giang", 
+                jobs: "1 việc làm",
+                color: "text-blue-600"
+              },
+              { 
+                name: "Lego", 
+                logo: "/companies/lego-logo.png", 
+                location: "Bình Dương", 
+                jobs: "0 việc làm",
+                color: "text-blue-600"
+              },
+              { 
+                name: "FPT Software", 
+                logo: "/companies/fpt-logo.png", 
+                location: "Hà Nội", 
+                jobs: "2 việc làm",
+                color: "text-blue-600"
+              },
+              { 
+                name: "Netflix VN", 
+                logo: "/companies/netflix-logo.png", 
+                location: "Đà Nẵng", 
+                jobs: "0 việc làm",
+                color: "text-blue-600"
+              }
             ].map((company, index) => (
-              <Card key={index} className="p-6 text-center hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="flex flex-col items-center space-y-2">
-                  <div className={`w-12 h-12 ${company.bg} rounded-lg flex items-center justify-center text-primary-foreground text-xl`}>
-                    {company.logo}
+              <Card key={index} className="bg-card border border-border hover:shadow-lg transition-shadow cursor-pointer group">
+                <CardContent className="p-6">
+                  {/* Heart Button - Top Right */}
+                  <div className="flex justify-end mb-4">
+                    <button className="text-muted-foreground hover:text-red-500 transition-colors">
+                      <Heart className="w-5 h-5" />
+                    </button>
                   </div>
-                  <p className="text-sm font-medium text-foreground">{company.name}</p>
+                  
+                  {/* Large Company Logo - Center */}
+                  <div className="flex justify-center mb-6">
+                    <div className="w-24 h-24 bg-gradient-to-br from-primary/10 to-primary/20 rounded-lg flex items-center justify-center shadow-sm border relative overflow-hidden">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Building className="w-12 h-12 text-primary/60" />
+                      </div>
+            <Image
+                        src={company.logo} 
+                        alt={`${company.name} logo`}
+                        width={80}
+                        height={80}
+                        className="object-contain relative z-10"
+                        onError={(e) => {
+                          // Hide the image if it fails to load, showing the Building icon instead
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Company Info - Bottom */}
+                  <div className="text-center space-y-2">
+                    <h3 className="font-semibold text-foreground">{company.name}</h3>
+                    
+                    <div className="flex items-center justify-center text-sm text-muted-foreground">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      {company.location}
+                    </div>
+                    <div className={`text-sm font-medium ${company.color}`}>
+                      {company.jobs}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ))}
+          </div>
+          
+          {/* View All Companies Button */}
+          <div className="text-center mt-8">
+            <Button variant="outline" size="lg">
+              Xem tất cả công ty
+            </Button>
           </div>
         </div>
       </section>

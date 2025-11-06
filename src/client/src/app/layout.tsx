@@ -4,6 +4,8 @@ import Image from "next/image";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { NavBar } from "@/components/NavBar";
+import { Facebook, Twitter, Music, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -48,10 +50,50 @@ export default function RootLayout({
                     <p className="text-muted-foreground">
                       Kết nối tài năng với cơ hội. Tìm kiếm công việc mơ ước của bạn.
                     </p>
-                    <div className="flex space-x-4">
-                      <a href="#" className="text-muted-foreground hover:text-foreground">📧</a>
-                      <a href="#" className="text-muted-foreground hover:text-foreground">📱</a>
-                      <a href="#" className="text-muted-foreground hover:text-foreground">🐦</a>
+                    <div className="flex space-x-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        asChild
+                        className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                      >
+                        <a href="https://facebook.com/jobify" target="_blank" rel="noopener noreferrer">
+                          <Facebook className="w-5 h-5" />
+                        </a>
+                      </Button>
+                      
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        asChild
+                        className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                      >
+                        <a href="https://twitter.com/jobify" target="_blank" rel="noopener noreferrer">
+                          <Twitter className="w-5 h-5" />
+                        </a>
+                      </Button>
+                      
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        asChild
+                        className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                      >
+                        <a href="https://tiktok.com/@jobify" target="_blank" rel="noopener noreferrer">
+                          <Music className="w-5 h-5" />
+                        </a>
+                      </Button>
+                      
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        asChild
+                        className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                      >
+                        <a href="mailto:contact@jobify.vn">
+                          <Mail className="w-5 h-5" />
+                        </a>
+                      </Button>
                     </div>
                   </div>
                   
@@ -85,7 +127,7 @@ export default function RootLayout({
                 </div>
                 
                 <div className="border-t border-border mt-8 pt-8 text-center text-muted-foreground">
-                  <p>&copy; 2024 Jobify. Tất cả quyền được bảo lưu.</p>
+                  <p>&copy; 2025 Jobify. Đây là đồ án chuyên ngành của Trầm Khôi Nguyên.</p>
                 </div>
               </div>
             </footer>
