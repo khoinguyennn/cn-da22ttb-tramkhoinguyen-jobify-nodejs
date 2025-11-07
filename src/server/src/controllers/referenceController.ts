@@ -36,13 +36,51 @@ export class ReferenceController {
    * /provinces/type:
    *   get:
    *     tags: [Tỉnh]
-   *     summary: Lấy danh sách tỉnh thành có phân loại
+   *     summary: Lấy danh sách tỉnh thành có phân loại với số lượng công việc
    *     responses:
    *       200:
-   *         description: Lấy danh sách tỉnh thành thành công
+   *         description: Lấy danh sách tỉnh thành theo loại với số lượng công việc thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     municipalities:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                         properties:
+   *                           id:
+   *                             type: integer
+   *                           name:
+   *                             type: string
+   *                           nameWithType:
+   *                             type: string
+   *                           jobCount:
+   *                             type: integer
+   *                     provinces:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                         properties:
+   *                           id:
+   *                             type: integer
+   *                           name:
+   *                             type: string
+   *                           nameWithType:
+   *                             type: string
+   *                           jobCount:
+   *                             type: integer
+   *                 message:
+   *                   type: string
    */
   getProvincesWithType = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const provinces = await this.referenceService.getAllProvinces();
+    const provinces = await this.referenceService.getAllProvincesWithJobCount();
     
     // Group provinces by type (có thể customize logic này)
     const provincesWithType = {
@@ -50,7 +88,7 @@ export class ReferenceController {
       provinces: provinces.filter(p => p.nameWithType.includes('Tỉnh')),
     };
     
-    ResponseUtil.success(res, provincesWithType, 'Lấy danh sách tỉnh thành theo loại thành công');
+    ResponseUtil.success(res, provincesWithType, 'Lấy danh sách tỉnh thành theo loại với số lượng công việc thành công');
   });
 
   // ===== FIELDS =====
@@ -79,10 +117,34 @@ export class ReferenceController {
    * /fields/type:
    *   get:
    *     tags: [Ngành nghề]
-   *     summary: Lấy danh sách ngành nghề theo loại
+   *     summary: Lấy danh sách ngành nghề theo loại với số lượng công việc
    *     responses:
    *       200:
-   *         description: Lấy danh sách ngành nghề theo loại thành công
+   *         description: Lấy danh sách ngành nghề theo loại với số lượng công việc thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 data:
+   *                   type: object
+   *                   additionalProperties:
+   *                     type: array
+   *                     items:
+   *                       type: object
+   *                       properties:
+   *                         id:
+   *                           type: integer
+   *                         name:
+   *                           type: string
+   *                         typeField:
+   *                           type: string
+   *                         jobCount:
+   *                           type: integer
+   *                 message:
+   *                   type: string
    */
   getFieldsByType = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const fieldTypes = await this.referenceService.getUniqueFieldTypes();
@@ -90,10 +152,10 @@ export class ReferenceController {
     const fieldsByType: { [key: string]: any[] } = {};
     
     for (const type of fieldTypes) {
-      fieldsByType[type] = await this.referenceService.getFieldsByType(type);
+      fieldsByType[type] = await this.referenceService.getFieldsByTypeWithJobCount(type);
     }
     
-    ResponseUtil.success(res, fieldsByType, 'Lấy danh sách ngành nghề theo loại thành công');
+    ResponseUtil.success(res, fieldsByType, 'Lấy danh sách ngành nghề theo loại với số lượng công việc thành công');
   });
 }
 

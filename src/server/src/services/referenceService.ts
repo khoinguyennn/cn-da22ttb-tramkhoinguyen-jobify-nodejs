@@ -1,5 +1,5 @@
 import { ReferenceRepository } from '@/repositories/referenceRepository';
-import { Province, Field } from '@/types';
+import { Province, Field, FieldWithJobCount, ProvinceWithJobCount } from '@/types';
 
 export class ReferenceService {
   private referenceRepository: ReferenceRepository;
@@ -18,6 +18,10 @@ export class ReferenceService {
     return await this.referenceRepository.getProvinceById(id);
   }
 
+  async getAllProvincesWithJobCount(): Promise<ProvinceWithJobCount[]> {
+    return await this.referenceRepository.getAllProvincesWithJobCount();
+  }
+
   // ===== FIELDS =====
   
   async getAllFields(): Promise<Field[]> {
@@ -28,6 +32,10 @@ export class ReferenceService {
     return await this.referenceRepository.getFieldsByType(typeField);
   }
 
+  async getFieldsByTypeWithJobCount(typeField: string): Promise<FieldWithJobCount[]> {
+    return await this.referenceRepository.getFieldsByTypeWithJobCount(typeField);
+  }
+
   async getFieldById(id: number): Promise<Field | null> {
     return await this.referenceRepository.getFieldById(id);
   }
@@ -36,6 +44,8 @@ export class ReferenceService {
     return await this.referenceRepository.getUniqueFieldTypes();
   }
 }
+
+
 
 
 

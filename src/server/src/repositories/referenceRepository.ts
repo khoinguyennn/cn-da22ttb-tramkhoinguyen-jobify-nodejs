@@ -1,5 +1,5 @@
 import { pool } from '@/config/database';
-import { Province, Field } from '@/types';
+import { Province, Field, FieldWithJobCount, ProvinceWithJobCount } from '@/types';
 import { ProvinceModel } from '@/models/Province';
 import { FieldModel } from '@/models/Field';
 import { RowDataPacket } from 'mysql2';
@@ -25,6 +25,27 @@ export class ReferenceRepository {
     );
     
     return rows.length > 0 ? ProvinceModel.fromRow(rows[0]) : null;
+  }
+
+  async getAllProvincesWithJobCount(): Promise<ProvinceWithJobCount[]> {
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        p.id, 
+        p.name, 
+        p.nameWithType,
+        COUNT(j.id) as jobCount
+       FROM provinces p 
+       LEFT JOIN jobs j ON p.id = j.idProvince AND j.deletedAt IS NULL
+       GROUP BY p.id, p.name, p.nameWithType
+       ORDER BY p.name ASC`
+    );
+    
+    return rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      nameWithType: row.nameWithType,
+      jobCount: row.jobCount || 0
+    }));
   }
 
   async searchProvinces(query: string): Promise<Province[]> {
@@ -74,6 +95,29 @@ export class ReferenceRepository {
     );
     
     return rows.map(row => FieldModel.fromRow(row));
+  }
+
+  async getFieldsByTypeWithJobCount(typeField: string): Promise<FieldWithJobCount[]> {
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 
+        f.id, 
+        f.name, 
+        f.typeField,
+        COUNT(j.id) as jobCount
+       FROM fields f 
+       LEFT JOIN jobs j ON f.id = j.idField AND j.deletedAt IS NULL
+       WHERE f.typeField = ?
+       GROUP BY f.id, f.name, f.typeField
+       ORDER BY f.name ASC`,
+      [typeField]
+    );
+    
+    return rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      typeField: row.typeField,
+      jobCount: row.jobCount || 0
+    }));
   }
 
   async searchFields(query: string): Promise<Field[]> {

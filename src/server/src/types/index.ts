@@ -63,6 +63,13 @@ export interface Company {
   web?: string;
 }
 
+// Company with job count for API responses
+export interface CompanyWithJobCount extends Omit<Company, 'password'> {
+  jobCount: number;
+  provinceName?: string;
+  provinceFullName?: string;
+}
+
 export interface Job {
   id: number;
   idCompany: number;
@@ -102,10 +109,20 @@ export interface Province {
   nameWithType: string;
 }
 
+// Province with job count for API responses
+export interface ProvinceWithJobCount extends Province {
+  jobCount: number;
+}
+
 export interface Field {
   id: number;
   name: string;
   typeField: string;
+}
+
+// Field with job count for API responses
+export interface FieldWithJobCount extends Field {
+  jobCount: number;
 }
 
 export interface SaveJob {

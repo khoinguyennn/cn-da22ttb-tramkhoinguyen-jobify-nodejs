@@ -1,6 +1,6 @@
 import { CompanyRepository } from '@/repositories/companyRepository';
 import { AppError } from '@/middlewares/errorHandler';
-import { Company, PaginatedResponse } from '@/types';
+import { Company, CompanyWithJobCount, PaginatedResponse } from '@/types';
 
 export class CompanyService {
   private companyRepository: CompanyRepository;
@@ -20,19 +20,15 @@ export class CompanyService {
     return companyWithoutPassword;
   }
 
-  async getAllCompanies(page: number = 1, limit: number = 10): Promise<PaginatedResponse<Omit<Company, 'password'>>> {
+  async getAllCompanies(page: number = 1, limit: number = 10): Promise<PaginatedResponse<CompanyWithJobCount>> {
     const { companies, total } = await this.companyRepository.findAll(page, limit);
     
-    // Remove passwords from all companies
-    const companiesWithoutPassword = companies.map(company => {
-      const { password, ...companyWithoutPassword } = company;
-      return companyWithoutPassword;
-    });
-
+    // Companies already don't have password (CompanyWithJobCount extends Omit<Company, 'password'>)
+    // and jobCount is already included
     const totalPages = Math.ceil(total / limit);
 
     return {
-      data: companiesWithoutPassword,
+      data: companies,
       total,
       page,
       limit,

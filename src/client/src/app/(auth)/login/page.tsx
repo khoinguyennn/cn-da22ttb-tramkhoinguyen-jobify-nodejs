@@ -48,7 +48,7 @@ export default function CandidateLoginPage() {
       
       // Demo: Thành công với email test@example.com
       if (formData.email === "test@example.com" && formData.password === "123456") {
-        showToast.success("Đăng nhập thành công! Chào mừng bạn quay trở lại.");
+        showToast.success("Đăng nhập thành công!");
         // Redirect logic sẽ được thêm sau
       } else {
         showToast.error("Email hoặc mật khẩu không chính xác!");

@@ -102,7 +102,29 @@ export class CompanyController {
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/PaginatedResponse'
+   *               allOf:
+   *                 - $ref: '#/components/schemas/PaginatedResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: array
+   *                       items:
+   *                         allOf:
+   *                           - $ref: '#/components/schemas/Company'
+   *                           - type: object
+   *                             properties:
+   *                               jobCount:
+   *                                 type: integer
+   *                                 description: Số lượng việc làm hiện có của công ty
+   *                                 example: 25
+   *                               provinceName:
+   *                                 type: string
+   *                                 description: Tên tỉnh/thành phố
+   *                                 example: "Trà Vinh"
+   *                               provinceFullName:
+   *                                 type: string
+   *                                 description: Tên đầy đủ tỉnh/thành phố
+   *                                 example: "Tỉnh Trà Vinh"
    */
   getAllCompanies = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const page = parseInt(req.query.page as string) || 1;

@@ -1,5 +1,5 @@
 import { pool } from '@/config/database';
-import { Company } from '@/types';
+import { Company, CompanyWithJobCount } from '@/types';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 export class CompanyRepository {
@@ -24,7 +24,7 @@ export class CompanyRepository {
     return rows.length > 0 ? (rows[0] as Company) : null;
   }
 
-  async findAll(page: number, limit: number): Promise<{ companies: Company[], total: number }> {
+  async findAll(page: number, limit: number): Promise<{ companies: CompanyWithJobCount[], total: number }> {
     const offset = (page - 1) * limit;
 
     // Validate parameters
@@ -38,18 +38,41 @@ export class CompanyRepository {
     );
     const total = countRows[0].total;
 
-    // Get paginated companies
+    // Get paginated companies with job count
     const [rows] = await pool.query<RowDataPacket[]>(
-      `SELECT c.*, p.name as provinceName, p.nameWithType as provinceFullName 
+      `SELECT 
+        c.*, 
+        p.name as provinceName, 
+        p.nameWithType as provinceFullName,
+        COALESCE(COUNT(j.id), 0) as jobCount
        FROM companies c 
        LEFT JOIN provinces p ON c.idProvince = p.id 
+       LEFT JOIN jobs j ON c.id = j.idCompany AND j.deletedAt IS NULL
+       GROUP BY c.id, c.nameCompany, c.nameAdmin, c.email, c.phone, c.idProvince, c.web, c.avatarPic, c.intro, c.scale, p.name, p.nameWithType
        ORDER BY c.nameCompany ASC 
        LIMIT ? OFFSET ?`,
       [limit, offset]
     );
 
+    // Convert jobCount to integer and structure the response
+    const companies: CompanyWithJobCount[] = rows.map(row => ({
+      id: row.id,
+      nameCompany: row.nameCompany,
+      nameAdmin: row.nameAdmin,
+      email: row.email,
+      avatarPic: row.avatarPic,
+      phone: row.phone,
+      idProvince: row.idProvince,
+      intro: row.intro,
+      scale: row.scale,
+      web: row.web,
+      provinceName: row.provinceName,
+      provinceFullName: row.provinceFullName,
+      jobCount: parseInt(row.jobCount) || 0 // Ensure it's an integer
+    }));
+
     return {
-      companies: rows as Company[],
+      companies,
       total,
     };
   }
