@@ -217,10 +217,7 @@ export default function TimKiemPage() {
     <div className="min-h-screen bg-white">
       {/* Search Header */}
       <div 
-        className="relative py-16 px-4 mx-4 my-4 rounded-2xl"
-        style={{
-          background: "linear-gradient(135deg, rgb(102, 126, 234) 0%, rgb(118, 75, 162) 100%)"
-        }}
+        className="relative py-16 px-4 mx-4 my-4 rounded-2xl bg-gray-100"
       >
         <div className="container mx-auto max-w-6xl">
           {/* Search Bar */}
