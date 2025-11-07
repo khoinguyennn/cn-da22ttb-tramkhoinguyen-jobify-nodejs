@@ -6,6 +6,8 @@ import { QueryProvider } from "@/providers/QueryProvider";
 import { NavBar } from "@/components/NavBar";
 import { Facebook, Twitter, Music, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -133,6 +135,20 @@ export default function RootLayout({
             </footer>
           </div>
         </QueryProvider>
+        
+        {/* Toast Container */}
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </body>
     </html>
   );

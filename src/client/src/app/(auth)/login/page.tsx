@@ -7,10 +7,58 @@ import { ArrowLeft, Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { showToast } from "@/utils/toast";
 
 // Standalone login page component that bypasses root layout
 export default function CandidateLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validation
+    if (!formData.email || !formData.password) {
+      showToast.error("Vui lòng điền đầy đủ thông tin!");
+      return;
+    }
+
+    if (!formData.email.includes("@")) {
+      showToast.error("Email không hợp lệ!");
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      // Giả lập API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Demo: Thành công với email test@example.com
+      if (formData.email === "test@example.com" && formData.password === "123456") {
+        showToast.success("Đăng nhập thành công! Chào mừng bạn quay trở lại.");
+        // Redirect logic sẽ được thêm sau
+      } else {
+        showToast.error("Email hoặc mật khẩu không chính xác!");
+      }
+    } catch (error) {
+      showToast.error("Có lỗi xảy ra! Vui lòng thử lại.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
@@ -62,7 +110,7 @@ export default function CandidateLoginPage() {
         <div className="relative z-10 w-full max-w-lg mx-auto px-4 sm:px-6 lg:px-8">
           {/* Logo */}
           <div className="text-center mb-6 sm:mb-8">
-            <div className="inline-flex items-center space-x-2">
+            <div className="inline-flex items-center gap-0.5">
               <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
                 <Image src="/logo.png" alt="Jobify Logo" width={32} height={32} className="object-contain" />
               </div>
@@ -83,7 +131,7 @@ export default function CandidateLoginPage() {
                 </p>
               </div>
 
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleSubmit}>
                 {/* Email Input */}
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -91,7 +139,10 @@ export default function CandidateLoginPage() {
                   </div>
                   <Input
                     type="email"
+                    name="email"
                     placeholder="Email"
+                    value={formData.email}
+                    onChange={handleInputChange}
                     className="pl-10 py-3 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                     style={{ borderColor: "#e5e7eb" }}
                   />
@@ -104,7 +155,10 @@ export default function CandidateLoginPage() {
                   </div>
                   <Input
                     type={showPassword ? "text" : "password"}
+                    name="password"
                     placeholder="Password"
+                    value={formData.password}
+                    onChange={handleInputChange}
                     className="pl-10 pr-10 py-3 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
                     style={{ borderColor: "#e5e7eb" }}
                   />
@@ -134,19 +188,24 @@ export default function CandidateLoginPage() {
                 {/* Login Button */}
                 <Button 
                   type="submit"
-                  className="w-full text-white font-medium py-3 rounded-lg transition-colors"
+                  disabled={isLoading}
+                  className="w-full text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
-                    backgroundColor: "rgba(139, 92, 246, 1)",
+                    backgroundColor: isLoading ? "rgba(139, 92, 246, 0.5)" : "rgba(139, 92, 246, 1)",
                     border: "none"
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(139, 92, 246, 0.9)";
+                    if (!isLoading) {
+                      e.currentTarget.style.backgroundColor = "rgba(139, 92, 246, 0.9)";
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(139, 92, 246, 1)";
+                    if (!isLoading) {
+                      e.currentTarget.style.backgroundColor = "rgba(139, 92, 246, 1)";
+                    }
                   }}
                 >
-                  Đăng nhập
+                  {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
                 </Button>
 
                 {/* Sign Up Link */}
