@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { showToast } from "@/utils/toast";
 
-// Standalone login page component that bypasses root layout
-export default function CandidateLoginPage() {
+// Standalone employer login page component that bypasses root layout
+export default function EmployerLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -46,10 +46,10 @@ export default function CandidateLoginPage() {
       // Giả lập API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Demo: Thành công với email test@example.com
-      if (formData.email === "test@example.com" && formData.password === "123456") {
-        showToast.success("Đăng nhập thành công! Chào mừng bạn quay trở lại.");
-        // Redirect logic sẽ được thêm sau
+      // Demo: Thành công với email employer@example.com
+      if (formData.email === "employer@example.com" && formData.password === "123456") {
+        showToast.success("Đăng nhập thành công! Chào mừng nhà tuyển dụng quay trở lại.");
+        // Redirect logic sẽ được thêm sau (có thể là dashboard của employer)
       } else {
         showToast.error("Email hoặc mật khẩu không chính xác!");
       }
@@ -123,11 +123,11 @@ export default function CandidateLoginPage() {
             <CardContent className="p-6 sm:p-8">
               <div className="text-center mb-6">
                 <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
-                  Chào mừng ứng viên đã quay trở lại
+                  Chào mừng nhà tuyển dụng quay trở lại
                 </h1>
                 <p className="text-gray-600 text-sm">
-                  Cùng xây dựng một hồ sơ nổi bật và nhận được các{" "}
-                  <span className="sm:block">cơ hội sự nghiệp lý tương</span>
+                  Kết nối với những ứng viên tài năng và{" "}
+                  <span className="sm:block">xây dựng đội ngũ mạnh mẽ</span>
                 </p>
               </div>
 
@@ -175,11 +175,11 @@ export default function CandidateLoginPage() {
                   </button>
                 </div>
 
-                {/* Forgot Password */}
-                <div className="text-right">
+                {/* Forgot Password Link */}
+                <div className="flex justify-end">
                   <Link 
-                    href="/forgot-password" 
-                    className="text-purple-600 text-sm hover:text-purple-700 transition-colors"
+                    href="/employer/forgot-password" 
+                    className="text-sm text-purple-600 hover:text-purple-800 font-medium"
                   >
                     Quên mật khẩu ?
                   </Link>
@@ -213,7 +213,7 @@ export default function CandidateLoginPage() {
                   <span className="text-gray-600 text-sm">
                     Bạn chưa có tài khoản? {" "}
                     <Link 
-                      href="/register" 
+                      href="/employer/register" 
                       className="text-purple-600 hover:text-purple-800 font-medium"
                     >
                       Đăng ký ngay

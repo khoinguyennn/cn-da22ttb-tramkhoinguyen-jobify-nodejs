@@ -4,7 +4,7 @@ import Image from "next/image";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { NavBar } from "@/components/NavBar";
-import { Facebook, Twitter, Music, Mail } from "lucide-react";
+import { Facebook, Twitter, Music, Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -120,10 +120,19 @@ export default function RootLayout({
                   
                   <div>
                     <h3 className="font-semibold mb-4 text-foreground">Liên hệ</h3>
-                    <ul className="space-y-2 text-muted-foreground">
-                      <li>📍 Hà Nội, Việt Nam</li>
-                      <li>📞 +84 123 456 789</li>
-                      <li>✉️ info@jobify.vn</li>
+                    <ul className="space-y-3 text-muted-foreground">
+                      <li className="flex items-center space-x-3">
+                        <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="text-sm">Trà Vinh, Việt Nam</span>
+                      </li>
+                      <li className="flex items-center space-x-3">
+                        <Phone className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="text-sm">+84 987 769 860</span>
+                      </li>
+                      <li className="flex items-center space-x-3">
+                        <Mail className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="text-sm">info@jobify.vn</span>
+                      </li>
                     </ul>
                   </div>
                 </div>
