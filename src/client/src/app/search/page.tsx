@@ -285,33 +285,19 @@ export default function TimKiemPage() {
 
             {/* Salary Filter */}
             <div className="relative">
-              <Select 
-                value={showSalaryRange ? "range" : "all"} 
-                onValueChange={(value) => {
-                  if (value === "range") {
-                    setShowSalaryRange(true);
-                  } else {
-                    setShowSalaryRange(false);
-                  }
-                }}
+              <Button
+                variant="outline"
+                onClick={() => setShowSalaryRange(!showSalaryRange)}
+                className="bg-white border-0 rounded-lg shadow-sm w-full justify-between h-10 px-3"
               >
-                <SelectTrigger className="bg-white border-0 rounded-lg shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-gray-500" />
-                    <SelectValue placeholder="Mức lương" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả mức lương</SelectItem>
-                  <SelectItem value="range">Tùy chọn khoảng lương</SelectItem>
-                  <SelectItem value="under-5">Dưới 5 triệu</SelectItem>
-                  <SelectItem value="5-10">5 - 10 triệu</SelectItem>
-                  <SelectItem value="10-20">10 - 20 triệu</SelectItem>
-                  <SelectItem value="20-30">20 - 30 triệu</SelectItem>
-                  <SelectItem value="over-30">Trên 30 triệu</SelectItem>
-                  <SelectItem value="negotiable">Thỏa thuận</SelectItem>
-                </SelectContent>
-              </Select>
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm">
+                    {showSalaryRange ? `${salaryRange[0]} - ${salaryRange[1]} triệu` : "Mức lương"}
+                  </span>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showSalaryRange ? 'rotate-180' : ''}`} />
+              </Button>
               
               {/* Salary Range Slider */}
               {showSalaryRange && (

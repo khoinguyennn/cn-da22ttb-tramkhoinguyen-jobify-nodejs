@@ -12,9 +12,9 @@ export function NavBar() {
 
   const navItems = [
     { href: "/", label: "Trang chủ", icon: Home },
-    { href: "/nganh-nghe", label: "Ngành nghề/Địa điểm", icon: MapPin },
-    { href: "/tim-kiem", label: "Tìm kiếm", icon: Search },
-    { href: "/cong-ty", label: "Công ty", icon: Building },
+    { href: "/fields", label: "Ngành nghề/Địa điểm", icon: MapPin },
+    { href: "/search", label: "Tìm kiếm", icon: Search },
+    { href: "/companies", label: "Công ty", icon: Building },
   ];
 
   return (
