@@ -325,7 +325,7 @@ export default function NganhNghePage() {
                         {category.jobs.map((job, jobIndex) => (
                           <li key={jobIndex}>
                             <Link 
-                              href={`/tim-kiem?job=${encodeURIComponent(job.name)}`}
+                              href={`/search?job=${encodeURIComponent(job.name)}`}
                               className="text-sm text-gray-600 hover:text-primary transition-colors"
                             >
                               {job.name} ({job.count})
@@ -354,7 +354,7 @@ export default function NganhNghePage() {
                         {province.cities.map((city, cityIndex) => (
                           <li key={cityIndex}>
                             <Link 
-                              href={`/tim-kiem?location=${encodeURIComponent(city.name)}`}
+                              href={`/search?location=${encodeURIComponent(city.name)}`}
                               className="text-sm text-gray-600 hover:text-primary transition-colors"
                             >
                               {city.name} ({city.count})
@@ -378,7 +378,7 @@ export default function NganhNghePage() {
                   {popularCategories.map((category, index) => (
                     <li key={index}>
                       <Link 
-                        href={`/tim-kiem?job=${encodeURIComponent(category.name)}`}
+                        href={`/search?job=${encodeURIComponent(category.name)}`}
                         className="text-sm text-gray-600 hover:text-primary transition-colors flex justify-between"
                       >
                         <span>{category.name}</span>
@@ -398,7 +398,7 @@ export default function NganhNghePage() {
                   {suggestedKeywords.map((keyword, index) => (
                     <Link
                       key={index}
-                      href={`/tim-kiem?q=${encodeURIComponent(keyword)}`}
+                      href={`/search?q=${encodeURIComponent(keyword)}`}
                       className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full hover:bg-purple-100 hover:text-primary transition-colors"
                     >
                       {keyword}
