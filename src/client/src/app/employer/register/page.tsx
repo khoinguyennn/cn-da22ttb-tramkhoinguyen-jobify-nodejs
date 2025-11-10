@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Eye, EyeOff, Mail, Lock, Phone, Building, User, MapPin, Users } from "lucide-react";
@@ -8,10 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useProvinces } from "@/hooks/useReferenceData";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 import { showToast } from "@/utils/toast";
 
 // Standalone employer register page component that bypasses root layout
 export default function EmployerRegisterPage() {
+  const router = useRouter();
+  const { registerCompany } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,42 +29,34 @@ export default function EmployerRegisterPage() {
     companyName: "",
     representativeName: "",
     companySize: "",
-    companyAddress: ""
+    companyAddress: "" // Sẽ lưu ID của province
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  // Lấy dữ liệu provinces từ API
+  const { data: provincesData = [], isLoading: provincesLoading, error: provincesError } = useProvinces();
+  
+  // Đảm bảo provinces luôn là array
+  const provinces = Array.isArray(provincesData) ? provincesData : [];
+
+  // Hiển thị lỗi nếu không thể tải provinces
+  useEffect(() => {
+    if (provincesError) {
+      showToast.error("Không thể tải danh sách tỉnh thành. Vui lòng thử lại!");
+    }
+  }, [provincesError]);
+
   // Data cho dropdown
   const companySizes = [
-    { value: "1-10", label: "1-10 nhân viên" },
-    { value: "11-50", label: "11-50 nhân viên" },
-    { value: "51-100", label: "51-100 nhân viên" },
-    { value: "101-500", label: "101-500 nhân viên" },
-    { value: "501-1000", label: "501-1000 nhân viên" },
-    { value: "1000+", label: "Trên 1000 nhân viên" }
+    { value: "ít hơn 10", label: "ít hơn 10 nhân viên" },
+    { value: "10 - 20", label: "10 - 20 nhân viên" },
+    { value: "20 - 100", label: "20 - 100 nhân viên" },
+    { value: "100 - 500", label: "100 - 500 nhân viên" },
+    { value: "500 - 1000", label: "500 - 1000 nhân viên" },
+    { value: "1000 - 5000", label: "1000 - 5000 nhân viên" },
+    { value: "nhiều hơn 5000", label: "nhiều hơn 5000 nhân viên" }
   ];
 
-  const provinces = [
-    { value: "hanoi", label: "Hà Nội" },
-    { value: "hochiminh", label: "Hồ Chí Minh" },
-    { value: "danang", label: "Đà Nẵng" },
-    { value: "haiphong", label: "Hải Phòng" },
-    { value: "cantho", label: "Cần Thơ" },
-    { value: "travinh", label: "Trà Vinh" },
-    { value: "angiang", label: "An Giang" },
-    { value: "bacgiang", label: "Bắc Giang" },
-    { value: "backan", label: "Bắc Kạn" },
-    { value: "baclieu", label: "Bạc Liêu" },
-    { value: "bacninh", label: "Bắc Ninh" },
-    { value: "bentre", label: "Bến Tre" },
-    { value: "binhdinh", label: "Bình Định" },
-    { value: "binhduong", label: "Bình Dương" },
-    { value: "binhphuoc", label: "Bình Phước" },
-    { value: "binhthuan", label: "Bình Thuận" },
-    { value: "camau", label: "Cà Mau" },
-    { value: "caobang", label: "Cao Bằng" },
-    { value: "daklak", label: "Đắk Lắk" },
-    { value: "daknong", label: "Đắk Nông" }
-  ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -113,9 +110,13 @@ export default function EmployerRegisterPage() {
       return false;
     }
 
-    if (!formData.companyAddress) {
-      showToast.error("Vui lòng chọn địa chỉ công ty!");
-      return false;
+    // Province là optional theo API, nhưng nếu chọn thì phải hợp lệ
+    if (formData.companyAddress) {
+      const selectedProvinceId = parseInt(formData.companyAddress);
+      if (isNaN(selectedProvinceId) || selectedProvinceId <= 0) {
+        showToast.error("Địa chỉ công ty không hợp lệ!");
+        return false;
+      }
     }
 
     // Kiểm tra định dạng email
@@ -163,30 +164,41 @@ export default function EmployerRegisterPage() {
     setIsLoading(true);
     
     try {
-      // Giả lập API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Chuẩn bị dữ liệu theo format API
+      const registerData = {
+        nameCompany: formData.companyName,
+        nameAdmin: formData.representativeName,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        idProvince: formData.companyAddress ? parseInt(formData.companyAddress) : undefined, // Optional
+        scale: formData.companySize,
+      };
+
+      // Gọi API đăng ký
+      const success = await registerCompany(registerData);
       
-      // Giả lập đăng ký thành công
-      showToast.success("Đăng ký thành công! Chào mừng bạn đến với Jobify.");
-      
-      // Reset form sau khi thành công
-      setFormData({
-        email: "",
-        phone: "",
-        password: "",
-        confirmPassword: "",
-        companyName: "",
-        representativeName: "",
-        companySize: "",
-        companyAddress: ""
-      });
-      
-      // Có thể redirect đến trang login employer
-      setTimeout(() => {
-        window.location.href = "/employer/login";
-      }, 2000);
+      if (success) {
+        // Reset form sau khi thành công
+        setFormData({
+          email: "",
+          phone: "",
+          password: "",
+          confirmPassword: "",
+          companyName: "",
+          representativeName: "",
+          companySize: "",
+          companyAddress: ""
+        });
+        
+        // Redirect về trang chủ sau khi đăng ký thành công
+        setTimeout(() => {
+          router.push('/');
+        }, 1500);
+      }
       
     } catch (error) {
+      console.error('Registration error:', error);
       showToast.error("Có lỗi xảy ra! Vui lòng thử lại.");
     } finally {
       setIsLoading(false);
@@ -200,7 +212,7 @@ export default function EmployerRegisterPage() {
           margin: 0 !important;
           padding: 0 !important;
           height: 100% !important;
-          overflow: hidden !important;
+          overflow: auto !important;
         }
         
         body > div {
@@ -211,6 +223,59 @@ export default function EmployerRegisterPage() {
         /* Hide any existing navbar/footer */
         header, nav, footer {
           display: none !important;
+        }
+        
+        /* Radix UI Select specific styles */
+        [data-radix-select-content] {
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 6px;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+          z-index: 50;
+          max-height: 200px;
+          overflow-y: auto;
+          padding: 4px;
+        }
+        
+        [data-radix-select-item] {
+          padding: 8px 12px;
+          cursor: pointer;
+          border-radius: 4px;
+          font-size: 14px;
+          outline: none;
+        }
+        
+        [data-radix-select-item]:hover,
+        [data-radix-select-item][data-highlighted] {
+          background-color: #f3f4f6;
+        }
+        
+        [data-radix-select-trigger] {
+          cursor: pointer;
+        }
+        
+        [data-radix-select-trigger][data-state="open"] {
+          border-color: #8b5cf6;
+          box-shadow: 0 0 0 1px #8b5cf6;
+        }
+        
+        /* Ensure Radix portals work */
+        [data-radix-popper-content-wrapper] {
+          z-index: 9999 !important;
+        }
+        
+        /* Fix for portal rendering */
+        body > div[data-radix-portal] {
+          z-index: 9999 !important;
+        }
+        
+        /* Ensure dropdown can be clicked */
+        [data-radix-select-content] {
+          pointer-events: auto !important;
+        }
+        
+        [data-radix-select-item] {
+          pointer-events: auto !important;
         }
       `}</style>
       
@@ -409,18 +474,29 @@ export default function EmployerRegisterPage() {
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                         <Users className="w-5 h-5 text-gray-400" />
                       </div>
-                      <Select onValueChange={(value) => handleSelectChange("companySize", value)}>
-                        <SelectTrigger className="pl-10 py-2 border-gray-200 focus:border-purple-500" style={{ borderColor: "#e5e7eb" }}>
-                          <SelectValue placeholder="Chọn quy mô công ty" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {companySizes.map((size) => (
-                            <SelectItem key={size.value} value={size.value}>
-                              {size.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div style={{ isolation: 'isolate' }}>
+                        <Select 
+                          value={formData.companySize} 
+                          onValueChange={(value) => handleSelectChange("companySize", value)}
+                        >
+                          <SelectTrigger 
+                            className="pl-10 py-2 border-gray-200 focus:border-purple-500" 
+                            style={{ borderColor: "#e5e7eb" }}
+                          >
+                            <SelectValue placeholder="Chọn quy mô công ty" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[9999]">
+                            {companySizes.map((size) => (
+                              <SelectItem 
+                                key={size.value} 
+                                value={size.value}
+                              >
+                                {size.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
                     {/* Company Address Select */}
@@ -428,18 +504,29 @@ export default function EmployerRegisterPage() {
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                         <MapPin className="w-5 h-5 text-gray-400" />
                       </div>
-                      <Select onValueChange={(value) => handleSelectChange("companyAddress", value)}>
-                        <SelectTrigger className="pl-10 py-2 border-gray-200 focus:border-purple-500" style={{ borderColor: "#e5e7eb" }}>
-                          <SelectValue placeholder="Chọn địa chỉ công ty" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {provinces.map((province) => (
-                            <SelectItem key={province.value} value={province.value}>
-                              {province.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div style={{ isolation: 'isolate' }}>
+                        <Select 
+                          value={formData.companyAddress} 
+                          onValueChange={(value) => handleSelectChange("companyAddress", value)}
+                          disabled={provincesLoading}
+                        >
+                          <SelectTrigger 
+                            className="pl-10 py-2 border-gray-200 focus:border-purple-500" 
+                            style={{ borderColor: "#e5e7eb" }}
+                          >
+                            <SelectValue 
+                              placeholder={provincesLoading ? "Đang tải..." : "Chọn địa chỉ công ty"} 
+                            />
+                          </SelectTrigger>
+                          <SelectContent className="z-[9999]">
+                            {provinces.map((province) => (
+                              <SelectItem key={province.id} value={province.id.toString()}>
+                                {province.nameWithType}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
                 </div>

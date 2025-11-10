@@ -38,9 +38,9 @@ export function UserAvatar({
       return avatarPic;
     }
     
-    // Nếu là relative path thì tạo URL đầy đủ
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    return `${baseUrl}/uploads/${avatarPic}`;
+    // Sử dụng Next.js proxy để bypass CORS
+    // Proxy sẽ forward /api/uploads/* đến http://localhost:5000/uploads/*
+    return `/api/uploads/${avatarPic}`;
   };
 
   // Lấy initials từ tên user

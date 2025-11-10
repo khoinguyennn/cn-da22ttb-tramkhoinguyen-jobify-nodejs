@@ -35,26 +35,53 @@ class Server {
   }
 
   private initializeMiddlewares(): void {
-    // Security middleware
-    this.app.use(helmet());
-    
-    // CORS configuration
-    this.app.use(cors({
-      origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-      credentials: true,
+    // Security middleware với cấu hình cho static files
+    this.app.use(helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+      crossOriginEmbedderPolicy: false
     }));
-
+    
+    // CORS middleware riêng cho static files (phải đặt trước static middleware)
+    this.app.use('/uploads', (req, res, next) => {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+      res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+      
+      if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+      } else {
+        next();
+      }
+    });
+    
     // Static files serving (cho uploaded images)
     this.app.use('/uploads', express.static('uploads', {
       maxAge: '1d', // Cache 1 ngày
       setHeaders: (res, path) => {
-        // Set proper headers cho JPG và PNG images
+        // Set proper content type headers
         if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
           res.setHeader('Content-Type', 'image/jpeg');
         } else if (path.endsWith('.png')) {
           res.setHeader('Content-Type', 'image/png');
+        } else if (path.endsWith('.gif')) {
+          res.setHeader('Content-Type', 'image/gif');
+        } else if (path.endsWith('.webp')) {
+          res.setHeader('Content-Type', 'image/webp');
         }
       }
+    }));
+    
+    // CORS configuration cho API routes
+    this.app.use(cors({
+      origin: [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        process.env.CORS_ORIGIN || 'http://localhost:3000',
+      ],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     }));
 
     // Body parsing middleware
@@ -68,6 +95,15 @@ class Server {
   }
 
   private initializeRoutes(): void {
+    // Test route cho static files
+    this.app.get('/test-upload', (req, res) => {
+      res.json({
+        message: 'Static files server is working',
+        uploadPath: '/uploads/',
+        testImage: '/uploads/logos/test.jpg'
+      });
+    });
+
     const apiPrefix = process.env.API_PREFIX || '/api';
 
     // Setup Swagger documentation

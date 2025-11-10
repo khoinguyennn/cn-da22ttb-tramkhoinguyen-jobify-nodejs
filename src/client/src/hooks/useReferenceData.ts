@@ -9,7 +9,7 @@ export const useProvinces = () => {
     queryKey: [QUERY_KEYS.PROVINCES],
     queryFn: async (): Promise<Province[]> => {
       const response = await apiClient.get('/provinces');
-      return response.data;
+      return response.data.data; // API trả về { success, data, message }
     },
     staleTime: 10 * 60 * 1000, // 10 phút - dữ liệu ít thay đổi
     gcTime: 30 * 60 * 1000, // 30 phút - giữ trong cache lâu hơn
@@ -22,7 +22,7 @@ export const useFields = () => {
     queryKey: [QUERY_KEYS.FIELDS],
     queryFn: async (): Promise<Field[]> => {
       const response = await apiClient.get('/fields');
-      return response.data;
+      return response.data.data; // API trả về { success, data, message }
     },
     staleTime: 10 * 60 * 1000, // 10 phút - dữ liệu ít thay đổi
     gcTime: 30 * 60 * 1000, // 30 phút - giữ trong cache lâu hơn
@@ -35,7 +35,7 @@ export const useProvince = (provinceId: number) => {
     queryKey: [QUERY_KEYS.PROVINCES, provinceId],
     queryFn: async (): Promise<Province> => {
       const response = await apiClient.get(`/provinces/${provinceId}`);
-      return response.data;
+      return response.data.data; // API trả về { success, data, message }
     },
     enabled: !!provinceId,
     staleTime: 10 * 60 * 1000,
@@ -48,7 +48,7 @@ export const useField = (fieldId: number) => {
     queryKey: [QUERY_KEYS.FIELDS, fieldId],
     queryFn: async (): Promise<Field> => {
       const response = await apiClient.get(`/fields/${fieldId}`);
-      return response.data;
+      return response.data.data; // API trả về { success, data, message }
     },
     enabled: !!fieldId,
     staleTime: 10 * 60 * 1000,

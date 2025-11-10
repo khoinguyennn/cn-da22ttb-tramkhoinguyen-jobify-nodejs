@@ -14,6 +14,21 @@ export interface RegisterRequest {
   idProvince?: number;
 }
 
+export interface CompanyLoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface CompanyRegisterRequest {
+  nameCompany: string;
+  nameAdmin: string;
+  email: string;
+  password: string;
+  phone: string;
+  idProvince: number;
+  scale?: string;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -31,10 +46,26 @@ export interface User {
   provinceFullName?: string;
 }
 
+export interface Company {
+  id: number;
+  nameCompany: string;
+  nameAdmin: string;
+  email: string;
+  phone: string;
+  idProvince?: number;
+  avatarPic?: string;
+  intro?: string;
+  scale?: string;
+  web?: string;
+  provinceName?: string;
+  provinceFullName?: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   data: {
-    user: User;
+    user?: User;
+    company?: Company;
     token: string;
   };
   message: string;
@@ -95,6 +126,54 @@ class AuthService {
     }
   }
 
+  // Đăng nhập nhà tuyển dụng
+  async loginCompany(credentials: CompanyLoginRequest): Promise<AuthResponse> {
+    try {
+      const response = await apiClient.post<AuthResponse>('/auth/companies/sessions', credentials);
+      
+      // Lưu token vào localStorage
+      if (response.data.success && response.data.data.token) {
+        localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('company', JSON.stringify(response.data.data.company));
+        localStorage.setItem('userType', 'company');
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw error.response.data;
+      }
+      throw {
+        success: false,
+        error: 'Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.',
+      };
+    }
+  }
+
+  // Đăng ký nhà tuyển dụng
+  async registerCompany(companyData: CompanyRegisterRequest): Promise<AuthResponse> {
+    try {
+      const response = await apiClient.post<AuthResponse>('/companies', companyData);
+      
+      // Lưu token vào localStorage sau khi đăng ký thành công
+      if (response.data.success && response.data.data.token) {
+        localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('company', JSON.stringify(response.data.data.company));
+        localStorage.setItem('userType', 'company');
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data) {
+        throw error.response.data;
+      }
+      throw {
+        success: false,
+        error: 'Có lỗi xảy ra khi đăng ký. Vui lòng thử lại.',
+      };
+    }
+  }
+
   // Đăng xuất
   async logout(): Promise<void> {
     try {
@@ -110,6 +189,7 @@ class AuthService {
       // Luôn xóa dữ liệu local
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('company');
       localStorage.removeItem('userType');
     }
   }
@@ -118,7 +198,8 @@ class AuthService {
   isAuthenticated(): boolean {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-    return !!(token && user);
+    const company = localStorage.getItem('company');
+    return !!(token && (user || company));
   }
 
   // Lấy thông tin user hiện tại
@@ -133,6 +214,31 @@ class AuthService {
       console.error('Error parsing user data:', error);
       return null;
     }
+  }
+
+  // Lấy thông tin company hiện tại
+  getCurrentCompany(): Company | null {
+    try {
+      const companyStr = localStorage.getItem('company');
+      if (companyStr) {
+        return JSON.parse(companyStr);
+      }
+      return null;
+    } catch (error) {
+      console.error('Error parsing company data:', error);
+      return null;
+    }
+  }
+
+  // Lấy thông tin account hiện tại (user hoặc company)
+  getCurrentAccount(): User | Company | null {
+    const userType = this.getUserType();
+    if (userType === 'user') {
+      return this.getCurrentUser();
+    } else if (userType === 'company') {
+      return this.getCurrentCompany();
+    }
+    return null;
   }
 
   // Lấy token hiện tại

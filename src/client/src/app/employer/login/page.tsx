@@ -3,20 +3,23 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 import { showToast } from "@/utils/toast";
 
 // Standalone employer login page component that bypasses root layout
 export default function EmployerLoginPage() {
+  const router = useRouter();
+  const { loginCompany, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -40,23 +43,19 @@ export default function EmployerLoginPage() {
       return;
     }
 
-    setIsLoading(true);
-    
     try {
-      // Giả lập API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Demo: Thành công với email employer@example.com
-      if (formData.email === "employer@example.com" && formData.password === "123456") {
-        showToast.success("Đăng nhập thành công! Chào mừng nhà tuyển dụng quay trở lại.");
-        // Redirect logic sẽ được thêm sau (có thể là dashboard của employer)
-      } else {
-        showToast.error("Email hoặc mật khẩu không chính xác!");
+      const success = await loginCompany({
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (success) {
+        // Redirect về trang chủ sau khi đăng nhập thành công
+        router.push('/');
       }
     } catch (error) {
-      showToast.error("Có lỗi xảy ra! Vui lòng thử lại.");
-    } finally {
-      setIsLoading(false);
+      // Error đã được xử lý trong AuthContext
+      console.error('Company login error:', error);
     }
   };
 

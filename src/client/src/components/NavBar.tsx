@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserAvatar } from "@/components/UserAvatar";
+import { NotificationBell } from "@/components/NotificationBell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,12 +27,15 @@ import {
   Briefcase, 
   Heart, 
   Lock,
-  ChevronDown 
+  ChevronDown
 } from "lucide-react";
 
 export function NavBar() {
   const pathname = usePathname();
-  const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const { user, company, isAuthenticated, logout, isLoading, userType } = useAuth();
+  
+  // Get current account (user or company)
+  const currentAccount = userType === 'company' ? company : user;
 
   const navItems = [
     { href: "/", label: "Trang chủ", icon: Home },
@@ -81,22 +85,30 @@ export function NavBar() {
           </nav>
           
           <div className="flex items-center space-x-3">
-            {isAuthenticated && user ? (
-              // Hiển thị khi đã đăng nhập - Dropdown Menu
-              <DropdownMenu>
+            {isAuthenticated && currentAccount ? (
+              // Hiển thị khi đã đăng nhập - Notification + Dropdown Menu
+              <>
+                {/* Notification Bell */}
+                <NotificationBell />
+
+                {/* User Dropdown Menu */}
+                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
                     className="flex items-center space-x-2 hover:bg-primary/10 px-3 py-2 h-auto"
                   >
                     <UserAvatar 
-                      user={user} 
+                      user={userType === 'company' ? {
+                        name: company?.nameCompany || '',
+                        avatarPic: company?.avatarPic
+                      } : user} 
                       size="md" 
                       showFallbackIcon={false}
                       className="border-2 border-primary/20"
                     />
                     <span className="font-medium text-gray-700 max-w-[120px] truncate">
-                      {user.name}
+                      {userType === 'company' ? company?.nameCompany : user?.name}
                     </span>
                     <ChevronDown className="w-4 h-4 text-gray-500 ml-0.5" />
                   </Button>
@@ -105,49 +117,87 @@ export function NavBar() {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-sm font-medium leading-none">
+                        {userType === 'company' ? company?.nameCompany : user?.name}
+                      </p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {user.email}
+                        {userType === 'company' ? company?.email : user?.email}
                       </p>
                     </div>
                   </DropdownMenuLabel>
                   
                   <DropdownMenuSeparator />
                   
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Trang cá nhân</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile/info" className="flex items-center">
-                      <FileText className="mr-2 h-4 w-4" />
-                      <span>Thông tin</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem asChild>
-                    <Link href="/applications" className="flex items-center">
-                      <Briefcase className="mr-2 h-4 w-4" />
-                      <span>Ứng tuyển</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem asChild>
-                    <Link href="/saved-jobs" className="flex items-center">
-                      <Heart className="mr-2 h-4 w-4" />
-                      <span>Việc làm đã lưu</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem asChild>
-                    <Link href="/following" className="flex items-center">
-                      <Building className="mr-2 h-4 w-4" />
-                      <span>Theo dõi</span>
-                    </Link>
-                  </DropdownMenuItem>
+                  {userType === 'company' ? (
+                    // Menu cho nhà tuyển dụng
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/company/profile" className="flex items-center">
+                          <User className="mr-2 h-4 w-4" />
+                          <span>Trang cá nhân</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem asChild>
+                        <Link href="/company/info" className="flex items-center">
+                          <FileText className="mr-2 h-4 w-4" />
+                          <span>Thông tin cá nhân</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem asChild>
+                        <Link href="/company/applications" className="flex items-center">
+                          <Briefcase className="mr-2 h-4 w-4" />
+                          <span>Đơn ứng tuyển</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem asChild>
+                        <Link href="/company/post-job" className="flex items-center">
+                          <Building className="mr-2 h-4 w-4" />
+                          <span>Đăng ứng tuyển</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    // Menu cho ứng viên
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile" className="flex items-center">
+                          <User className="mr-2 h-4 w-4" />
+                          <span>Trang cá nhân</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile/info" className="flex items-center">
+                          <FileText className="mr-2 h-4 w-4" />
+                          <span>Thông tin</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem asChild>
+                        <Link href="/applications" className="flex items-center">
+                          <Briefcase className="mr-2 h-4 w-4" />
+                          <span>Ứng tuyển</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem asChild>
+                        <Link href="/saved-jobs" className="flex items-center">
+                          <Heart className="mr-2 h-4 w-4" />
+                          <span>Việc làm đã lưu</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem asChild>
+                        <Link href="/following" className="flex items-center">
+                          <Building className="mr-2 h-4 w-4" />
+                          <span>Theo dõi</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   
                   <DropdownMenuSeparator />
                   
@@ -170,6 +220,7 @@ export function NavBar() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              </>
             ) : (
               // Hiển thị khi chưa đăng nhập
               <>

@@ -2,12 +2,13 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { authService, User, LoginRequest, RegisterRequest } from '@/services/authService';
+import { authService, User, Company, LoginRequest, RegisterRequest, CompanyLoginRequest, CompanyRegisterRequest } from '@/services/authService';
 import { showToast } from '@/utils/toast';
 
 interface AuthContextType {
   // State
   user: User | null;
+  company: Company | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   userType: 'user' | 'company' | null;
@@ -15,6 +16,8 @@ interface AuthContextType {
   // Actions
   login: (credentials: LoginRequest) => Promise<boolean>;
   register: (userData: RegisterRequest) => Promise<boolean>;
+  loginCompany: (credentials: CompanyLoginRequest) => Promise<boolean>;
+  registerCompany: (companyData: CompanyRegisterRequest) => Promise<boolean>;
   logout: () => Promise<void>;
   refreshUser: () => void;
 }
@@ -28,6 +31,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [company, setCompany] = useState<Company | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userType, setUserType] = useState<'user' | 'company' | null>(null);
@@ -38,10 +42,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const isAuth = authService.isAuthenticated();
         const currentUser = authService.getCurrentUser();
+        const currentCompany = authService.getCurrentCompany();
         const currentUserType = authService.getUserType();
 
         setIsAuthenticated(isAuth);
         setUser(currentUser);
+        setCompany(currentCompany);
         setUserType(currentUserType);
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -107,6 +113,60 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  // Đăng nhập nhà tuyển dụng
+  const loginCompany = async (credentials: CompanyLoginRequest): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      const response = await authService.loginCompany(credentials);
+      
+      if (response.success) {
+        setCompany(response.data.company || null);
+        setUser(null); // Clear user data
+        setIsAuthenticated(true);
+        setUserType('company');
+        showToast.success(response.message || 'Đăng nhập thành công!');
+        return true;
+      } else {
+        showToast.error('Đăng nhập thất bại!');
+        return false;
+      }
+    } catch (error: any) {
+      console.error('Company login error:', error);
+      const errorMessage = error.error || error.message || 'Có lỗi xảy ra khi đăng nhập!';
+      showToast.error(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Đăng ký nhà tuyển dụng
+  const registerCompany = async (companyData: CompanyRegisterRequest): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      const response = await authService.registerCompany(companyData);
+      
+      if (response.success) {
+        setCompany(response.data.company || null);
+        setUser(null); // Clear user data
+        setIsAuthenticated(true);
+        setUserType('company');
+        showToast.success(response.message || 'Đăng ký thành công!');
+        return true;
+      } else {
+        showToast.error('Đăng ký thất bại!');
+        return false;
+      }
+    } catch (error: any) {
+      console.error('Company register error:', error);
+      const errorMessage = error.error || error.message || 'Có lỗi xảy ra khi đăng ký!';
+      showToast.error(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Đăng xuất
   const logout = async (): Promise<void> => {
     try {
@@ -117,6 +177,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       // Cập nhật state
       setUser(null);
+      setCompany(null);
       setIsAuthenticated(false);
       setUserType(null);
       
@@ -127,12 +188,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       // Vẫn clear local state ngay cả khi API fail
       setUser(null);
+      setCompany(null);
       setIsAuthenticated(false);
       setUserType(null);
       
       // Clear localStorage manually nếu API fail
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('company');
       localStorage.removeItem('userType');
       
       showToast.warning('Đã đăng xuất (có lỗi kết nối server)');
@@ -146,10 +209,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refreshUser = () => {
     try {
       const currentUser = authService.getCurrentUser();
+      const currentCompany = authService.getCurrentCompany();
       const isAuth = authService.isAuthenticated();
       const currentUserType = authService.getUserType();
       
       setUser(currentUser);
+      setCompany(currentCompany);
       setIsAuthenticated(isAuth);
       setUserType(currentUserType);
     } catch (error) {
@@ -160,11 +225,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const value: AuthContextType = {
     user,
+    company,
     isAuthenticated,
     isLoading,
     userType,
     login,
     register,
+    loginCompany,
+    registerCompany,
     logout,
     refreshUser,
   };
