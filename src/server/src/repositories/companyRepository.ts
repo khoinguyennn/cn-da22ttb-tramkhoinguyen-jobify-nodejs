@@ -24,21 +24,54 @@ export class CompanyRepository {
     return rows.length > 0 ? (rows[0] as Company) : null;
   }
 
-  async findAll(page: number, limit: number): Promise<{ companies: CompanyWithJobCount[], total: number }> {
+  async findAll(
+    page: number, 
+    limit: number, 
+    searchParams?: {
+      keyword?: string;
+      province?: number;
+      scale?: string;
+    }
+  ): Promise<{ companies: CompanyWithJobCount[], total: number }> {
     const offset = (page - 1) * limit;
 
     // Validate parameters
     if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
       throw new Error(`Invalid pagination parameters: page=${page}, limit=${limit}`);
     }
+
+    // Build WHERE conditions
+    const whereConditions: string[] = [];
+    const queryParams: any[] = [];
+
+    if (searchParams?.keyword) {
+      whereConditions.push('(c.nameCompany LIKE ? OR c.intro LIKE ?)');
+      queryParams.push(`%${searchParams.keyword}%`, `%${searchParams.keyword}%`);
+    }
+
+    if (searchParams?.province) {
+      whereConditions.push('c.idProvince = ?');
+      queryParams.push(searchParams.province);
+    }
+
+    if (searchParams?.scale) {
+      whereConditions.push('c.scale = ?');
+      queryParams.push(searchParams.scale);
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
     
-    // Get total count
+    // Get total count with search conditions
     const [countRows] = await pool.execute<RowDataPacket[]>(
-      'SELECT COUNT(*) as total FROM companies'
+      `SELECT COUNT(DISTINCT c.id) as total 
+       FROM companies c 
+       LEFT JOIN provinces p ON c.idProvince = p.id 
+       ${whereClause}`,
+      queryParams
     );
     const total = countRows[0].total;
 
-    // Get paginated companies with job count
+    // Get paginated companies with job count and search conditions
     const [rows] = await pool.query<RowDataPacket[]>(
       `SELECT 
         c.*, 
@@ -48,10 +81,11 @@ export class CompanyRepository {
        FROM companies c 
        LEFT JOIN provinces p ON c.idProvince = p.id 
        LEFT JOIN jobs j ON c.id = j.idCompany AND j.deletedAt IS NULL
+       ${whereClause}
        GROUP BY c.id, c.nameCompany, c.nameAdmin, c.email, c.phone, c.idProvince, c.web, c.avatarPic, c.intro, c.scale, p.name, p.nameWithType
        ORDER BY c.nameCompany ASC 
        LIMIT ? OFFSET ?`,
-      [limit, offset]
+      [...queryParams, limit, offset]
     );
 
     // Convert jobCount to integer and structure the response

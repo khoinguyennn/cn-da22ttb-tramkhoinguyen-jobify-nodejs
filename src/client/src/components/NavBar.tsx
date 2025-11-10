@@ -5,10 +5,33 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Home, MapPin, Search, Building } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserAvatar } from "@/components/UserAvatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { 
+  Home, 
+  MapPin, 
+  Search, 
+  Building, 
+  LogOut, 
+  User, 
+  FileText, 
+  Briefcase, 
+  Heart, 
+  Lock,
+  ChevronDown 
+} from "lucide-react";
 
 export function NavBar() {
   const pathname = usePathname();
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
 
   const navItems = [
     { href: "/", label: "Trang chủ", icon: Home },
@@ -16,6 +39,10 @@ export function NavBar() {
     { href: "/search", label: "Tìm kiếm", icon: Search },
     { href: "/companies", label: "Công ty", icon: Building },
   ];
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <header className="border-b bg-white -mx-8 lg:-mx-16">
@@ -54,12 +81,106 @@ export function NavBar() {
           </nav>
           
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" className="hover:bg-primary/10" asChild>
-              <Link href="/login">Đăng nhập</Link>
-            </Button>
-            <Button className="bg-primary hover:bg-primary/90" asChild>
-              <Link href="/employer/login">Nhà tuyển dụng</Link>
-            </Button>
+            {isAuthenticated && user ? (
+              // Hiển thị khi đã đăng nhập - Dropdown Menu
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center space-x-2 hover:bg-primary/10 px-3 py-2 h-auto"
+                  >
+                    <UserAvatar 
+                      user={user} 
+                      size="md" 
+                      showFallbackIcon={false}
+                      className="border-2 border-primary/20"
+                    />
+                    <span className="font-medium text-gray-700 max-w-[120px] truncate">
+                      {user.name}
+                    </span>
+                    <ChevronDown className="w-4 h-4 text-gray-500 ml-0.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="flex items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Trang cá nhân</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile/info" className="flex items-center">
+                      <FileText className="mr-2 h-4 w-4" />
+                      <span>Thông tin</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem asChild>
+                    <Link href="/applications" className="flex items-center">
+                      <Briefcase className="mr-2 h-4 w-4" />
+                      <span>Ứng tuyển</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem asChild>
+                    <Link href="/saved-jobs" className="flex items-center">
+                      <Heart className="mr-2 h-4 w-4" />
+                      <span>Việc làm đã lưu</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem asChild>
+                    <Link href="/following" className="flex items-center">
+                      <Building className="mr-2 h-4 w-4" />
+                      <span>Theo dõi</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuItem asChild>
+                    <Link href="/change-password" className="flex items-center">
+                      <Lock className="mr-2 h-4 w-4" />
+                      <span>Đổi mật khẩu</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuItem 
+                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                    onClick={handleLogout}
+                    disabled={isLoading}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{isLoading ? "Đang đăng xuất..." : "Đăng xuất"}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              // Hiển thị khi chưa đăng nhập
+              <>
+                <Button variant="ghost" className="hover:bg-primary/10" asChild>
+                  <Link href="/login">Đăng nhập</Link>
+                </Button>
+                <Button className="bg-primary hover:bg-primary/90" asChild>
+                  <Link href="/employer/login">Nhà tuyển dụng</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import Image from "next/image";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { NavBar } from "@/components/NavBar";
 import { Facebook, Twitter, Music, Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,14 +32,15 @@ export default function RootLayout({
         className={`${roboto.variable} antialiased font-sans`}
       >
         <QueryProvider>
-          <div className="px-8 lg:px-16">
-            {/* Header Navigation */}
-            <NavBar />
+          <AuthProvider>
+            <div className="px-8 lg:px-16">
+              {/* Header Navigation */}
+              <NavBar />
 
-            {/* Main Content */}
-            <main>
-              {children}
-            </main>
+              {/* Main Content */}
+              <main>
+                {children}
+              </main>
 
             {/* Footer */}
             <footer className="bg-muted py-12 -mx-8 lg:-mx-16">
@@ -142,7 +144,8 @@ export default function RootLayout({
                 </div>
               </div>
             </footer>
-          </div>
+            </div>
+          </AuthProvider>
         </QueryProvider>
         
         {/* Toast Container */}

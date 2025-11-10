@@ -82,7 +82,7 @@ export class CompanyController {
    * /companies:
    *   get:
    *     tags: [Nhà tuyển dụng]
-   *     summary: Lấy danh sách tất cả công ty (có phân trang)
+   *     summary: Lấy danh sách tất cả công ty (có phân trang và tìm kiếm)
    *     parameters:
    *       - in: query
    *         name: page
@@ -96,6 +96,30 @@ export class CompanyController {
    *           type: integer
    *           default: 10
    *         description: Số lượng công ty mỗi trang
+   *       - in: query
+   *         name: keyword
+   *         schema:
+   *           type: string
+   *         description: Từ khóa tìm kiếm (tên công ty hoặc giới thiệu)
+   *         example: "Facebook"
+   *       - in: query
+   *         name: province
+   *         schema:
+   *           type: integer
+   *         description: Tìm kiếm theo ID tỉnh/thành phố
+   *         example: 20
+   *       - in: query
+   *         name: scale
+   *         schema:
+   *           type: string
+   *         description: Tìm kiếm theo quy mô công ty
+   *         example: "100 - 500"
+   *         enum:
+   *           - "20 - 100"
+   *           - "100 - 500"
+   *           - "500 - 1000"
+   *           - "1000 - 5000"
+   *           - "nhiều hơn 5000"
    *     responses:
    *       200:
    *         description: Lấy danh sách công ty thành công
@@ -130,7 +154,26 @@ export class CompanyController {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     
-    const result = await this.companyService.getAllCompanies(page, limit);
+    // Extract search parameters
+    const searchParams: {
+      keyword?: string;
+      province?: number;
+      scale?: string;
+    } = {};
+
+    if (req.query.keyword) {
+      searchParams.keyword = req.query.keyword as string;
+    }
+
+    if (req.query.province) {
+      searchParams.province = parseInt(req.query.province as string);
+    }
+
+    if (req.query.scale) {
+      searchParams.scale = req.query.scale as string;
+    }
+
+    const result = await this.companyService.getAllCompanies(page, limit, searchParams);
     
     ResponseUtil.paginated(
       res, 

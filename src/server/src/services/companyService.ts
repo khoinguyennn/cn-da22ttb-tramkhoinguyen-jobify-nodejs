@@ -20,8 +20,16 @@ export class CompanyService {
     return companyWithoutPassword;
   }
 
-  async getAllCompanies(page: number = 1, limit: number = 10): Promise<PaginatedResponse<CompanyWithJobCount>> {
-    const { companies, total } = await this.companyRepository.findAll(page, limit);
+  async getAllCompanies(
+    page: number = 1, 
+    limit: number = 10,
+    searchParams?: {
+      keyword?: string;
+      province?: number;
+      scale?: string;
+    }
+  ): Promise<PaginatedResponse<CompanyWithJobCount>> {
+    const { companies, total } = await this.companyRepository.findAll(page, limit, searchParams);
     
     // Companies already don't have password (CompanyWithJobCount extends Omit<Company, 'password'>)
     // and jobCount is already included

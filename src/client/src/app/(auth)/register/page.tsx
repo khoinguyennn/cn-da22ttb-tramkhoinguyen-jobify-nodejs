@@ -3,14 +3,18 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 import { showToast } from "@/utils/toast";
 
 // Standalone register page component that bypasses root layout
 export default function CandidateRegisterPage() {
+  const router = useRouter();
+  const { register, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -20,7 +24,6 @@ export default function CandidateRegisterPage() {
     password: "",
     confirmPassword: ""
   });
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -99,33 +102,32 @@ export default function CandidateRegisterPage() {
       return;
     }
 
-    setIsLoading(true);
-    
     try {
-      // Giả lập API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Giả lập đăng ký thành công
-      showToast.success("Đăng ký thành công! Chào mừng bạn đến với Jobify.");
-      
-      // Reset form sau khi thành công
-      setFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        password: "",
-        confirmPassword: ""
+      const success = await register({
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password
       });
-      
-      // Có thể redirect đến trang login hoặc dashboard
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 2000);
-      
+
+      if (success) {
+        // Reset form sau khi thành công
+        setFormData({
+          fullName: "",
+          email: "",
+          phone: "",
+          password: "",
+          confirmPassword: ""
+        });
+        
+        // Redirect về trang chủ sau khi đăng ký thành công
+        setTimeout(() => {
+          router.push('/');
+        }, 1500);
+      }
     } catch (error) {
-      showToast.error("Có lỗi xảy ra! Vui lòng thử lại.");
-    } finally {
-      setIsLoading(false);
+      // Error đã được xử lý trong AuthContext
+      console.error('Register error:', error);
     }
   };
 
