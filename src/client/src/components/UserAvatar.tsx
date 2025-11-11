@@ -14,6 +14,7 @@ interface UserAvatarProps {
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
   showFallbackIcon?: boolean;
+  forceRefresh?: boolean;
 }
 
 const sizeClasses = {
@@ -27,7 +28,8 @@ export function UserAvatar({
   user, 
   size = "lg", 
   className,
-  showFallbackIcon = true 
+  showFallbackIcon = true,
+  forceRefresh = false
 }: UserAvatarProps) {
   // Tạo URL đầy đủ cho avatar nếu có
   const getAvatarUrl = (avatarPic?: string) => {
@@ -40,7 +42,14 @@ export function UserAvatar({
     
     // Sử dụng Next.js proxy để bypass CORS
     // Proxy sẽ forward /api/uploads/* đến http://localhost:5000/uploads/*
-    return `/api/uploads/${avatarPic}`;
+    let url = `/api/uploads/${avatarPic}`;
+    
+    // Thêm cache busting nếu forceRefresh = true
+    if (forceRefresh) {
+      url += `?t=${Date.now()}`;
+    }
+    
+    return url;
   };
 
   // Lấy initials từ tên user
@@ -58,16 +67,25 @@ export function UserAvatar({
   const avatarUrl = getAvatarUrl(user?.avatarPic);
   const initials = getInitials(user?.name);
 
+  // Nếu có avatar, sử dụng Next.js Image trực tiếp để tránh cache issues
+  if (avatarUrl) {
+    return (
+      <div className={cn("relative overflow-hidden rounded-full", sizeClasses[size], className)}>
+        <Image
+          key={forceRefresh ? `avatar-${Date.now()}` : `avatar-${user?.avatarPic}`}
+          src={avatarUrl}
+          alt={user?.name || "User avatar"}
+          fill
+          className="object-cover"
+          unoptimized // Tắt optimization để tránh cache
+        />
+      </div>
+    );
+  }
+
+  // Fallback khi không có avatar
   return (
     <Avatar className={cn(sizeClasses[size], className)}>
-      {avatarUrl ? (
-        <AvatarImage 
-          src={avatarUrl} 
-          alt={user?.name || "User avatar"}
-          className="object-cover"
-        />
-      ) : null}
-      
       <AvatarFallback className="bg-primary/10 text-primary font-medium">
         {initials ? (
           <span className="text-sm font-semibold">{initials}</span>

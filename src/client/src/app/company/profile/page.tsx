@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCompanyProfile } from "@/hooks/useCompanyProfile";
 import { useUpdateCompany } from "@/hooks/useUpdateCompany";
+import { useUpdateCompanyAvatar } from "@/hooks/useUpdateCompanyAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Input } from "@/components/ui/input";
@@ -207,9 +208,12 @@ export default function CompanyProfilePage() {
     idProvince: 0
   });
 
-  const { company } = useAuth();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const { company, avatarUpdateTime } = useAuth();
   const { data: companyProfile, isLoading, error } = useCompanyProfile();
   const updateCompanyMutation = useUpdateCompany();
+  const updateAvatarMutation = useUpdateCompanyAvatar();
   const { data: provincesData = [], isLoading: provincesLoading } = useProvinces();
 
   // Sử dụng dữ liệu từ API hoặc fallback từ auth context
@@ -304,6 +308,45 @@ export default function CompanyProfilePage() {
     }));
   }, []);
 
+  // Xử lý upload avatar
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !companyData?.id) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      showToast.error('Chỉ chấp nhận file ảnh (JPG, PNG, GIF)');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      showToast.error('Kích thước file không được vượt quá 5MB');
+      return;
+    }
+
+    try {
+      await updateAvatarMutation.mutateAsync({
+        id: companyData.id,
+        file: file
+      });
+      showToast.success('Cập nhật logo công ty thành công!');
+    } catch (error: any) {
+      showToast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật logo');
+    }
+
+    // Reset input value để có thể chọn lại cùng file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
 
   // Mock job posts - sẽ tích hợp API jobs sau
   const mockJobPosts = [
@@ -372,10 +415,29 @@ export default function CompanyProfilePage() {
                   }} 
                   size="xl"
                   className="w-32 h-32 border-4 border-white shadow-lg"
+                  forceRefresh={avatarUpdateTime > 0}
                 />
-                <button className="absolute bottom-2 right-2 w-8 h-8 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center transition-colors shadow-md">
-                  <Camera className="w-4 h-4 text-primary-foreground" />
+                <button 
+                  onClick={handleAvatarClick}
+                  disabled={updateAvatarMutation.isPending}
+                  className="absolute bottom-2 right-2 w-8 h-8 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-full flex items-center justify-center transition-colors shadow-md"
+                  title="Thay đổi logo công ty"
+                >
+                  {updateAvatarMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 text-primary-foreground animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4 text-primary-foreground" />
+                  )}
                 </button>
+                
+                {/* Hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
               </div>
 
               {/* Company Details */}

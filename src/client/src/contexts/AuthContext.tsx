@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { authService, User, Company, LoginRequest, RegisterRequest, CompanyLoginRequest, CompanyRegisterRequest } from '@/services/authService';
 import { showToast } from '@/utils/toast';
 
@@ -12,6 +13,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   userType: 'user' | 'company' | null;
+  avatarUpdateTime: number;
 
   // Actions
   login: (credentials: LoginRequest) => Promise<boolean>;
@@ -31,11 +33,13 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userType, setUserType] = useState<'user' | 'company' | null>(null);
+  const [avatarUpdateTime, setAvatarUpdateTime] = useState(0);
 
   // Khởi tạo auth state từ localStorage
   useEffect(() => {
@@ -66,12 +70,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (credentials: LoginRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
+      
+      // Clear cache trước khi đăng nhập tài khoản mới
+      queryClient.clear();
+      
       const response = await authService.loginUser(credentials);
       
       if (response.success) {
         setUser(response.data.user);
+        setCompany(null); // Clear company data
         setIsAuthenticated(true);
         setUserType('user');
+        setAvatarUpdateTime(0); // Reset avatar update time
         showToast.success(response.message || 'Đăng nhập thành công!');
         return true;
       } else {
@@ -92,12 +102,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const register = async (userData: RegisterRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
+      
+      // Clear cache trước khi đăng ký tài khoản mới
+      queryClient.clear();
+      
       const response = await authService.registerUser(userData);
       
       if (response.success) {
         setUser(response.data.user);
+        setCompany(null); // Clear company data
         setIsAuthenticated(true);
         setUserType('user');
+        setAvatarUpdateTime(0); // Reset avatar update time
         showToast.success(response.message || 'Đăng ký thành công!');
         return true;
       } else {
@@ -118,6 +134,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const loginCompany = async (credentials: CompanyLoginRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
+      
+      // Clear cache trước khi đăng nhập tài khoản mới
+      queryClient.clear();
+      
       const response = await authService.loginCompany(credentials);
       
       if (response.success) {
@@ -125,6 +145,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(null); // Clear user data
         setIsAuthenticated(true);
         setUserType('company');
+        setAvatarUpdateTime(0); // Reset avatar update time
         showToast.success(response.message || 'Đăng nhập thành công!');
         return true;
       } else {
@@ -145,6 +166,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const registerCompany = async (companyData: CompanyRegisterRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
+      
+      // Clear cache trước khi đăng ký tài khoản mới
+      queryClient.clear();
+      
       const response = await authService.registerCompany(companyData);
       
       if (response.success) {
@@ -152,6 +177,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(null); // Clear user data
         setIsAuthenticated(true);
         setUserType('company');
+        setAvatarUpdateTime(0); // Reset avatar update time
         showToast.success(response.message || 'Đăng ký thành công!');
         return true;
       } else {
@@ -176,22 +202,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Gọi API đăng xuất
       await authService.logout();
       
+      // Clear tất cả cache của TanStack Query
+      queryClient.clear();
+      
       // Cập nhật state
       setUser(null);
       setCompany(null);
       setIsAuthenticated(false);
       setUserType(null);
+      setAvatarUpdateTime(0);
       
       showToast.success('Đăng xuất thành công!');
       
     } catch (error: any) {
       console.error('Logout error:', error);
       
-      // Vẫn clear local state ngay cả khi API fail
+      // Vẫn clear cache và local state ngay cả khi API fail
+      queryClient.clear();
       setUser(null);
       setCompany(null);
       setIsAuthenticated(false);
       setUserType(null);
+      setAvatarUpdateTime(0);
       
       // Clear localStorage manually nếu API fail
       localStorage.removeItem('token');
@@ -230,6 +262,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Cập nhật state
       setCompany(updatedCompany);
       
+      // Cập nhật timestamp để force refresh avatar
+      setAvatarUpdateTime(Date.now());
+      
       // Cập nhật localStorage thông qua authService
       authService.updateCompanyData(updatedCompany);
     } catch (error) {
@@ -243,6 +278,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated,
     isLoading,
     userType,
+    avatarUpdateTime,
     login,
     register,
     loginCompany,

@@ -32,7 +32,7 @@ import {
 
 export function NavBar() {
   const pathname = usePathname();
-  const { user, company, isAuthenticated, logout, isLoading, userType } = useAuth();
+  const { user, company, isAuthenticated, logout, isLoading, userType, avatarUpdateTime } = useAuth();
   
   // Get current account (user or company)
   const currentAccount = userType === 'company' ? company : user;
@@ -106,6 +106,7 @@ export function NavBar() {
                       size="md" 
                       showFallbackIcon={false}
                       className="border-2 border-primary/20"
+                      forceRefresh={avatarUpdateTime > 0}
                     />
                     <span className="font-medium text-gray-700 max-w-[120px] truncate">
                       {userType === 'company' ? company?.nameCompany : user?.name}
