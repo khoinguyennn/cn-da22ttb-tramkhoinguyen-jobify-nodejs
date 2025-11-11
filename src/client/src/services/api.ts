@@ -29,10 +29,23 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Chỉ xóa token nếu là lỗi 401 và có token trong localStorage
+    // Không tự động redirect, để component xử lý
     if (error.response?.status === 401) {
-      // Xóa token và chuyển hướng đến trang đăng nhập
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Chỉ xóa token nếu đã có token (tức là đã đăng nhập trước đó)
+        // Không xóa nếu đang trong quá trình đăng nhập
+        const isLoginRequest = error.config?.url?.includes('/sessions') || 
+                              error.config?.url?.includes('/login');
+        
+        if (!isLoginRequest) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('company');
+          localStorage.removeItem('userType');
+        }
+      }
     }
     return Promise.reject(error);
   }
