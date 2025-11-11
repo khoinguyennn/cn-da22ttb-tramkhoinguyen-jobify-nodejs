@@ -250,6 +250,15 @@ class AuthService {
   getUserType(): 'user' | 'company' | null {
     return localStorage.getItem('userType') as 'user' | 'company' | null;
   }
+
+  // Cập nhật dữ liệu company trong localStorage
+  updateCompanyData(updatedCompany: Company): void {
+    try {
+      localStorage.setItem('company', JSON.stringify(updatedCompany));
+    } catch (error) {
+      console.error('Error updating company data in localStorage:', error);
+    }
+  }
 }
 
 export const authService = new AuthService();

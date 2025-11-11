@@ -20,6 +20,7 @@ interface AuthContextType {
   registerCompany: (companyData: CompanyRegisterRequest) => Promise<boolean>;
   logout: () => Promise<void>;
   refreshUser: () => void;
+  updateCompany: (updatedCompany: Company) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -223,6 +224,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  // Update company data
+  const updateCompany = (updatedCompany: Company) => {
+    try {
+      // Cập nhật state
+      setCompany(updatedCompany);
+      
+      // Cập nhật localStorage thông qua authService
+      authService.updateCompanyData(updatedCompany);
+    } catch (error) {
+      console.error('Error updating company:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     company,
@@ -235,6 +249,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     registerCompany,
     logout,
     refreshUser,
+    updateCompany,
   };
 
   return (
