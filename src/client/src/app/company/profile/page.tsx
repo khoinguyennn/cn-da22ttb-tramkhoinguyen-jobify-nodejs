@@ -10,8 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { useCompanyProfile } from "@/hooks/useCompanyProfile";
 import { useUpdateCompany } from "@/hooks/useUpdateCompany";
 import { useUpdateCompanyAvatar } from "@/hooks/useUpdateCompanyAvatar";
+import { useUpdateCompanyIntro } from "@/hooks/useUpdateCompanyIntro";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserAvatar } from "@/components/UserAvatar";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 // import { Textarea } from "@/components/ui/textarea";
@@ -197,6 +199,8 @@ const EditableField = ({
 export default function CompanyProfilePage() {
   const [activeTab, setActiveTab] = useState("gioi-thieu");
   const [editingField, setEditingField] = useState<string | null>(null);
+  const [isEditingIntro, setIsEditingIntro] = useState(false);
+  const [introContent, setIntroContent] = useState("");
   const [formData, setFormData] = useState({
     nameCompany: "",
     nameAdmin: "",
@@ -214,6 +218,7 @@ export default function CompanyProfilePage() {
   const { data: companyProfile, isLoading, error } = useCompanyProfile();
   const updateCompanyMutation = useUpdateCompany();
   const updateAvatarMutation = useUpdateCompanyAvatar();
+  const updateIntroMutation = useUpdateCompanyIntro();
   const { data: provincesData = [], isLoading: provincesLoading } = useProvinces();
 
   // Sử dụng dữ liệu từ API hoặc fallback từ auth context
@@ -250,6 +255,7 @@ export default function CompanyProfilePage() {
         scale: companyData.scale || "",
         idProvince: companyData.idProvince || 0
       });
+      setIntroContent(companyData.intro || "");
     }
   }, [companyData]);
 
@@ -347,6 +353,32 @@ export default function CompanyProfilePage() {
     }
   };
 
+  // Xử lý intro editor
+  const handleEditIntro = () => {
+    setIsEditingIntro(true);
+  };
+
+  const handleSaveIntro = async () => {
+    if (!companyData?.id) {
+      showToast.error('Không tìm thấy thông tin công ty');
+      return;
+    }
+
+    try {
+      await updateIntroMutation.mutateAsync({
+        id: companyData.id,
+        intro: introContent
+      });
+      setIsEditingIntro(false);
+    } catch (error) {
+      console.error('Error updating intro:', error);
+    }
+  };
+
+  const handleCancelIntro = () => {
+    setIntroContent(companyData?.intro || "");
+    setIsEditingIntro(false);
+  };
 
   // Mock job posts - sẽ tích hợp API jobs sau
   const mockJobPosts = [
@@ -511,18 +543,60 @@ export default function CompanyProfilePage() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-xl font-semibold text-gray-900">Về công ty</h2>
-                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
-                        <Edit className="w-4 h-4 mr-2" />
-                        Chỉnh sửa
-                      </Button>
-                    </div>
-                    <p className="text-gray-600 leading-relaxed">
-                      {!companyData.intro || companyData.intro.trim() === "" ? (
-                        <span className="text-gray-400 italic">Chưa có thông tin về công ty</span>
+                      {!isEditingIntro ? (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-primary hover:text-primary/80"
+                          onClick={handleEditIntro}
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Chỉnh sửa
+                        </Button>
                       ) : (
-                        companyData.intro
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            onClick={handleSaveIntro}
+                            disabled={updateIntroMutation.isPending}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            {updateIntroMutation.isPending ? (
+                              <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                            ) : null}
+                            Lưu
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={handleCancelIntro}
+                            disabled={updateIntroMutation.isPending}
+                          >
+                            Hủy
+                          </Button>
+                        </div>
                       )}
-                    </p>
+                    </div>
+                    
+                    {isEditingIntro ? (
+                      <RichTextEditor
+                        content={introContent}
+                        onChange={setIntroContent}
+                        placeholder=""
+                        className="min-h-[300px]"
+                      />
+                    ) : (
+                      <div className="text-gray-600 leading-relaxed">
+                        {!companyData.intro || companyData.intro.trim() === "" ? (
+                          <span className="text-gray-400 italic">Chưa có thông tin về công ty</span>
+                        ) : (
+                          <div 
+                            className="prose prose-sm max-w-none company-intro-content"
+                            dangerouslySetInnerHTML={{ __html: companyData.intro }}
+                          />
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -766,4 +840,72 @@ export default function CompanyProfilePage() {
       </div>
     </div>
   );
+}
+
+// CSS styles cho hiển thị content
+const styles = `
+  .company-intro-content h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 1rem 0 0.5rem 0;
+    line-height: 1.2;
+    color: #1f2937;
+  }
+  .company-intro-content h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 1rem 0 0.5rem 0;
+    line-height: 1.3;
+    color: #1f2937;
+  }
+  .company-intro-content h3 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin: 1rem 0 0.5rem 0;
+    line-height: 1.4;
+    color: #1f2937;
+  }
+  .company-intro-content ul {
+    list-style-type: disc;
+    margin-left: 1.5rem;
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+  }
+  .company-intro-content ol {
+    list-style-type: decimal;
+    margin-left: 1.5rem;
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+  }
+  .company-intro-content li {
+    margin: 0.25rem 0;
+    padding-left: 0.25rem;
+  }
+  .company-intro-content p {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+  }
+  .company-intro-content strong {
+    font-weight: bold;
+  }
+  .company-intro-content em {
+    font-style: italic;
+  }
+  .company-intro-content u {
+    text-decoration: underline;
+  }
+  .company-intro-content s {
+    text-decoration: line-through;
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleElement = document.getElementById('company-intro-styles');
+  if (!styleElement) {
+    const style = document.createElement('style');
+    style.id = 'company-intro-styles';
+    style.textContent = styles;
+    document.head.appendChild(style);
+  }
 }
