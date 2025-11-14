@@ -1,106 +1,145 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api';
-import { Job, JobSearchParams, PaginatedResponse } from '@/types';
-import { QUERY_KEYS } from '@/constants';
 
-// Hook để lấy danh sách jobs với pagination và search
-export const useJobs = (params?: JobSearchParams) => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.JOBS, params],
-    queryFn: async (): Promise<PaginatedResponse<Job>> => {
-      const response = await apiClient.get('/jobs', { params });
-      return response.data;
-    },
-    staleTime: 5 * 60 * 1000, // 5 phút
-  });
-};
+export interface Job {
+  id: number;
+  title: string;
+  fieldId: number;
+  locationId: number;
+  gender: string;
+  minSalary?: number;
+  maxSalary?: number;
+  negotiable: boolean;
+  workType: string;
+  education: string;
+  experience: string;
+  description: string;
+  requirements: string;
+  benefits: string;
+  status: 'active' | 'inactive' | 'expired';
+  createdAt: string;
+  updatedAt: string;
+  companyId: number;
+  // Relations
+  field?: {
+    id: number;
+    nameField: string;
+  };
+  location?: {
+    id: number;
+    nameWithType: string;
+  };
+  company?: {
+    id: number;
+    nameCompany: string;
+    avatarPic?: string;
+  };
+}
 
-// Hook để lấy chi tiết một job
-export const useJobDetail = (jobId: number) => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.JOB_DETAIL, jobId],
-    queryFn: async (): Promise<Job> => {
-      const response = await apiClient.get(`/jobs/${jobId}`);
-      return response.data;
-    },
-    enabled: !!jobId,
-  });
-};
+export interface CreateJobData {
+  title: string;
+  fieldId: number;
+  locationId: number;
+  gender?: string;
+  minSalary?: number;
+  maxSalary?: number;
+  negotiable: boolean;
+  workType?: string;
+  education?: string;
+  experience?: string;
+  description: string;
+  requirements: string;
+  benefits: string;
+}
 
-// Hook để tạo job mới (dành cho company)
-export const useCreateJob = () => {
+// Hook để tạo job mới
+export function useCreateJob() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (jobData: Omit<Job, 'id' | 'createdAt' | 'deletedAt'>) => {
+    mutationFn: async (jobData: CreateJobData) => {
       const response = await apiClient.post('/jobs', jobData);
       return response.data;
     },
     onSuccess: () => {
-      // Invalidate jobs list để refresh data
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.JOBS] });
+      // Invalidate và refetch jobs list
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['company-jobs'] });
     },
   });
-};
+}
+
+// Hook để lấy danh sách jobs của company
+export function useCompanyJobs() {
+  return useQuery({
+    queryKey: ['company-jobs'],
+    queryFn: async () => {
+      const response = await apiClient.get('/companies/me/jobs');
+      return response.data.data as Job[];
+    },
+  });
+}
+
+// Hook để lấy danh sách tất cả jobs (public)
+export function useJobs(params?: {
+  page?: number;
+  limit?: number;
+  fieldId?: number;
+  locationId?: number;
+  search?: string;
+}) {
+  return useQuery({
+    queryKey: ['jobs', params],
+    queryFn: async () => {
+      const response = await apiClient.get('/jobs', { params });
+      return response.data;
+    },
+  });
+}
+
+// Hook để lấy chi tiết job
+export function useJob(id: number) {
+  return useQuery({
+    queryKey: ['job', id],
+    queryFn: async () => {
+      const response = await apiClient.get(`/jobs/${id}`);
+      return response.data.data as Job;
+    },
+    enabled: !!id,
+  });
+}
 
 // Hook để cập nhật job
-export const useUpdateJob = () => {
+export function useUpdateJob() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ jobId, jobData }: { jobId: number; jobData: Partial<Job> }) => {
-      const response = await apiClient.put(`/jobs/${jobId}`, jobData);
+    mutationFn: async ({ id, data }: { id: number; data: Partial<CreateJobData> }) => {
+      const response = await apiClient.put(`/jobs/${id}`, data);
       return response.data;
     },
-    onSuccess: (_, variables) => {
-      // Invalidate specific job và jobs list
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.JOB_DETAIL, variables.jobId] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.JOBS] });
+    onSuccess: (data, variables) => {
+      // Cập nhật cache
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['company-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['job', variables.id] });
     },
   });
-};
+}
 
 // Hook để xóa job
-export const useDeleteJob = () => {
+export function useDeleteJob() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (jobId: number) => {
-      const response = await apiClient.delete(`/jobs/${jobId}`);
+    mutationFn: async (id: number) => {
+      const response = await apiClient.delete(`/jobs/${id}`);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.JOBS] });
+      // Invalidate queries
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['company-jobs'] });
     },
   });
-};
-
-// Hook để save/unsave job (cho user)
-export const useSaveJob = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (jobId: number) => {
-      const response = await apiClient.post('/saved-jobs', { idJob: jobId });
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SAVED_JOBS] });
-    },
-  });
-};
-
-// Hook để unsave job
-export const useUnsaveJob = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (jobId: number) => {
-      const response = await apiClient.delete(`/saved-jobs/${jobId}`);
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SAVED_JOBS] });
-    },
-  });
-};
+}

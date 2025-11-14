@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MapPin, Users, Globe, Edit, Heart, MoreHorizontal, ChevronLeft, ChevronRight, Camera, Facebook, Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -197,6 +198,7 @@ const EditableField = ({
 };
 
 export default function CompanyProfilePage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("gioi-thieu");
   const [editingField, setEditingField] = useState<string | null>(null);
   const [isEditingIntro, setIsEditingIntro] = useState(false);
@@ -415,6 +417,15 @@ export default function CompanyProfilePage() {
     );
   }
 
+  // Handle tab click
+  const handleTabClick = (tabId: string) => {
+    if (tabId === "tuyen-dung") {
+      router.push("/company/jobs/create");
+    } else {
+      setActiveTab(tabId);
+    }
+  };
+
   const tabs = [
     { id: "gioi-thieu", label: "Giới thiệu" },
     { id: "thong-tin", label: "Thông tin" },
@@ -515,7 +526,7 @@ export default function CompanyProfilePage() {
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleTabClick(tab.id)}
                     className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                       activeTab === tab.id
                         ? "border-primary text-primary"

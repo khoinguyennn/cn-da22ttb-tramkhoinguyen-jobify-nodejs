@@ -154,7 +154,7 @@ export function NavBar() {
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem asChild>
-                        <Link href="/company/post-job" className="flex items-center">
+                        <Link href="/company/jobs/create" className="flex items-center">
                           <Building className="mr-2 h-4 w-4" />
                           <span>Đăng ứng tuyển</span>
                         </Link>
