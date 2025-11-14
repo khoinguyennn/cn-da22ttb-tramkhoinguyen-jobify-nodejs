@@ -27,7 +27,7 @@ interface JobFormData {
   negotiable: boolean;
   
   // Hình thức làm việc
-  workType: 'Nhân viên chính thức' | 'Bán thời gian' | 'Thực tập' | 'Tự do' | 'Trung cấp' | 'Trung học' | null;
+  workType: 'Nhân viên chính thức' | 'Bán thời gian' | 'Tự do' | 'Thực tập' | null;
   
   // Bằng cấp
   education: 'Không yêu cầu' | 'Đại học' | 'Cao đẳng' | 'Trung cấp' | 'Trung học' | null;
@@ -97,22 +97,37 @@ export default function CreateJobPage() {
       return;
     }
 
+    // Additional validation for minimum length
+    if (formData.title.trim().length < 5) {
+      showToast.error('Tên công việc phải có ít nhất 5 ký tự');
+      return;
+    }
+
+    if (formData.description.trim().length < 10) {
+      showToast.error('Mô tả công việc phải có ít nhất 10 ký tự');
+      return;
+    }
+
+    if (formData.requirements.trim().length < 10) {
+      showToast.error('Yêu cầu công việc phải có ít nhất 10 ký tự');
+      return;
+    }
+
     try {
-      // Prepare data for API
+      // Prepare data for API (match backend schema)
       const jobData = {
-        title: formData.title.trim(),
-        fieldId: formData.fieldId,
-        locationId: formData.locationId,
-        gender: formData.gender || undefined,
-        minSalary: formData.minAge || undefined,
-        maxSalary: formData.maxAge || undefined,
-        negotiable: formData.negotiable,
-        workType: formData.workType || undefined,
-        education: formData.education || undefined,
-        experience: formData.experience || undefined,
-        description: formData.description.trim(),
-        requirements: formData.requirements.trim(),
-        benefits: formData.benefits.trim() || '',
+        nameJob: formData.title.trim(),
+        idField: formData.fieldId,
+        idProvince: formData.locationId,
+        sex: formData.gender || 'Không yêu cầu',
+        salaryMin: formData.minAge || undefined,
+        salaryMax: formData.maxAge || undefined,
+        typeWork: formData.workType || 'Nhân viên chính thức',
+        education: formData.education || 'Không yêu cầu',
+        experience: formData.experience || 'Không yêu cầu',
+        desc: formData.description.trim(),
+        request: formData.requirements.trim(),
+        other: formData.benefits.trim() || '',
       };
 
       await createJobMutation.mutateAsync(jobData);

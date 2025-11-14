@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MapPin, Users, Globe, Edit, Heart, MoreHorizontal, ChevronLeft, ChevronRight, Camera, Facebook, Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -199,7 +199,9 @@ const EditableField = ({
 
 export default function CompanyProfilePage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("gioi-thieu");
+  const searchParams = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "gioi-thieu");
   const [editingField, setEditingField] = useState<string | null>(null);
   const [isEditingIntro, setIsEditingIntro] = useState(false);
   const [introContent, setIntroContent] = useState("");
@@ -225,6 +227,14 @@ export default function CompanyProfilePage() {
 
   // Sử dụng dữ liệu từ API hoặc fallback từ auth context
   const companyData = companyProfile || company;
+
+  // Update activeTab when URL changes
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
 
   // Dữ liệu cho company scales
   const companySizes = [

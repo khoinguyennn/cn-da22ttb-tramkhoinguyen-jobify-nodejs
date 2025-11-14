@@ -140,7 +140,7 @@ export function NavBar() {
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem asChild>
-                        <Link href="/company/info" className="flex items-center">
+                        <Link href="/company/profile?tab=thong-tin" className="flex items-center">
                           <FileText className="mr-2 h-4 w-4" />
                           <span>Thông tin cá nhân</span>
                         </Link>

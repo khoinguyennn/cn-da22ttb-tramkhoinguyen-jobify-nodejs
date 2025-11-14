@@ -3,29 +3,28 @@ import { apiClient } from '@/services/api';
 
 export interface Job {
   id: number;
-  title: string;
-  fieldId: number;
-  locationId: number;
-  gender: string;
-  minSalary?: number;
-  maxSalary?: number;
-  negotiable: boolean;
-  workType: string;
+  nameJob: string;
+  idField: number;
+  idProvince: number;
+  sex?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  typeWork: string;
   education: string;
   experience: string;
-  description: string;
-  requirements: string;
-  benefits: string;
-  status: 'active' | 'inactive' | 'expired';
+  desc: string;
+  request: string;
+  other?: string;
   createdAt: string;
-  updatedAt: string;
-  companyId: number;
+  updatedAt?: string;
+  deletedAt?: string;
+  idCompany: number;
   // Relations
   field?: {
     id: number;
-    nameField: string;
+    name: string;
   };
-  location?: {
+  province?: {
     id: number;
     nameWithType: string;
   };
@@ -37,19 +36,18 @@ export interface Job {
 }
 
 export interface CreateJobData {
-  title: string;
-  fieldId: number;
-  locationId: number;
-  gender?: string;
-  minSalary?: number;
-  maxSalary?: number;
-  negotiable: boolean;
-  workType?: string;
+  nameJob: string;
+  idField: number;
+  idProvince: number;
+  sex?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  typeWork?: string;
   education?: string;
   experience?: string;
-  description: string;
-  requirements: string;
-  benefits: string;
+  desc: string;
+  request: string;
+  other?: string;
 }
 
 // Hook để tạo job mới
