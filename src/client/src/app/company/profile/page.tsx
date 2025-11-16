@@ -4,15 +4,22 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MapPin, Users, Globe, Edit, Heart, MoreHorizontal, ChevronLeft, ChevronRight, Camera, Facebook, Mail, Loader2 } from "lucide-react";
+import { MapPin, Users, Globe, Edit, Heart, MoreHorizontal, ChevronLeft, ChevronRight, Camera, Facebook, Mail, Loader2, Trash2, StopCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useCompanyProfile } from "@/hooks/useCompanyProfile";
 import { useUpdateCompany } from "@/hooks/useUpdateCompany";
 import { useUpdateCompanyAvatar } from "@/hooks/useUpdateCompanyAvatar";
 import { useUpdateCompanyIntro } from "@/hooks/useUpdateCompanyIntro";
 import { useUpdateCompanyPassword } from "@/hooks/useUpdateCompanyPassword";
+import { useCompanyJobs } from "@/hooks/useCompanyJobs";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserAvatar } from "@/components/UserAvatar";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -226,14 +233,16 @@ export default function CompanyProfilePage() {
 
   const { company, avatarUpdateTime } = useAuth();
   const { data: companyProfile, isLoading, error } = useCompanyProfile();
+  
+  // Sử dụng dữ liệu từ API hoặc fallback từ auth context
+  const companyData = companyProfile || company;
+  
   const updateCompanyMutation = useUpdateCompany();
   const updateAvatarMutation = useUpdateCompanyAvatar();
   const updateIntroMutation = useUpdateCompanyIntro();
   const updatePasswordMutation = useUpdateCompanyPassword();
   const { data: provincesData = [], isLoading: provincesLoading } = useProvinces();
-
-  // Sử dụng dữ liệu từ API hoặc fallback từ auth context
-  const companyData = companyProfile || company;
+  const { data: companyJobs = [], isLoading: jobsLoading, error: jobsError } = useCompanyJobs(companyData?.id);
 
   // Update activeTab when URL changes
   useEffect(() => {
@@ -456,18 +465,27 @@ export default function CompanyProfilePage() {
     setIsEditingIntro(false);
   };
 
-  // Mock job posts - sẽ tích hợp API jobs sau
-  const mockJobPosts = [
-    {
-      id: 1,
-      title: "Frontend Developer",
-      company: companyData?.nameCompany || "Công ty",
-      salary: "5 - 10 triệu",
-      type: "Nhân viên chính thức",
-      location: companyData?.provinceName || "Việt Nam",
-      timeAgo: "một tháng trước"
-    }
-  ];
+  // Format job data for display
+  const formatSalary = (min?: number, max?: number) => {
+    if (!min && !max) return "Thỏa thuận";
+    if (min && max) return `${min} - ${max} triệu`;
+    if (min) return `Từ ${min} triệu`;
+    if (max) return `Đến ${max} triệu`;
+    return "Thỏa thuận";
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return "1 ngày trước";
+    if (diffDays < 7) return `${diffDays} ngày trước`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} tuần trước`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} tháng trước`;
+    return `${Math.floor(diffDays / 365)} năm trước`;
+  };
 
   if (isLoading) {
     return (
@@ -497,6 +515,30 @@ export default function CompanyProfilePage() {
       router.push("/company/jobs/create");
     } else {
       setActiveTab(tabId);
+    }
+  };
+
+  // Job action handlers
+  const handleEditJob = (jobId: number) => {
+    console.log('Edit job:', jobId);
+    // TODO: Navigate to edit job page
+    // router.push(`/company/jobs/edit/${jobId}`);
+    showToast.info('Chức năng sửa việc làm đang được phát triển');
+  };
+
+  const handleDeleteJob = (jobId: number) => {
+    console.log('Delete job:', jobId);
+    // TODO: Show confirmation dialog and call delete API
+    if (confirm('Bạn có chắc chắn muốn xóa việc làm này?')) {
+      showToast.info('Chức năng xóa việc làm đang được phát triển');
+    }
+  };
+
+  const handleStopRecruiting = (jobId: number) => {
+    console.log('Stop recruiting for job:', jobId);
+    // TODO: Call API to stop recruiting
+    if (confirm('Bạn có chắc chắn muốn ngừng tuyển dụng cho việc làm này?')) {
+      showToast.info('Chức năng ngừng tuyển dụng đang được phát triển');
     }
   };
 
@@ -691,30 +733,56 @@ export default function CompanyProfilePage() {
                   <CardContent className="p-6">
                     <h2 className="text-xl font-semibold text-gray-900 mb-6">Tuyển dụng</h2>
                     
-                    {mockJobPosts.length > 0 ? (
+                    {jobsLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                          <span className="text-gray-600">Đang tải danh sách việc làm...</span>
+                        </div>
+                      </div>
+                    ) : jobsError ? (
+                      <div className="text-center py-8">
+                        <p className="text-red-600">Có lỗi xảy ra khi tải danh sách việc làm</p>
+                      </div>
+                    ) : companyJobs.length > 0 ? (
                       <div className="space-y-4">
-                        {mockJobPosts.map((job) => (
+                        {companyJobs.map((job) => (
                           <div key={job.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between">
                               <div className="flex gap-4">
-                                <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center flex-shrink-0">
-                                  <span className="text-white text-lg font-bold">M</span>
+                                <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-100">
+                                  {job.company.avatarPic ? (
+                                    <Image
+                                      src={`/api/uploads/${job.company.avatarPic}`}
+                                      alt={job.company.nameCompany}
+                                      width={48}
+                                      height={48}
+                                      className="w-full h-full object-cover"
+                                      unoptimized
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-primary flex items-center justify-center">
+                                      <span className="text-white text-lg font-bold">
+                                        {job.company.nameCompany.charAt(0).toUpperCase()}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
                                 
                                 <div className="flex-1">
-                                  <h3 className="font-semibold text-gray-900 mb-1">{job.title}</h3>
-                                  <p className="text-sm text-gray-600 mb-2">{job.company}</p>
+                                  <h3 className="font-semibold text-gray-900 mb-1">{job.nameJob}</h3>
+                                  <p className="text-sm text-gray-600 mb-2">{companyData?.nameCompany}</p>
                                   
                                   <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
-                                    <span>$ {job.salary}</span>
-                                    <span>{job.type}</span>
+                                    <span>{formatSalary(job.salaryMin, job.salaryMax)}</span>
+                                    <span>{job.typeWork}</span>
                                     <div className="flex items-center gap-1">
                                       <MapPin className="w-3 h-3" />
-                                      <span>{job.location}</span>
+                                      <span>{job.province?.nameWithType || job.province?.name || 'Không xác định'}</span>
                                     </div>
                                   </div>
                                   
-                                  <p className="text-xs text-gray-400">{job.timeAgo}</p>
+                                  <p className="text-xs text-gray-400">{formatTimeAgo(job.createdAt)}</p>
                                 </div>
                               </div>
                               
@@ -725,9 +793,36 @@ export default function CompanyProfilePage() {
                                 <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500">
                                   <Heart className="w-4 h-4" />
                                 </Button>
-                                <Button variant="ghost" size="sm" className="text-gray-400">
-                                  <MoreHorizontal className="w-4 h-4" />
-                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600">
+                                      <MoreHorizontal className="w-4 h-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-48">
+                                    <DropdownMenuItem 
+                                      onClick={() => handleEditJob(job.id)}
+                                      className="flex items-center cursor-pointer"
+                                    >
+                                      <Edit className="mr-2 h-4 w-4" />
+                                      <span>Sửa</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      onClick={() => handleStopRecruiting(job.id)}
+                                      className="flex items-center cursor-pointer"
+                                    >
+                                      <StopCircle className="mr-2 h-4 w-4" />
+                                      <span>Ngừng tuyển dụng</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      onClick={() => handleDeleteJob(job.id)}
+                                      className="flex items-center cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      <span>Xóa</span>
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
                           </div>
@@ -1074,3 +1169,4 @@ if (typeof document !== 'undefined') {
     document.head.appendChild(style);
   }
 }
+

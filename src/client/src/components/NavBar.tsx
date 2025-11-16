@@ -159,6 +159,13 @@ export function NavBar() {
                           <span>Đăng ứng tuyển</span>
                         </Link>
                       </DropdownMenuItem>
+                      
+                      <DropdownMenuItem asChild>
+                        <Link href="/company/profile?tab=doi-mat-khau" className="flex items-center">
+                          <Lock className="mr-2 h-4 w-4" />
+                          <span>Đổi mật khẩu</span>
+                        </Link>
+                      </DropdownMenuItem>
                     </>
                   ) : (
                     // Menu cho ứng viên
@@ -199,15 +206,6 @@ export function NavBar() {
                       </DropdownMenuItem>
                     </>
                   )}
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuItem asChild>
-                    <Link href="/change-password" className="flex items-center">
-                      <Lock className="mr-2 h-4 w-4" />
-                      <span>Đổi mật khẩu</span>
-                    </Link>
-                  </DropdownMenuItem>
                   
                   <DropdownMenuSeparator />
                   
