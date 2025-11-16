@@ -12,6 +12,7 @@ import { useCompanyProfile } from "@/hooks/useCompanyProfile";
 import { useUpdateCompany } from "@/hooks/useUpdateCompany";
 import { useUpdateCompanyAvatar } from "@/hooks/useUpdateCompanyAvatar";
 import { useUpdateCompanyIntro } from "@/hooks/useUpdateCompanyIntro";
+import { useUpdateCompanyPassword } from "@/hooks/useUpdateCompanyPassword";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserAvatar } from "@/components/UserAvatar";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -215,6 +216,11 @@ export default function CompanyProfilePage() {
     scale: "",
     idProvince: 0
   });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -223,6 +229,7 @@ export default function CompanyProfilePage() {
   const updateCompanyMutation = useUpdateCompany();
   const updateAvatarMutation = useUpdateCompanyAvatar();
   const updateIntroMutation = useUpdateCompanyIntro();
+  const updatePasswordMutation = useUpdateCompanyPassword();
   const { data: provincesData = [], isLoading: provincesLoading } = useProvinces();
 
   // Sử dụng dữ liệu từ API hoặc fallback từ auth context
@@ -387,6 +394,63 @@ export default function CompanyProfilePage() {
     }
   };
 
+  // Xử lý đổi mật khẩu
+  const handlePasswordChange = (field: string, value: string) => {
+    setPasswordData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleChangePassword = async () => {
+    if (!companyData?.id) {
+      showToast.error('Không tìm thấy thông tin công ty');
+      return;
+    }
+
+    // Validation
+    if (!passwordData.currentPassword) {
+      showToast.error('Vui lòng nhập mật khẩu hiện tại');
+      return;
+    }
+
+    if (!passwordData.newPassword) {
+      showToast.error('Vui lòng nhập mật khẩu mới');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      showToast.error('Mật khẩu mới phải có ít nhất 6 ký tự');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showToast.error('Mật khẩu xác nhận không khớp');
+      return;
+    }
+
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      showToast.error('Mật khẩu mới phải khác mật khẩu hiện tại');
+      return;
+    }
+
+    try {
+      await updatePasswordMutation.mutateAsync({
+        id: companyData.id,
+        data: passwordData
+      });
+      
+      // Reset form sau khi thành công
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+    } catch (error) {
+      console.error('Error updating password:', error);
+    }
+  };
+
   const handleCancelIntro = () => {
     setIntroContent(companyData?.intro || "");
     setIsEditingIntro(false);
@@ -439,6 +503,7 @@ export default function CompanyProfilePage() {
   const tabs = [
     { id: "gioi-thieu", label: "Giới thiệu" },
     { id: "thong-tin", label: "Thông tin" },
+    { id: "doi-mat-khau", label: "Đổi mật khẩu" },
     { id: "ung-vien", label: "Ứng viên" },
     { id: "tuyen-dung", label: "Tuyển dụng" }
   ];
@@ -795,6 +860,85 @@ export default function CompanyProfilePage() {
                       onSelectChange={handleSelectChange}
                       placeholder="Chọn quy mô công ty"
                     />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {activeTab === "doi-mat-khau" && (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    {/* Mật khẩu hiện tại */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mật khẩu hiện tại <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        type="password"
+                        value={passwordData.currentPassword}
+                        onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+                        placeholder="Nhập mật khẩu hiện tại"
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Mật khẩu mới */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mật khẩu mới <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        type="password"
+                        value={passwordData.newPassword}
+                        onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                        placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)"
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Xác nhận mật khẩu mới */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Xác nhận mật khẩu mới <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        type="password"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                        placeholder="Nhập lại mật khẩu mới"
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Nút hành động */}
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        onClick={handleChangePassword}
+                        disabled={updatePasswordMutation.isPending}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        {updatePasswordMutation.isPending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            Đang cập nhật...
+                          </>
+                        ) : (
+                          'Đổi mật khẩu'
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setPasswordData({
+                          currentPassword: "",
+                          newPassword: "",
+                          confirmPassword: ""
+                        })}
+                        disabled={updatePasswordMutation.isPending}
+                      >
+                        Hủy bỏ
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
