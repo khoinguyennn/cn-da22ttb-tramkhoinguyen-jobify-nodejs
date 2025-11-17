@@ -17,6 +17,7 @@ export interface CompanyJob {
   education: string;
   experience: string;
   createdAt: string;
+  deletedAt?: string | null;
   // Thông tin liên kết từ API
   company: {
     id: number;

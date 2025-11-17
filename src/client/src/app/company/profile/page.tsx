@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MapPin, Users, Globe, Edit, Heart, MoreHorizontal, ChevronLeft, ChevronRight, Camera, Facebook, Mail, Loader2, Trash2, StopCircle } from "lucide-react";
+import { MapPin, Users, Globe, Edit, Heart, MoreHorizontal, ChevronLeft, ChevronRight, Camera, Facebook, Mail, Loader2, Trash2, StopCircle, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,10 +19,12 @@ import { useUpdateCompany } from "@/hooks/useUpdateCompany";
 import { useUpdateCompanyAvatar } from "@/hooks/useUpdateCompanyAvatar";
 import { useUpdateCompanyIntro } from "@/hooks/useUpdateCompanyIntro";
 import { useUpdateCompanyPassword } from "@/hooks/useUpdateCompanyPassword";
-import { useCompanyJobs } from "@/hooks/useCompanyJobs";
+import { useCompanyJobs, CompanyJob } from "@/hooks/useCompanyJobs";
+import { useDeleteJob, useHideJob, useUnhideJob } from "@/hooks/useJobs";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserAvatar } from "@/components/UserAvatar";
 import { RichTextEditor } from "@/components/RichTextEditor";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 // import { Textarea } from "@/components/ui/textarea";
@@ -243,6 +245,20 @@ export default function CompanyProfilePage() {
   const updatePasswordMutation = useUpdateCompanyPassword();
   const { data: provincesData = [], isLoading: provincesLoading } = useProvinces();
   const { data: companyJobs = [], isLoading: jobsLoading, error: jobsError } = useCompanyJobs(companyData?.id);
+  
+  // Job management hooks
+  const deleteJobMutation = useDeleteJob();
+  const hideJobMutation = useHideJob();
+  const unhideJobMutation = useUnhideJob();
+  
+  // Dialog states
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+    variant: 'default' as 'default' | 'destructive'
+  });
 
   // Update activeTab when URL changes
   useEffect(() => {
@@ -520,25 +536,67 @@ export default function CompanyProfilePage() {
 
   // Job action handlers
   const handleEditJob = (jobId: number) => {
-    console.log('Edit job:', jobId);
-    // TODO: Navigate to edit job page
-    // router.push(`/company/jobs/edit/${jobId}`);
-    showToast.info('Chức năng sửa việc làm đang được phát triển');
+    router.push(`/company/jobs/${jobId}/edit`);
   };
 
   const handleDeleteJob = (jobId: number) => {
-    console.log('Delete job:', jobId);
-    // TODO: Show confirmation dialog and call delete API
-    if (confirm('Bạn có chắc chắn muốn xóa việc làm này?')) {
-      showToast.info('Chức năng xóa việc làm đang được phát triển');
-    }
+    setConfirmDialog({
+      open: true,
+      title: 'Xóa công việc',
+      description: 'Bạn có chắc chắn muốn xóa vĩnh viễn công việc này? Hành động này không thể hoàn tác.',
+      onConfirm: () => confirmDeleteJob(jobId),
+      variant: 'destructive'
+    });
   };
 
   const handleStopRecruiting = (jobId: number) => {
-    console.log('Stop recruiting for job:', jobId);
-    // TODO: Call API to stop recruiting
-    if (confirm('Bạn có chắc chắn muốn ngừng tuyển dụng cho việc làm này?')) {
-      showToast.info('Chức năng ngừng tuyển dụng đang được phát triển');
+    setConfirmDialog({
+      open: true,
+      title: 'Ngừng tuyển dụng',
+      description: 'Bạn có chắc chắn muốn ngừng tuyển dụng cho công việc này? Bạn có thể khôi phục lại sau.',
+      onConfirm: () => confirmStopRecruiting(jobId),
+      variant: 'default'
+    });
+  };
+
+  const handleRestoreJob = (jobId: number) => {
+    setConfirmDialog({
+      open: true,
+      title: 'Khôi phục tuyển dụng',
+      description: 'Bạn có chắc chắn muốn khôi phục tuyển dụng cho công việc này?',
+      onConfirm: () => confirmRestoreJob(jobId),
+      variant: 'default'
+    });
+  };
+
+  // Confirm actions
+  const confirmDeleteJob = async (jobId: number) => {
+    try {
+      await deleteJobMutation.mutateAsync(jobId);
+      showToast.success('Xóa công việc thành công!');
+      setConfirmDialog({ ...confirmDialog, open: false });
+    } catch (error: any) {
+      showToast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xóa công việc');
+    }
+  };
+
+  const confirmStopRecruiting = async (jobId: number) => {
+    try {
+      await hideJobMutation.mutateAsync(jobId);
+      showToast.success('Đã ngừng tuyển dụng công việc!');
+      setConfirmDialog({ ...confirmDialog, open: false });
+    } catch (error: any) {
+      showToast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi ngừng tuyển dụng');
+    }
+  };
+
+  const confirmRestoreJob = async (jobId: number) => {
+    try {
+      await unhideJobMutation.mutateAsync(jobId);
+      showToast.success('Đã khôi phục tuyển dụng công việc!');
+      setConfirmDialog({ ...confirmDialog, open: false });
+    } catch (error: any) {
+      showToast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi khôi phục tuyển dụng');
     }
   };
 
@@ -787,9 +845,18 @@ export default function CompanyProfilePage() {
                               </div>
                               
                               <div className="flex items-center gap-2">
-                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm px-4 py-2">
-                                  Ứng tuyển
-                                </Button>
+                                {job.deletedAt ? (
+                                  <Button 
+                                    disabled 
+                                    className="bg-red-600 hover:bg-red-600 text-white text-sm px-4 py-2 cursor-not-allowed"
+                                  >
+                                    Ngừng ứng tuyển
+                                  </Button>
+                                ) : (
+                                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm px-4 py-2">
+                                    Ứng tuyển
+                                  </Button>
+                                )}
                                 <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500">
                                   <Heart className="w-4 h-4" />
                                 </Button>
@@ -807,13 +874,25 @@ export default function CompanyProfilePage() {
                                       <Edit className="mr-2 h-4 w-4" />
                                       <span>Sửa</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                      onClick={() => handleStopRecruiting(job.id)}
-                                      className="flex items-center cursor-pointer"
-                                    >
-                                      <StopCircle className="mr-2 h-4 w-4" />
-                                      <span>Ngừng tuyển dụng</span>
-                                    </DropdownMenuItem>
+                                    
+                                    {job.deletedAt ? (
+                                      <DropdownMenuItem 
+                                        onClick={() => handleRestoreJob(job.id)}
+                                        className="flex items-center cursor-pointer text-green-600 focus:text-green-600 focus:bg-green-50"
+                                      >
+                                        <Play className="mr-2 h-4 w-4" />
+                                        <span>Khôi phục tuyển dụng</span>
+                                      </DropdownMenuItem>
+                                    ) : (
+                                      <DropdownMenuItem 
+                                        onClick={() => handleStopRecruiting(job.id)}
+                                        className="flex items-center cursor-pointer"
+                                      >
+                                        <StopCircle className="mr-2 h-4 w-4" />
+                                        <span>Ngừng tuyển dụng</span>
+                                      </DropdownMenuItem>
+                                    )}
+                                    
                                     <DropdownMenuItem 
                                       onClick={() => handleDeleteJob(job.id)}
                                       className="flex items-center cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
@@ -1098,6 +1177,17 @@ export default function CompanyProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        onConfirm={confirmDialog.onConfirm}
+        variant={confirmDialog.variant}
+        confirmText={confirmDialog.variant === 'destructive' ? 'Xóa' : 'Xác nhận'}
+      />
     </div>
   );
 }

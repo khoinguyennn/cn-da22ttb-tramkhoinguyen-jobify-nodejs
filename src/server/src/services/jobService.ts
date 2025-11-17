@@ -72,6 +72,50 @@ export class JobService {
     }
   }
 
+  async hideJob(id: number, companyId: number): Promise<void> {
+    // Check if job exists and belongs to this company
+    const existingJob = await this.jobRepository.findById(id);
+    if (!existingJob) {
+      throw new AppError('Không tìm thấy công việc', 404);
+    }
+    
+    if (existingJob.idCompany !== companyId) {
+      throw new AppError('Bạn không có quyền ẩn công việc này', 403);
+    }
+
+    // Check if job is already hidden
+    if (existingJob.deletedAt) {
+      throw new AppError('Công việc đã được ẩn trước đó', 400);
+    }
+
+    const hidden = await this.jobRepository.hide(id);
+    if (!hidden) {
+      throw new AppError('Ẩn công việc thất bại', 500);
+    }
+  }
+
+  async unhideJob(id: number, companyId: number): Promise<void> {
+    // Find job including hidden ones
+    const existingJob = await this.jobRepository.findByIdIncludingDeleted(id);
+    if (!existingJob) {
+      throw new AppError('Không tìm thấy công việc', 404);
+    }
+    
+    if (existingJob.idCompany !== companyId) {
+      throw new AppError('Bạn không có quyền khôi phục công việc này', 403);
+    }
+
+    // Check if job is actually hidden
+    if (!existingJob.deletedAt) {
+      throw new AppError('Công việc không ở trạng thái ẩn', 400);
+    }
+
+    const unhidden = await this.jobRepository.unhide(id);
+    if (!unhidden) {
+      throw new AppError('Khôi phục công việc thất bại', 500);
+    }
+  }
+
   async getJobsByCompany(companyId: number, params: JobQueryParams): Promise<PaginatedResponse<JobWithDetails>> {
     return await this.jobRepository.findByCompany(companyId, params);
   }

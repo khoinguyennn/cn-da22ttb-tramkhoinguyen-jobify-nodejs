@@ -75,6 +75,71 @@ export class JobRepository {
     } as JobWithDetails;
   }
 
+  // Tìm job theo ID bao gồm cả job đã bị ẩn
+  async findByIdIncludingDeleted(id: number, userId?: number): Promise<JobWithDetails | null> {
+    let query = `
+      SELECT 
+        j.*,
+        c.nameCompany, c.avatarPic as companyAvatar, c.scale, c.web,
+        f.name as fieldName, f.typeField,
+        p.name as provinceName, p.nameWithType as provinceFullName
+    `;
+
+    if (userId) {
+      query += `,
+        CASE WHEN sj.id IS NOT NULL THEN TRUE ELSE FALSE END as isSaved,
+        CASE WHEN aj.id IS NOT NULL THEN TRUE ELSE FALSE END as isApplied
+      `;
+    }
+
+    query += `
+      FROM jobs j
+      LEFT JOIN companies c ON j.idCompany = c.id
+      LEFT JOIN fields f ON j.idField = f.id  
+      LEFT JOIN provinces p ON j.idProvince = p.id
+    `;
+
+    if (userId) {
+      query += `
+        LEFT JOIN save_job sj ON j.id = sj.idJob AND sj.idUser = ? AND sj.deletedAt IS NULL
+        LEFT JOIN apply_job aj ON j.id = aj.idJob AND aj.idUser = ? AND aj.deletedAt IS NULL
+      `;
+    }
+
+    query += ` WHERE j.id = ?`; // Không filter deletedAt
+
+    const params = userId ? [userId, userId, id] : [id];
+    const [rows] = await pool.execute<RowDataPacket[]>(query, params);
+    
+    if (rows.length === 0) return null;
+
+    const row = rows[0];
+    const job = JobModel.fromRow(row);
+
+    return {
+      ...job,
+      company: {
+        id: row.idCompany,
+        nameCompany: row.nameCompany,
+        avatarPic: row.companyAvatar,
+        scale: row.scale,
+        web: row.web
+      },
+      field: {
+        id: job.idField,
+        name: row.fieldName,
+        typeField: row.typeField
+      },
+      province: {
+        id: job.idProvince,
+        name: row.provinceName,
+        nameWithType: row.provinceFullName
+      },
+      isSaved: userId ? Boolean(row.isSaved) : false,
+      isApplied: userId ? Boolean(row.isApplied) : false
+    } as JobWithDetails;
+  }
+
   // Tạo job mới
   async create(jobData: CreateJobDTO): Promise<Job> {
     const jobRow = JobModel.toRow(jobData);
@@ -131,10 +196,30 @@ export class JobRepository {
     return result.affectedRows > 0 ? this.findById(id) : null;
   }
 
-  // Xóa job (soft delete)
+  // Xóa job cứng (hard delete)
   async delete(id: number): Promise<boolean> {
     const [result] = await pool.execute<ResultSetHeader>(
+      'DELETE FROM jobs WHERE id = ?',
+      [id]
+    );
+
+    return result.affectedRows > 0;
+  }
+
+  // Ẩn job (soft delete)
+  async hide(id: number): Promise<boolean> {
+    const [result] = await pool.execute<ResultSetHeader>(
       'UPDATE jobs SET deletedAt = NOW() WHERE id = ?',
+      [id]
+    );
+
+    return result.affectedRows > 0;
+  }
+
+  // Khôi phục job (unhide)
+  async unhide(id: number): Promise<boolean> {
+    const [result] = await pool.execute<ResultSetHeader>(
+      'UPDATE jobs SET deletedAt = NULL WHERE id = ?',
       [id]
     );
 
@@ -293,11 +378,11 @@ export class JobRepository {
     };
   }
 
-  // Tìm jobs của một company
+  // Tìm jobs của một company (bao gồm cả job đã ẩn)
   async findByCompany(companyId: number, params: JobQueryParams): Promise<PaginatedResponse<JobWithDetails>> {
     const modifiedParams = { ...params, idCompany: companyId };
     
-    let whereClause = 'WHERE j.deletedAt IS NULL AND j.idCompany = ?';
+    let whereClause = 'WHERE j.idCompany = ?';
     const queryParams: any[] = [companyId];
 
     // Count total

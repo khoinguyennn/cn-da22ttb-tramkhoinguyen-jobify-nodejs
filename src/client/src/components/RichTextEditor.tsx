@@ -96,6 +96,13 @@ export function RichTextEditor({
     },
   });
 
+  // Sync content with editor when content prop changes
+  React.useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content);
+    }
+  }, [editor, content]);
+
   if (!editor) {
     return null;
   }

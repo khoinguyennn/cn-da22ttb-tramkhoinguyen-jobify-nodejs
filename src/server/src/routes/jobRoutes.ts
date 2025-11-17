@@ -21,11 +21,15 @@ router.get('/jobs', jobController.getAllJobs);
 /**
  * POST /jobs - Tạo job mới (chỉ company)
  * PUT /jobs/:id - Cập nhật job (chỉ company owner)
- * DELETE /jobs/:id - Xóa job (chỉ company owner)
+ * DELETE /jobs/:id - Xóa cứng job (chỉ company owner)
+ * PUT /jobs/:id/hidden - Ẩn job (soft delete)
+ * PUT /jobs/:id/unhidden - Khôi phục job đã ẩn
  */
 router.post('/jobs', authenticate, jobController.createJob);
 router.put('/jobs/:id', authenticate, jobController.updateJob);
 router.delete('/jobs/:id', authenticate, jobController.deleteJob);
+router.put('/jobs/:id/hidden', authenticate, jobController.hideJob);
+router.put('/jobs/:id/unhidden', authenticate, jobController.unhideJob);
 
 // ===== NESTED RESOURCE ROUTES =====
 

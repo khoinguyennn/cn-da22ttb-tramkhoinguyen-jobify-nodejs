@@ -284,7 +284,7 @@ export class JobController {
    * /jobs/{id}:
    *   delete:
    *     tags: [Jobs]
-   *     summary: Xóa công việc (chỉ company owner)
+   *     summary: Xóa cứng công việc (chỉ company owner) - KHÔNG THỂ KHÔI PHỤC
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -312,6 +312,86 @@ export class JobController {
       await this.jobService.deleteJob(jobId, req.user.id);
 
       ResponseUtil.noContent(res);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * @swagger
+   * /jobs/{id}/hidden:
+   *   put:
+   *     tags: [Jobs]
+   *     summary: Ẩn công việc (soft delete) - có thể khôi phục
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Ẩn công việc thành công
+   *       400:
+   *         description: Công việc đã được ẩn trước đó
+   *       403:
+   *         description: Không có quyền ẩn job này
+   *       404:
+   *         description: Không tìm thấy công việc
+   */
+  hideJob = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user || req.user.userType !== 'company') {
+        throw new AppError('Chỉ công ty mới có thể ẩn công việc', 403);
+      }
+
+      const jobId = parseInt(req.params.id);
+      
+      await this.jobService.hideJob(jobId, req.user.id);
+
+      ResponseUtil.success(res, null, 'Ẩn công việc thành công');
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * @swagger
+   * /jobs/{id}/unhidden:
+   *   put:
+   *     tags: [Jobs]
+   *     summary: Khôi phục công việc đã bị ẩn
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: integer
+   *     responses:
+   *       200:
+   *         description: Khôi phục công việc thành công
+   *       400:
+   *         description: Công việc không ở trạng thái ẩn
+   *       403:
+   *         description: Không có quyền khôi phục job này
+   *       404:
+   *         description: Không tìm thấy công việc
+   */
+  unhideJob = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user || req.user.userType !== 'company') {
+        throw new AppError('Chỉ công ty mới có thể khôi phục công việc', 403);
+      }
+
+      const jobId = parseInt(req.params.id);
+      
+      await this.jobService.unhideJob(jobId, req.user.id);
+
+      ResponseUtil.success(res, null, 'Khôi phục công việc thành công');
     } catch (error) {
       next(error);
     }

@@ -125,13 +125,47 @@ export function useUpdateJob() {
   });
 }
 
-// Hook để xóa job
+// Hook để xóa job (hard delete)
 export function useDeleteJob() {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (id: number) => {
       const response = await apiClient.delete(`/jobs/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate queries
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['company-jobs'] });
+    },
+  });
+}
+
+// Hook để ẩn job (soft delete)
+export function useHideJob() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiClient.put(`/jobs/${id}/hidden`);
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate queries
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['company-jobs'] });
+    },
+  });
+}
+
+// Hook để khôi phục job
+export function useUnhideJob() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiClient.put(`/jobs/${id}/unhidden`);
       return response.data;
     },
     onSuccess: () => {
