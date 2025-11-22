@@ -8,6 +8,7 @@ import { setupSwagger } from '@/config/swagger';
 import { errorHandler, notFound } from '@/middlewares/errorHandler';
 import { handleUploadError } from '@/middlewares/upload';
 import { ResponseUtil } from '@/utils/response';
+import { EmailService } from '@/services/emailService';
 
 // Import routes
 import authRoutes from '@/routes/authRoutes';
@@ -162,6 +163,10 @@ class Server {
     try {
       // Test database connection
       await testConnection();
+      
+      // Test email service connection
+      const emailService = new EmailService();
+      await emailService.verifyConnection();
       
       // Start server
       this.app.listen(this.port, () => {

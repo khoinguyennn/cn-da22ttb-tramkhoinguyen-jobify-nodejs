@@ -41,9 +41,17 @@ router.post('/users/:id/password', authenticate, authController.changeUserPasswo
 router.put('/companies/:id/password', authenticate, authController.changeCompanyPassword);
 router.post('/companies/:id/password', authenticate, authController.changeCompanyPassword); // Backward compatibility
 
-// TODO: Implement password reset (RESTful approach)
-// POST /auth/password/reset - Request password reset
-// PUT /auth/password/reset/:token - Reset password with token
+/**
+ * Password Reset (RESTful approach)
+ * POST /auth/forgot-password - Request user password reset
+ * PUT /auth/reset-password/:token - Reset user password with token
+ * POST /auth/companies/forgot-password - Request company password reset
+ * PUT /auth/companies/reset-password/:token - Reset company password with token
+ */
+router.post('/auth/forgot-password', authController.forgotPassword);
+router.put('/auth/reset-password/:token', authController.resetPassword);
+router.post('/auth/companies/forgot-password', authController.forgotCompanyPassword);
+router.put('/auth/companies/reset-password/:token', authController.resetCompanyPassword);
 
 export default router;
 

@@ -413,6 +413,238 @@ export class AuthController {
       ResponseUtil.success(res, null, 'Đăng xuất thành công');
     }
   });
+
+  // ===== PASSWORD RESET =====
+
+  /**
+   * @swagger
+   * /auth/forgot-password:
+   *   post:
+   *     tags: [Khôi phục mật khẩu]
+   *     summary: Gửi email khôi phục mật khẩu
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - email
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *                 example: user@example.com
+   *                 description: Email của người dùng cần khôi phục mật khẩu
+   *     responses:
+   *       200:
+   *         description: Gửi email khôi phục thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   *             example:
+   *               success: true
+   *               data: null
+   *               message: "Email khôi phục mật khẩu đã được gửi"
+   *       400:
+   *         description: Email không hợp lệ
+   *       404:
+   *         description: Email không tồn tại trong hệ thống
+   *       500:
+   *         description: Lỗi server khi gửi email
+   */
+  forgotPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body;
+
+    if (!email) {
+      return ResponseUtil.error(res, 'Email là bắt buộc', 400);
+    }
+
+    if (!email.includes('@')) {
+      return ResponseUtil.error(res, 'Email không hợp lệ', 400);
+    }
+
+    await this.authService.forgotPassword(email);
+
+    ResponseUtil.success(res, null, 'Email khôi phục mật khẩu đã được gửi');
+  });
+
+  /**
+   * @swagger
+   * /auth/reset-password/{token}:
+   *   put:
+   *     tags: [Khôi phục mật khẩu]
+   *     summary: Đặt lại mật khẩu với token
+   *     parameters:
+   *       - in: path
+   *         name: token
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Token khôi phục mật khẩu
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - password
+   *             properties:
+   *               password:
+   *                 type: string
+   *                 minLength: 6
+   *                 example: newpassword123
+   *                 description: Mật khẩu mới (tối thiểu 6 ký tự)
+   *     responses:
+   *       200:
+   *         description: Đặt lại mật khẩu thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   *             example:
+   *               success: true
+   *               data: null
+   *               message: "Mật khẩu đã được đặt lại thành công"
+   *       400:
+   *         description: Token không hợp lệ hoặc đã hết hạn
+   *       404:
+   *         description: Token không tồn tại
+   */
+  resetPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return ResponseUtil.error(res, 'Mật khẩu mới là bắt buộc', 400);
+    }
+
+    if (password.length < 6) {
+      return ResponseUtil.error(res, 'Mật khẩu phải có ít nhất 6 ký tự', 400);
+    }
+
+    await this.authService.resetPassword(token, password);
+
+    ResponseUtil.success(res, null, 'Mật khẩu đã được đặt lại thành công');
+  });
+
+  // ===== COMPANY PASSWORD RESET =====
+
+  /**
+   * @swagger
+   * /auth/companies/forgot-password:
+   *   post:
+   *     tags: [Khôi phục mật khẩu]
+   *     summary: Gửi email khôi phục mật khẩu cho công ty
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - email
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *                 example: company@example.com
+   *                 description: Email của công ty cần khôi phục mật khẩu
+   *     responses:
+   *       200:
+   *         description: Gửi email khôi phục thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   *             example:
+   *               success: true
+   *               data: null
+   *               message: "Email khôi phục mật khẩu đã được gửi"
+   *       400:
+   *         description: Email không hợp lệ
+   *       404:
+   *         description: Email không tồn tại trong hệ thống
+   *       500:
+   *         description: Lỗi server khi gửi email
+   */
+  forgotCompanyPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body;
+
+    if (!email) {
+      return ResponseUtil.error(res, 'Email là bắt buộc', 400);
+    }
+
+    if (!email.includes('@')) {
+      return ResponseUtil.error(res, 'Email không hợp lệ', 400);
+    }
+
+    await this.authService.forgotCompanyPassword(email);
+
+    ResponseUtil.success(res, null, 'Email khôi phục mật khẩu đã được gửi');
+  });
+
+  /**
+   * @swagger
+   * /auth/companies/reset-password/{token}:
+   *   put:
+   *     tags: [Khôi phục mật khẩu]
+   *     summary: Đặt lại mật khẩu công ty với token
+   *     parameters:
+   *       - in: path
+   *         name: token
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Token khôi phục mật khẩu
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - password
+   *             properties:
+   *               password:
+   *                 type: string
+   *                 minLength: 6
+   *                 example: newpassword123
+   *                 description: Mật khẩu mới (tối thiểu 6 ký tự)
+   *     responses:
+   *       200:
+   *         description: Đặt lại mật khẩu thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   *             example:
+   *               success: true
+   *               data: null
+   *               message: "Mật khẩu đã được đặt lại thành công"
+   *       400:
+   *         description: Token không hợp lệ hoặc đã hết hạn
+   *       404:
+   *         description: Token không tồn tại
+   */
+  resetCompanyPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return ResponseUtil.error(res, 'Mật khẩu mới là bắt buộc', 400);
+    }
+
+    if (password.length < 6) {
+      return ResponseUtil.error(res, 'Mật khẩu phải có ít nhất 6 ký tự', 400);
+    }
+
+    await this.authService.resetCompanyPassword(token, password);
+
+    ResponseUtil.success(res, null, 'Mật khẩu đã được đặt lại thành công');
+  });
 }
 
 

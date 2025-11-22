@@ -102,4 +102,54 @@ export class AuthRepository {
     
     return result.affectedRows > 0;
   }
+
+  // ===== PASSWORD RESET =====
+
+  async saveResetToken(userId: number, resetToken: string, resetTokenExpiry: Date): Promise<void> {
+    await pool.execute<ResultSetHeader>(
+      'UPDATE users SET resetToken = ?, resetTokenExpiry = ? WHERE id = ?',
+      [resetToken, resetTokenExpiry, userId]
+    );
+  }
+
+  async findUserByResetToken(resetToken: string): Promise<(User & { resetTokenExpiry?: Date }) | null> {
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      'SELECT * FROM users WHERE resetToken = ?',
+      [resetToken]
+    );
+    
+    return rows.length > 0 ? (rows[0] as User & { resetTokenExpiry?: Date }) : null;
+  }
+
+  async updatePasswordAndClearToken(userId: number, hashedPassword: string): Promise<void> {
+    await pool.execute<ResultSetHeader>(
+      'UPDATE users SET password = ?, resetToken = NULL, resetTokenExpiry = NULL WHERE id = ?',
+      [hashedPassword, userId]
+    );
+  }
+
+  // ===== COMPANY PASSWORD RESET =====
+
+  async saveCompanyResetToken(companyId: number, resetToken: string, resetTokenExpiry: Date): Promise<void> {
+    await pool.execute<ResultSetHeader>(
+      'UPDATE companies SET resetToken = ?, resetTokenExpiry = ? WHERE id = ?',
+      [resetToken, resetTokenExpiry, companyId]
+    );
+  }
+
+  async findCompanyByResetToken(resetToken: string): Promise<(Company & { resetTokenExpiry?: Date }) | null> {
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      'SELECT * FROM companies WHERE resetToken = ?',
+      [resetToken]
+    );
+    
+    return rows.length > 0 ? (rows[0] as Company & { resetTokenExpiry?: Date }) : null;
+  }
+
+  async updateCompanyPasswordAndClearToken(companyId: number, hashedPassword: string): Promise<void> {
+    await pool.execute<ResultSetHeader>(
+      'UPDATE companies SET password = ?, resetToken = NULL, resetTokenExpiry = NULL WHERE id = ?',
+      [hashedPassword, companyId]
+    );
+  }
 }

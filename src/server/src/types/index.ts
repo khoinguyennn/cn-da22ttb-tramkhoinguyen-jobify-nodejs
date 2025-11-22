@@ -47,6 +47,8 @@ export interface User {
   intro?: string;
   linkSocial?: string;
   sex?: 'Nam' | 'Nữ' | 'Khác';
+  resetToken?: string;
+  resetTokenExpiry?: Date;
 }
 
 export interface Company {
@@ -61,6 +63,8 @@ export interface Company {
   intro?: string;
   scale?: string;
   web?: string;
+  resetToken?: string;
+  resetTokenExpiry?: Date;
 }
 
 // Company with job count for API responses
