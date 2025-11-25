@@ -124,3 +124,7 @@
     font-family: var(--font-roboto), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 }
+
+.grid.grid-cols-1.md\:grid-cols-3.gap-8 {
+  margin-inline: 20px;
+}

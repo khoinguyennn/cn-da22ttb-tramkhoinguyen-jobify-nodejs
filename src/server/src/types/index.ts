@@ -41,6 +41,8 @@ export interface User {
   email: string;
   password: string;
   idProvince?: number;
+  provinceName?: string;      // Tên tỉnh từ JOIN với provinces table
+  provinceFullName?: string;  // Tên đầy đủ tỉnh từ JOIN với provinces table
   phone: string;
   avatarPic?: string;
   birthDay?: Date;

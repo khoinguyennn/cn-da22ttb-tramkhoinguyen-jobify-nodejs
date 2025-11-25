@@ -171,35 +171,35 @@ export function NavBar() {
                     // Menu cho ứng viên
                     <>
                       <DropdownMenuItem asChild>
-                        <Link href="/profile" className="flex items-center">
+                        <Link href="/user/profile" className="flex items-center">
                           <User className="mr-2 h-4 w-4" />
                           <span>Trang cá nhân</span>
                         </Link>
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem asChild>
-                        <Link href="/profile/info" className="flex items-center">
+                        <Link href="/user/profile?tab=thong-tin" className="flex items-center">
                           <FileText className="mr-2 h-4 w-4" />
-                          <span>Thông tin</span>
+                          <span>Thông tin cá nhân</span>
                         </Link>
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem asChild>
-                        <Link href="/applications" className="flex items-center">
+                        <Link href="/user/profile?tab=ung-tuyen" className="flex items-center">
                           <Briefcase className="mr-2 h-4 w-4" />
                           <span>Ứng tuyển</span>
                         </Link>
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem asChild>
-                        <Link href="/saved-jobs" className="flex items-center">
+                        <Link href="/user/profile?tab=viec-lam" className="flex items-center">
                           <Heart className="mr-2 h-4 w-4" />
                           <span>Việc làm đã lưu</span>
                         </Link>
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem asChild>
-                        <Link href="/following" className="flex items-center">
+                        <Link href="/user/profile?tab=theo-doi" className="flex items-center">
                           <Building className="mr-2 h-4 w-4" />
                           <span>Theo dõi</span>
                         </Link>

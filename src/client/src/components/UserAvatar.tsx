@@ -24,6 +24,13 @@ const sizeClasses = {
   xl: "h-12 w-12"
 };
 
+const textSizeClasses = {
+  sm: "text-xs",
+  md: "text-sm", 
+  lg: "text-base",
+  xl: "text-lg"
+};
+
 export function UserAvatar({ 
   user, 
   size = "lg", 
@@ -31,6 +38,8 @@ export function UserAvatar({
   showFallbackIcon = true,
   forceRefresh = false
 }: UserAvatarProps) {
+  // Detect if custom large size is used (like w-32 h-32 in profile)
+  const isLargeCustomSize = className?.includes('w-32') || className?.includes('h-32');
   // Tạo URL đầy đủ cho avatar nếu có
   const getAvatarUrl = (avatarPic?: string) => {
     if (!avatarPic) return null;
@@ -88,7 +97,10 @@ export function UserAvatar({
     <Avatar className={cn(sizeClasses[size], className)}>
       <AvatarFallback className="bg-primary/10 text-primary font-medium">
         {initials ? (
-          <span className="text-sm font-semibold">{initials}</span>
+          <span className={cn(
+            isLargeCustomSize ? "text-2xl" : textSizeClasses[size], 
+            "font-semibold"
+          )}>{initials}</span>
         ) : (
           <>
             {showFallbackIcon ? (

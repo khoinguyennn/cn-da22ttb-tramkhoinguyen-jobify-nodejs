@@ -23,6 +23,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => void;
   updateCompany: (updatedCompany: Company) => void;
+  updateUser: (updatedUser: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -272,6 +273,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  // Update user data
+  const updateUser = (updatedUser: User) => {
+    try {
+      // Cập nhật state
+      setUser(updatedUser);
+      
+      // Cập nhật timestamp để force refresh avatar
+      setAvatarUpdateTime(Date.now());
+      
+      // Cập nhật localStorage thông qua authService
+      authService.updateUserData(updatedUser);
+    } catch (error) {
+      console.error('Error updating user:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     company,
@@ -286,6 +303,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     refreshUser,
     updateCompany,
+    updateUser,
   };
 
   return (

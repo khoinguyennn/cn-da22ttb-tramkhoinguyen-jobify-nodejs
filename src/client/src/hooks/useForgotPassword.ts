@@ -19,7 +19,7 @@ export const useForgotPassword = () => {
       return response.data;
     },
     onSuccess: () => {
-      showToast.success('Email khôi phục mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư của bạn.');
+      showToast.success('Liên kết khôi phục mật khẩu đã được gửi!');
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || 'Có lỗi xảy ra khi gửi email khôi phục';
@@ -38,7 +38,7 @@ export const useResetPassword = () => {
       return response.data;
     },
     onSuccess: () => {
-      showToast.success('Mật khẩu đã được đặt lại thành công! Bạn có thể đăng nhập với mật khẩu mới.');
+      showToast.success('Mật khẩu đã được đặt lại thành công!');
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || 'Có lỗi xảy ra khi đặt lại mật khẩu';

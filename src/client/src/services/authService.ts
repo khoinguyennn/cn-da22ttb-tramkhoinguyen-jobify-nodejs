@@ -259,6 +259,15 @@ class AuthService {
       console.error('Error updating company data in localStorage:', error);
     }
   }
+
+  // Cập nhật dữ liệu user trong localStorage
+  updateUserData(updatedUser: User): void {
+    try {
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error('Error updating user data in localStorage:', error);
+    }
+  }
 }
 
 export const authService = new AuthService();

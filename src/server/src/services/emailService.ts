@@ -155,7 +155,9 @@ Trân trọng,
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🟣 Jobify</div>
+            <div class="logo" style="font-size: 32px; font-weight: bold; color: #8b5cf6; margin-bottom: 10px; text-align: center;">
+                🟣 Jobify
+            </div>
             <h1 class="title">Khôi phục mật khẩu</h1>
         </div>
 
@@ -168,7 +170,7 @@ Trân trọng,
         </div>
 
         <div class="button-container">
-            <a href="${resetUrl}" class="reset-button">
+            <a href="${resetUrl}" class="reset-button" style="display: inline-block; padding: 15px 30px; background-color: #8b5cf6; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
                 🔐 Đặt lại mật khẩu
             </a>
         </div>
@@ -344,7 +346,9 @@ Trân trọng,
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🟣 Jobify</div>
+            <div class="logo" style="font-size: 32px; font-weight: bold; color: #8b5cf6; margin-bottom: 10px; text-align: center;">
+                🟣 Jobify
+            </div>
             <h1 class="title">Chào mừng ${isCompany ? 'công ty' : 'bạn'} đến với Jobify!</h1>
         </div>
 
@@ -373,7 +377,7 @@ Trân trọng,
         </div>
 
         <div class="button-container">
-            <a href="${process.env.FRONTEND_URL}" class="cta-button">
+            <a href="${process.env.FRONTEND_URL}" class="cta-button" style="display: inline-block; padding: 15px 30px; background-color: #8b5cf6; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
                 🚀 Bắt đầu ngay
             </a>
         </div>

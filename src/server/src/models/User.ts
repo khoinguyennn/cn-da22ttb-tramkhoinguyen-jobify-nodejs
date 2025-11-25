@@ -13,6 +13,8 @@ export class UserModel {
       email: row.email,
       password: row.password,
       idProvince: row.idProvince,
+      provinceName: row.provinceName,        // Từ JOIN với provinces table
+      provinceFullName: row.provinceFullName, // Từ JOIN với provinces table
       phone: row.phone,
       avatarPic: row.avatarPic,
       birthDay: row.birthDay ? new Date(row.birthDay) : undefined,
@@ -33,7 +35,10 @@ export class UserModel {
     if (user.idProvince !== undefined) row.idProvince = user.idProvince;
     if (user.phone) row.phone = user.phone;
     if ('avatarPic' in user && user.avatarPic !== undefined) row.avatarPic = user.avatarPic;
-    if ('birthDay' in user && user.birthDay) row.birthDay = user.birthDay;
+    if ('birthDay' in user && user.birthDay !== undefined) {
+      console.log('Setting birthDay:', user.birthDay); // Debug
+      row.birthDay = user.birthDay;
+    }
     if ('intro' in user && user.intro !== undefined) row.intro = user.intro;
     if ('linkSocial' in user && user.linkSocial !== undefined) row.linkSocial = user.linkSocial;
     if (user.sex !== undefined) row.sex = user.sex;
