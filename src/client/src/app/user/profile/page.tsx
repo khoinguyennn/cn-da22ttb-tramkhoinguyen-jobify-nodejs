@@ -698,7 +698,7 @@ export default function UserProfilePage() {
                   }} 
                   size="xl"
                   className="w-32 h-32 border-4 border-white shadow-lg"
-                  forceRefresh={avatarUpdateTime > 0}
+                  forceRefresh={avatarUpdateTime}
                 />
                 <input
                   type="file"

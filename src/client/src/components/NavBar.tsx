@@ -106,7 +106,7 @@ export function NavBar() {
                       size="md" 
                       showFallbackIcon={false}
                       className="border-2 border-primary/20"
-                      forceRefresh={avatarUpdateTime > 0}
+                      forceRefresh={avatarUpdateTime}
                     />
                     <span className="font-medium text-gray-700 max-w-[120px] truncate">
                       {userType === 'company' ? company?.nameCompany : user?.name}

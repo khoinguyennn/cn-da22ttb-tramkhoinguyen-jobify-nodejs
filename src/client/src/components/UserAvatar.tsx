@@ -14,7 +14,7 @@ interface UserAvatarProps {
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
   showFallbackIcon?: boolean;
-  forceRefresh?: boolean;
+  forceRefresh?: boolean | number;
 }
 
 const sizeClasses = {
@@ -53,9 +53,10 @@ export function UserAvatar({
     // Proxy sẽ forward /api/uploads/* đến http://localhost:5000/uploads/*
     let url = `/api/uploads/${avatarPic}`;
     
-    // Thêm cache busting nếu forceRefresh = true
-    if (forceRefresh) {
-      url += `?t=${Date.now()}`;
+    // Thêm cache busting nếu forceRefresh có giá trị
+    if (forceRefresh && forceRefresh !== false) {
+      const timestamp = typeof forceRefresh === 'number' ? forceRefresh : Date.now();
+      url += `?t=${timestamp}`;
     }
     
     return url;
@@ -81,7 +82,7 @@ export function UserAvatar({
     return (
       <div className={cn("relative overflow-hidden rounded-full", sizeClasses[size], className)}>
         <Image
-          key={forceRefresh ? `avatar-${Date.now()}` : `avatar-${user?.avatarPic}`}
+          key={forceRefresh && forceRefresh !== false ? `avatar-${typeof forceRefresh === 'number' ? forceRefresh : Date.now()}` : `avatar-${user?.avatarPic}`}
           src={avatarUrl}
           alt={user?.name || "User avatar"}
           fill
