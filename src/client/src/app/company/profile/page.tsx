@@ -215,6 +215,8 @@ export default function CompanyProfilePage() {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [isEditingIntro, setIsEditingIntro] = useState(false);
   const [introContent, setIntroContent] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const jobsPerPage = 4;
   const [formData, setFormData] = useState({
     nameCompany: "",
     nameAdmin: "",
@@ -494,13 +496,45 @@ export default function CompanyProfilePage() {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
+    // Tính toán chính xác các đơn vị thời gian
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Hiển thị theo thời gian thực tế
+    if (diffMinutes < 1) return "Vừa xong";
+    if (diffMinutes < 60) return `${diffMinutes} phút trước`;
+    if (diffHours < 24) return `${diffHours} giờ trước`;
     if (diffDays === 1) return "1 ngày trước";
     if (diffDays < 7) return `${diffDays} ngày trước`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} tuần trước`;
     if (diffDays < 365) return `${Math.floor(diffDays / 30)} tháng trước`;
     return `${Math.floor(diffDays / 365)} năm trước`;
+  };
+
+  // Pagination calculations
+  const totalJobs = companyJobs.length;
+  const totalPages = Math.ceil(totalJobs / jobsPerPage);
+  const startIndex = (currentPage - 1) * jobsPerPage;
+  const endIndex = startIndex + jobsPerPage;
+  const currentJobs = companyJobs.slice(startIndex, endIndex);
+
+  // Pagination handlers
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePageClick = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
   };
 
   if (isLoading) {
@@ -804,7 +838,7 @@ export default function CompanyProfilePage() {
                       </div>
                     ) : companyJobs.length > 0 ? (
                       <div className="space-y-4">
-                        {companyJobs.map((job) => (
+                        {currentJobs.map((job) => (
                           <div key={job.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between">
                               <div className="flex gap-4">
@@ -908,17 +942,50 @@ export default function CompanyProfilePage() {
                         ))}
                         
                         {/* Pagination */}
-                        <div className="flex justify-center pt-6">
-                          <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" disabled className="text-gray-400">
-                              <ChevronLeft className="w-4 h-4" />
-                            </Button>
-                            <Button className="bg-primary text-primary-foreground w-8 h-8 text-sm">1</Button>
-                            <Button variant="ghost" size="sm" disabled className="text-gray-400">
-                              <ChevronRight className="w-4 h-4" />
-                            </Button>
+                        {totalPages > 1 && (
+                          <div className="flex justify-center pt-6">
+                            <div className="flex items-center gap-2">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={handlePreviousPage}
+                                disabled={currentPage === 1}
+                                className={currentPage === 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-600 hover:text-gray-800"}
+                              >
+                                <ChevronLeft className="w-4 h-4" />
+                              </Button>
+                              
+                              {/* Page Numbers */}
+                              {Array.from({ length: totalPages }, (_, index) => {
+                                const pageNumber = index + 1;
+                                return (
+                                  <Button
+                                    key={pageNumber}
+                                    size="sm"
+                                    onClick={() => handlePageClick(pageNumber)}
+                                    className={
+                                      currentPage === pageNumber
+                                        ? "bg-primary text-primary-foreground w-8 h-8 text-sm"
+                                        : "bg-white text-gray-600 hover:bg-gray-100 w-8 h-8 text-sm border border-gray-200"
+                                    }
+                                  >
+                                    {pageNumber}
+                                  </Button>
+                                );
+                              })}
+                              
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={handleNextPage}
+                                disabled={currentPage === totalPages}
+                                className={currentPage === totalPages ? "text-gray-400 cursor-not-allowed" : "text-gray-600 hover:text-gray-800"}
+                              >
+                                <ChevronRight className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     ) : (
                       <div className="text-center py-12">

@@ -9,7 +9,7 @@ export const useCompanies = (params?: CompanySearchParams) => {
     queryKey: [QUERY_KEYS.COMPANIES, params],
     queryFn: async (): Promise<PaginatedResponse<Company>> => {
       const response = await apiClient.get('/companies', { params });
-      return response.data;
+      return response.data.data; // Backend wraps response in { success, data, message }
     },
     staleTime: 5 * 60 * 1000, // 5 phút
   });
@@ -21,7 +21,7 @@ export const useCompanyDetail = (companyId: number) => {
     queryKey: [QUERY_KEYS.COMPANY_DETAIL, companyId],
     queryFn: async (): Promise<Company> => {
       const response = await apiClient.get(`/companies/${companyId}`);
-      return response.data;
+      return response.data.data; // Backend wraps response in { success, data, message }
     },
     enabled: !!companyId,
   });
@@ -63,7 +63,7 @@ export const useFollowedCompanies = () => {
     queryKey: [QUERY_KEYS.FOLLOWED_COMPANIES],
     queryFn: async (): Promise<Company[]> => {
       const response = await apiClient.get('/follow-companies');
-      return response.data;
+      return response.data.data; // Backend wraps response in { success, data, message }
     },
   });
 };

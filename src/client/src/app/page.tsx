@@ -19,11 +19,25 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import { useCompanies } from "@/hooks/useCompanies";
+import { useJobs } from "@/hooks/useJobs";
 
 export default function Home() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
+
+  // Fetch companies data - limit to 8 for homepage
+  const { data: companiesResponse, isLoading: isLoadingCompanies } = useCompanies({ 
+    page: 1, 
+    limit: 8 
+  });
+
+  // Fetch latest jobs data - limit to 4 for homepage
+  const { data: jobsResponse, isLoading: isLoadingJobs } = useJobs({ 
+    page: 1, 
+    limit: 4 
+  });
 
   useEffect(() => {
     if (!api) {
@@ -265,109 +279,78 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { 
-                name: "Facebook", 
-                logo: "/companies/facebook-logo.png", 
-                location: "Hồ Chí Minh", 
-                jobs: "5 việc làm",
-                color: "text-blue-600"
-              },
-              { 
-                name: "Microsoft", 
-                logo: "/companies/microsoft-logo.png", 
-                location: "Trà Vinh", 
-                jobs: "1 việc làm",
-                color: "text-blue-600"
-              },
-              { 
-                name: "Apple", 
-                logo: "/companies/apple-logo.png", 
-                location: "Hà Nội", 
-                jobs: "1 việc làm",
-                color: "text-blue-600"
-              },
-              { 
-                name: "Starbucks", 
-                logo: "/companies/starbucks-logo.png", 
-                location: "Trà Vinh", 
-                jobs: "0 việc làm",
-                color: "text-blue-600"
-              },
-              { 
-                name: "NVIDIA", 
-                logo: "/companies/nvidia-logo.png", 
-                location: "Hà Giang", 
-                jobs: "1 việc làm",
-                color: "text-blue-600"
-              },
-              { 
-                name: "Lego", 
-                logo: "/companies/lego-logo.png", 
-                location: "Bình Dương", 
-                jobs: "0 việc làm",
-                color: "text-blue-600"
-              },
-              { 
-                name: "FPT Software", 
-                logo: "/companies/fpt-logo.png", 
-                location: "Hà Nội", 
-                jobs: "2 việc làm",
-                color: "text-blue-600"
-              },
-              { 
-                name: "Netflix VN", 
-                logo: "/companies/netflix-logo.png", 
-                location: "Đà Nẵng", 
-                jobs: "0 việc làm",
-                color: "text-blue-600"
-              }
-            ].map((company, index) => (
-              <Card key={index} className="bg-card border border-border hover:shadow-lg transition-shadow cursor-pointer group">
-                <CardContent className="p-6">
-                  {/* Heart Button - Top Right */}
-                  <div className="flex justify-end mb-4">
-                    <button className="text-muted-foreground hover:text-red-500 transition-colors">
-                      <Heart className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
-                  {/* Large Company Logo - Center */}
-                  <div className="flex justify-center mb-6">
-                    <div className="w-24 h-24 bg-gradient-to-br from-primary/10 to-primary/20 rounded-lg flex items-center justify-center shadow-sm border relative overflow-hidden">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Building className="w-12 h-12 text-primary/60" />
-                      </div>
-            <Image
-                        src={company.logo} 
-                        alt={`${company.name} logo`}
-                        width={80}
-                        height={80}
-                        className="object-contain relative z-10"
-                        onError={(e) => {
-                          // Hide the image if it fails to load, showing the Building icon instead
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                      />
+            {isLoadingCompanies ? (
+              // Loading skeleton
+              Array.from({ length: 8 }, (_, index) => (
+                <Card key={index} className="bg-card border border-border">
+                  <CardContent className="p-6">
+                    <div className="flex justify-end mb-4">
+                      <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
                     </div>
-                  </div>
-                  
-                  {/* Company Info - Bottom */}
-                  <div className="text-center space-y-2">
-                    <h3 className="font-semibold text-foreground">{company.name}</h3>
+                    <div className="flex justify-center mb-6">
+                      <div className="w-24 h-24 bg-gray-200 rounded-lg animate-pulse"></div>
+                    </div>
+                    <div className="text-center space-y-2">
+                      <div className="h-5 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4 mx-auto"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2 mx-auto"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              companiesResponse?.data?.map((company) => (
+                <Card key={company.id} className="bg-card border border-border hover:shadow-lg transition-shadow cursor-pointer group">
+                  <CardContent className="p-6">
+                    {/* Heart Button - Top Right */}
+                    <div className="flex justify-end mb-4">
+                      <button className="text-muted-foreground hover:text-red-500 transition-colors">
+                        <Heart className="w-5 h-5" />
+                      </button>
+                    </div>
                     
-                    <div className="flex items-center justify-center text-sm text-muted-foreground">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      {company.location}
+                    {/* Large Company Logo - Center */}
+                    <div className="flex justify-center mb-6">
+                      <div className={`w-24 h-24 ${company.avatarPic ? 'bg-white' : 'bg-gradient-to-br from-primary/10 to-primary/20'} rounded-lg flex items-center justify-center shadow-sm border relative overflow-hidden`}>
+                        {company.avatarPic ? (
+                          <Image
+                            src={`/api/uploads/${company.avatarPic}`}
+                            alt={`${company.nameCompany} logo`}
+                            fill
+                            className="object-cover rounded-lg"
+                            onError={(e) => {
+                              // Hide the image if it fails to load, showing the Building icon instead
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              // Show fallback
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = '<div class="w-12 h-12 text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12h4"/><path d="M6 16h4"/></svg></div>';
+                              }
+                            }}
+                          />
+                        ) : (
+                          <Building className="w-12 h-12 text-primary/60" />
+                        )}
+                      </div>
                     </div>
-                    <div className={`text-sm font-medium ${company.color}`}>
-                      {company.jobs}
+                    
+                    {/* Company Info - Bottom */}
+                    <div className="text-center space-y-2">
+                      <h3 className="font-semibold text-foreground">{company.nameCompany}</h3>
+                      
+                      <div className="flex items-center justify-center text-sm text-muted-foreground">
+                        <MapPin className="w-4 h-4 mr-2" />
+                        {company.provinceName || company.provinceFullName || 'Chưa cập nhật'}
+                      </div>
+                      <div className="text-sm font-medium text-blue-600">
+                        {company.jobCount || 0} việc làm
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              )) || []
+            )}
           </div>
           
           {/* View All Companies Button */}
@@ -434,73 +417,107 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-foreground">Việc làm mới nhất</h2>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              {
-                title: "Frontend Developer",
-                company: "Công ty ABC",
-                location: "Hà Nội",
-                salary: "15-25 triệu",
-                experience: "2-3 năm",
-                type: "Fulltime"
-              },
-              {
-                title: "Backend Developer", 
-                company: "Công ty XYZ",
-                location: "TP.HCM",
-                salary: "18-30 triệu", 
-                experience: "3-5 năm",
-                type: "Fulltime"
-              },
-              {
-                title: "UI/UX Designer",
-                company: "Startup Tech",
-                location: "Đà Nẵng", 
-                salary: "12-20 triệu",
-                experience: "1-3 năm",
-                type: "Remote"
-              },
-              {
-                title: "DevOps Engineer",
-                company: "Big Corp",
-                location: "Hà Nội",
-                salary: "25-40 triệu",
-                experience: "3-7 năm", 
-                type: "Hybrid"
-              }
-            ].map((job, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow">
-                <CardHeader className="flex flex-row items-start justify-between">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Building className="w-6 h-6 text-primary" />
+          {isLoadingJobs ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Card key={index} className="animate-pulse">
+                  <CardHeader className="flex flex-row items-start justify-between">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+                      <div className="space-y-2">
+                        <div className="h-5 bg-gray-200 rounded w-32"></div>
+                        <div className="h-4 bg-gray-200 rounded w-24"></div>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">{job.title}</CardTitle>
-                      <CardDescription>{job.company}</CardDescription>
+                    <div className="w-5 h-5 bg-gray-200 rounded"></div>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center space-x-4">
+                      <div className="h-4 bg-gray-200 rounded w-16"></div>
+                      <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      <div className="h-4 bg-gray-200 rounded w-16"></div>
                     </div>
-                  </div>
-                  <Heart className="w-5 h-5 text-muted-foreground hover:text-destructive cursor-pointer" />
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                    <span className="flex items-center">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      {job.location}
-                    </span>
-                    <span>{job.salary}</span>
-                    <span>{job.experience}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Badge variant="secondary">{job.type}</Badge>
-                    <Button size="sm" className="bg-primary hover:bg-primary/90">
-                      Ứng tuyển
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    <div className="flex items-center justify-between">
+                      <div className="h-6 bg-gray-200 rounded w-16"></div>
+                      <div className="h-8 bg-gray-200 rounded w-20"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {(jobsResponse?.data?.data || []).map((job: any) => {
+                const formatSalary = (min?: number, max?: number) => {
+                  if (!min && !max) return "Thỏa thuận";
+                  if (min && max) return `${min} - ${max} triệu`;
+                  if (min) return `Từ ${min} triệu`;
+                  if (max) return `Đến ${max} triệu`;
+                  return "Thỏa thuận";
+                };
+
+                return (
+                  <Card key={job.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                    <CardHeader className="flex flex-row items-start justify-between">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 relative">
+                          {job.company?.avatarPic ? (
+                            <>
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <Building className="w-6 h-6 text-gray-400" />
+                              </div>
+                              <Image
+                                src={`/api/uploads/${job.company.avatarPic}`}
+                                alt={`${job.company.nameCompany} logo`}
+                                width={48}
+                                height={48}
+                                className="object-cover relative z-10"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                }}
+                              />
+                            </>
+                          ) : (
+                            <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+                              <Building className="w-6 h-6 text-primary" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{job.nameJob}</CardTitle>
+                          <CardDescription>{job.company?.nameCompany}</CardDescription>
+                        </div>
+                      </div>
+                      <Heart className="w-5 h-5 text-muted-foreground hover:text-destructive cursor-pointer" />
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                        <span className="flex items-center">
+                          <MapPin className="w-4 h-4 mr-1" />
+                          {job.province?.nameWithType || 'Không xác định'}
+                        </span>
+                        <span>{formatSalary(job.salaryMin, job.salaryMax)}</span>
+                        <span>{job.experience}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="secondary">{job.typeWork}</Badge>
+                        <Button size="sm" className="bg-primary hover:bg-primary/90">
+                          Ứng tuyển
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+          
+          {!isLoadingJobs && (!jobsResponse?.data?.data || jobsResponse.data.data.length === 0) && (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Chưa có việc làm nào</p>
+            </div>
+          )}
           
           <div className="text-center mt-8">
             <Button variant="outline" size="lg">

@@ -42,6 +42,10 @@ export interface Company {
   intro?: string;
   scale?: string;
   web?: string;
+  // Additional fields from API response
+  provinceName?: string;
+  provinceFullName?: string;
+  jobCount?: number;
   // Relations
   province?: Province;
 }
