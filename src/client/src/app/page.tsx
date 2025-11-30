@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { 
   Search, MapPin, Users, Shield, Calculator, Building, Heart, Star, HandCoins,
   TrendingUp, Package, Megaphone, Shirt, Target, MessageCircle, 
@@ -21,9 +22,22 @@ import {
 } from "@/components/ui/carousel";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useJobs } from "@/hooks/useJobs";
+import { useProvinces, useFields } from "@/hooks/useReferenceData";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Home() {
   const [api, setApi] = useState<CarouselApi>();
+  const router = useRouter();
+  
+  // Search form states
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("");
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
 
@@ -38,6 +52,58 @@ export default function Home() {
     page: 1, 
     limit: 4 
   });
+
+  // Fetch provinces and fields for search form
+  const { data: provinces } = useProvinces();
+  const { data: fields } = useFields();
+
+  // Handle search form submission
+  const handleSearch = () => {
+    const searchParams = new URLSearchParams();
+    
+    if (searchKeyword.trim()) {
+      searchParams.set('q', searchKeyword.trim());
+    }
+    
+    if (selectedLocation && selectedLocation !== "all") {
+      searchParams.set('location', selectedLocation);
+    }
+    
+    // Navigate to search page with parameters
+    const queryString = searchParams.toString();
+    const searchUrl = queryString ? `/search?${queryString}` : '/search';
+    router.push(searchUrl);
+  };
+
+  // Handle Enter key press in search inputs
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  // Handle industry/field search
+  const handleFieldSearch = (fieldName: string) => {
+    // Find field ID by name
+    const field = fields?.find(f => 
+      f.name.toLowerCase().includes(fieldName.toLowerCase()) ||
+      fieldName.toLowerCase().includes(f.name.toLowerCase())
+    );
+    
+    const searchParams = new URLSearchParams();
+    
+    if (field) {
+      searchParams.set('field', field.id.toString());
+    } else {
+      // If no exact field match, search by keyword
+      searchParams.set('q', fieldName);
+    }
+    
+    // Navigate to search page with field filter
+    const queryString = searchParams.toString();
+    const searchUrl = `/search?${queryString}`;
+    router.push(searchUrl);
+  };
 
   useEffect(() => {
     if (!api) {
@@ -96,16 +162,31 @@ export default function Home() {
                     <Input 
                       placeholder="Nhập tên công việc..."
                       className="pl-10"
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                      onKeyPress={handleKeyPress}
                     />
                   </div>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      placeholder="Chọn địa điểm..."
-                      className="pl-10"
-                    />
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                    <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                      <SelectTrigger className="pl-10">
+                        <SelectValue placeholder="Chọn địa điểm..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tất cả địa điểm</SelectItem>
+                        {(provinces || []).map((province) => (
+                          <SelectItem key={province.id} value={province.id.toString()}>
+                            {province.nameWithType || province.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Button className="bg-primary hover:bg-primary/90 w-full">
+                  <Button 
+                    className="bg-primary hover:bg-primary/90 w-full"
+                    onClick={handleSearch}
+                  >
                     Tìm việc
                   </Button>
                 </div>
@@ -132,7 +213,12 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold text-foreground">Ngành nghề phổ biến</h2>
-            <a href="#" className="text-primary hover:text-primary/80">Xem tất cả &gt;</a>
+            <button 
+              onClick={() => router.push('/fields')}
+              className="text-primary hover:text-primary/80"
+            >
+              Xem tất cả &gt;
+            </button>
           </div>
           
           <Carousel
@@ -154,7 +240,11 @@ export default function Home() {
                     { icon: Building, title: "Ngân hàng / Chứng khoán", color: "bg-primary/10 text-primary" },
                     { icon: HandCoins, title: "Tài chính / Đầu tư", color: "bg-primary/10 text-primary" }
                   ].map((item, index) => (
-                    <Card key={index} className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer">
+                    <Card 
+                      key={index} 
+                      className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => handleFieldSearch(item.title)}
+                    >
                       <CardContent className="flex flex-col items-center space-y-3">
                         <div className={`p-3 rounded-lg ${item.color}`}>
                           <item.icon className="w-6 h-6" />
@@ -177,7 +267,11 @@ export default function Home() {
                     { icon: Target, title: "Tiếp thị", color: "bg-primary/10 text-primary" },
                     { icon: MessageCircle, title: "Tư vấn", color: "bg-primary/10 text-primary" }
                   ].map((item, index) => (
-                    <Card key={index} className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer">
+                    <Card 
+                      key={index} 
+                      className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => handleFieldSearch(item.title)}
+                    >
                       <CardContent className="flex flex-col items-center space-y-3">
                         <div className={`p-3 rounded-lg ${item.color}`}>
                           <item.icon className="w-6 h-6" />
@@ -200,7 +294,11 @@ export default function Home() {
                     { icon: Stethoscope, title: "Chăm sóc sức khỏe / Y tế", color: "bg-primary/10 text-primary" },
                     { icon: Headphones, title: "Dịch vụ khách hàng", color: "bg-primary/10 text-primary" }
                   ].map((item, index) => (
-                    <Card key={index} className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer">
+                    <Card 
+                      key={index} 
+                      className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => handleFieldSearch(item.title)}
+                    >
                       <CardContent className="flex flex-col items-center space-y-3">
                         <div className={`p-3 rounded-lg ${item.color}`}>
                           <item.icon className="w-6 h-6" />
@@ -520,7 +618,11 @@ export default function Home() {
           )}
           
           <div className="text-center mt-8">
-            <Button variant="outline" size="lg">
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => router.push('/search')}
+            >
               Xem tất cả việc làm
             </Button>
           </div>

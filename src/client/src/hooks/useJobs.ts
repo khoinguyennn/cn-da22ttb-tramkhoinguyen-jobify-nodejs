@@ -82,9 +82,16 @@ export function useCompanyJobs() {
 export function useJobs(params?: {
   page?: number;
   limit?: number;
-  fieldId?: number;
-  locationId?: number;
+  idField?: number;
+  idProvince?: number;
+  salaryMin?: number;
+  salaryMax?: number;
+  typeWork?: string;
+  education?: string;
+  experience?: string;
   search?: string;
+  sortBy?: string;
+  sortOrder?: string;
 }) {
   return useQuery({
     queryKey: ['jobs', params],
