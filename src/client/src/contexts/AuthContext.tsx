@@ -215,6 +215,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       showToast.success('Đăng xuất thành công!');
       
+      // Điều hướng về trang chủ
+      router.push('/');
+      
     } catch (error: any) {
       console.error('Logout error:', error);
       
@@ -233,6 +236,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem('userType');
       
       showToast.warning('Đã đăng xuất (có lỗi kết nối server)');
+      
+      // Điều hướng về trang chủ ngay cả khi có lỗi
+      router.push('/');
       
     } finally {
       setIsLoading(false);

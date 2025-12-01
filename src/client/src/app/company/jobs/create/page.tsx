@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { useRouter } from 'next/navigation';
-import { useFields, useProvinces } from '@/hooks/useReferenceData';
+import { useFields } from '@/hooks/useFields';
+import { useProvinces } from '@/hooks/useProvinces';
 import { useCreateJob } from '@/hooks/useJobs';
 import { showToast } from '@/utils/toast';
 
@@ -43,8 +44,11 @@ interface JobFormData {
 
 export default function CreateJobPage() {
   const router = useRouter();
-  const { data: fields = [] } = useFields();
-  const { data: provinces = [] } = useProvinces();
+  const { data: fieldsResponse } = useFields();
+  const { data: provincesResponse } = useProvinces();
+  
+  const fields = fieldsResponse?.data || [];
+  const provinces = provincesResponse?.data || [];
   const createJobMutation = useCreateJob();
   
   const [formData, setFormData] = useState<JobFormData>({

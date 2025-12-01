@@ -235,6 +235,7 @@ export interface JobSearchParams extends PaginationParams {
 }
 
 export interface CompanySearchParams extends PaginationParams {
-  idProvince?: number;
+  keyword?: string;
+  province?: number;
   scale?: string;
 }

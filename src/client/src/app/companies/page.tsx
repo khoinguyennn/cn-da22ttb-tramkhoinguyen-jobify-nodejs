@@ -1,12 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Heart, Users, ChevronDown } from 'lucide-react';
+import { Search, MapPin, Heart, Users, ChevronDown, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useCompanies } from '@/hooks/useCompanies';
+import { useProvinces } from '@/hooks/useProvinces';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface Company {
   id: number;
@@ -17,12 +22,6 @@ interface Company {
   jobCount: number;
   provinceName?: string;
   provinceFullName?: string;
-}
-
-interface Province {
-  id: number;
-  provinceName: string;
-  provinceFullName: string;
 }
 
 const companySizes = [
@@ -36,104 +35,52 @@ const companySizes = [
 ];
 
 export default function CompaniesPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [provinces, setProvinces] = useState<Province[]>([]);
   const [selectedProvinces, setSelectedProvinces] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [activeSearchTerm, setActiveSearchTerm] = useState('');
+  
+  const companiesPerPage = 6;
 
-  // Mock data for demonstration
-  useEffect(() => {
-    // Simulate API call
-    const mockCompanies: Company[] = [
-      {
-        id: 1,
-        companyName: 'Facebook',
-        avatarPic: '/api/placeholder/200/200',
-        provinceId: 1,
-        companyScale: '1000-5000',
-        jobCount: 5,
-        provinceName: 'Hồ Chí Minh',
-        provinceFullName: 'Thành phố Hồ Chí Minh'
-      },
-      {
-        id: 2,
-        companyName: 'Microsoft',
-        avatarPic: '/api/placeholder/200/200',
-        provinceId: 2,
-        companyScale: 'over-5000',
-        jobCount: 1,
-        provinceName: 'Trà Vinh',
-        provinceFullName: 'Tỉnh Trà Vinh'
-      },
-      {
-        id: 3,
-        companyName: 'Apple',
-        avatarPic: '/api/placeholder/200/200',
-        provinceId: 3,
-        companyScale: 'over-5000',
-        jobCount: 1,
-        provinceName: 'Hà Nội',
-        provinceFullName: 'Thành phố Hà Nội'
-      },
-      {
-        id: 4,
-        companyName: 'Starbucks',
-        avatarPic: '/api/placeholder/200/200',
-        provinceId: 2,
-        companyScale: '1000-5000',
-        jobCount: 0,
-        provinceName: 'Trà Vinh',
-        provinceFullName: 'Tỉnh Trà Vinh'
-      },
-      {
-        id: 5,
-        companyName: 'NVIDIA',
-        avatarPic: '/api/placeholder/200/200',
-        provinceId: 4,
-        companyScale: '1000-5000',
-        jobCount: 1,
-        provinceName: 'Hà Giang',
-        provinceFullName: 'Tỉnh Hà Giang'
-      },
-      {
-        id: 6,
-        companyName: 'Lego',
-        avatarPic: '/api/placeholder/200/200',
-        provinceId: 5,
-        companyScale: '500-1000',
-        jobCount: 0,
-        provinceName: 'Bình Dương',
-        provinceFullName: 'Tỉnh Bình Dương'
-      }
-    ];
+  // Build search params (same logic as homepage)
+  const searchParams = {
+    page: currentPage,
+    limit: companiesPerPage,
+    ...(activeSearchTerm && { keyword: activeSearchTerm }),
+    ...(selectedProvinces.length > 0 && { province: parseInt(selectedProvinces[0]) }),
+  };
 
-    const mockProvinces: Province[] = [
-      { id: 1, provinceName: 'An Giang', provinceFullName: 'Tỉnh An Giang' },
-      { id: 2, provinceName: 'Bà Rịa - Vũng Tàu', provinceFullName: 'Tỉnh Bà Rịa - Vũng Tàu' },
-      { id: 3, provinceName: 'Bạc Liêu', provinceFullName: 'Tỉnh Bạc Liêu' },
-      { id: 4, provinceName: 'Bắc Giang', provinceFullName: 'Tỉnh Bắc Giang' },
-      { id: 5, provinceName: 'Bắc Kạn', provinceFullName: 'Tỉnh Bắc Kạn' },
-      { id: 6, provinceName: 'Bắc Ninh', provinceFullName: 'Tỉnh Bắc Ninh' },
-      { id: 7, provinceName: 'Bến Tre', provinceFullName: 'Tỉnh Bến Tre' },
-      { id: 8, provinceName: 'Bình Định', provinceFullName: 'Tỉnh Bình Định' },
-    ];
+  // API calls (same logic as homepage)
+  const { data: companiesResponse, isLoading: isLoadingCompanies } = useCompanies(searchParams);
+  const { data: provincesResponse, isLoading: isLoadingProvinces } = useProvinces();
 
-    setCompanies(mockCompanies);
-    setProvinces(mockProvinces);
-    setTotalPages(2);
-    setIsLoading(false);
-  }, []);
+  // Data extraction (same logic as homepage)
+  const companies = companiesResponse?.data || [];
+  const totalCompanies = companiesResponse?.total || 0;
+  const totalPages = Math.ceil(totalCompanies / companiesPerPage);
+  const provinces = provincesResponse?.data || [];
+
+  // Handle search
+  const handleSearch = () => {
+    setActiveSearchTerm(searchTerm);
+    setCurrentPage(1);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   const handleProvinceChange = (provinceId: string, checked: boolean) => {
     if (checked) {
-      setSelectedProvinces([...selectedProvinces, provinceId]);
+      setSelectedProvinces([provinceId]); // Only allow one province selection for now
     } else {
-      setSelectedProvinces(selectedProvinces.filter(id => id !== provinceId));
+      setSelectedProvinces([]);
     }
+    setCurrentPage(1);
   };
 
   const handleSizeChange = (sizeId: string, checked: boolean) => {
@@ -142,22 +89,19 @@ export default function CompaniesPage() {
     } else {
       setSelectedSizes(selectedSizes.filter(id => id !== sizeId));
     }
+    setCurrentPage(1);
   };
 
-  const getCompanyLogo = (avatarPic?: string) => {
-    if (avatarPic) {
-      return avatarPic;
-    }
-    return '/api/placeholder/200/200';
+  // Handle company click
+  const handleCompanyClick = (companyId: number) => {
+    router.push(`/company/${companyId}`);
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-xl">Đang tải...</div>
-      </div>
-    );
-  }
+  // Get avatar URL with fallback (same logic as homepage)
+  const getAvatarUrl = (avatarPic?: string) => {
+    if (!avatarPic) return null;
+    return `/api/uploads/${avatarPic}`;
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -176,10 +120,14 @@ export default function CompaniesPage() {
                   placeholder="Tìm công ty"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={handleKeyPress}
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
-              <Button className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-r-lg">
+              <Button 
+                onClick={handleSearch}
+                className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-r-lg"
+              >
                 Tìm
               </Button>
             </div>
@@ -194,25 +142,33 @@ export default function CompaniesPage() {
             {/* Location Filter */}
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <h3 className="font-semibold text-gray-900 mb-4">Địa chỉ</h3>
-              <div className="space-y-3 max-h-60 overflow-y-auto">
-                {provinces.map((province) => (
-                  <div key={province.id} className="flex items-center space-x-3">
-                    <Checkbox
-                      id={`province-${province.id}`}
-                      checked={selectedProvinces.includes(province.id.toString())}
-                      onCheckedChange={(checked) => 
-                        handleProvinceChange(province.id.toString(), checked as boolean)
-                      }
-                    />
-                    <label 
-                      htmlFor={`province-${province.id}`}
-                      className="text-sm text-gray-700 cursor-pointer flex-1"
-                    >
-                      {province.provinceName}
-                    </label>
-                  </div>
-                ))}
-              </div>
+              {isLoadingProvinces ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Skeleton key={index} className="h-6 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-60 overflow-y-auto">
+                  {provinces.map((province) => (
+                    <div key={province.id} className="flex items-center space-x-3">
+                      <Checkbox
+                        id={`province-${province.id}`}
+                        checked={selectedProvinces.includes(province.id.toString())}
+                        onCheckedChange={(checked) => 
+                          handleProvinceChange(province.id.toString(), checked as boolean)
+                        }
+                      />
+                      <label 
+                        htmlFor={`province-${province.id}`}
+                        className="text-sm text-gray-700 cursor-pointer flex-1"
+                      >
+                        {province.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Company Size Filter */}
@@ -242,85 +198,151 @@ export default function CompaniesPage() {
 
           {/* Main Content */}
           <div className="flex-1">
+            {/* Results Count */}
+            {!isLoadingCompanies && (
+              <div className="mb-6">
+                <p className="text-gray-600">
+                  Tìm thấy <span className="font-semibold">{totalCompanies}</span> công ty
+                  {activeSearchTerm && (
+                    <span> cho từ khóa "<span className="font-semibold">{activeSearchTerm}</span>"</span>
+                  )}
+                </p>
+              </div>
+            )}
+
             {/* Companies Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {companies.map((company) => (
-                <Card key={company.id} className="hover:shadow-lg transition-shadow duration-200">
-                  <CardContent className="p-6">
-                    {/* Company Logo */}
-                    <div className="flex justify-center mb-4">
-                      <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                        <img
-                          src={getCompanyLogo(company.avatarPic)}
-                          alt={company.companyName}
-                          className="w-full h-full object-contain"
-                        />
+            {isLoadingCompanies ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
+                    <CardContent className="p-6">
+                      <div className="flex justify-center mb-4">
+                        <Skeleton className="w-24 h-24 rounded-lg" />
                       </div>
-                    </div>
-
-                    {/* Company Info */}
-                    <div className="text-center space-y-2">
-                      <h3 className="font-semibold text-lg text-gray-900">
-                        {company.companyName}
-                      </h3>
+                      <div className="text-center space-y-2">
+                        <Skeleton className="h-6 w-32 mx-auto" />
+                        <Skeleton className="h-4 w-24 mx-auto" />
+                        <Skeleton className="h-4 w-20 mx-auto" />
+                      </div>
+                      <div className="flex justify-center mt-4">
+                        <Skeleton className="h-8 w-8 rounded" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : companies.length === 0 ? (
+              <div className="text-center py-12">
+                <Building className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy công ty</h3>
+                <p className="text-gray-500">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {companies.map((company) => (
+                  <Card 
+                    key={company.id} 
+                    className="bg-card border border-border hover:shadow-lg transition-shadow cursor-pointer group"
+                    onClick={() => handleCompanyClick(company.id)}
+                  >
+                    <CardContent className="p-6">
+                      {/* Heart Button - Top Right (same as homepage) */}
+                      <div className="flex justify-end mb-4">
+                        <button 
+                          className="text-muted-foreground hover:text-red-500 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // TODO: Implement follow functionality
+                          }}
+                        >
+                          <Heart className="w-5 h-5" />
+                        </button>
+                      </div>
                       
-                      <div className="flex items-center justify-center text-sm text-gray-600 space-x-1">
-                        <MapPin className="h-4 w-4" />
-                        <span>{company.provinceName}</span>
+                      {/* Company Logo */}
+                      <div className="flex justify-center mb-6">
+                        <div className={`w-24 h-24 ${getAvatarUrl(company.avatarPic) ? 'bg-white' : 'bg-gradient-to-br from-primary/10 to-primary/20'} rounded-lg flex items-center justify-center shadow-sm border relative overflow-hidden`}>
+                          {getAvatarUrl(company.avatarPic) ? (
+                            <Image
+                              src={getAvatarUrl(company.avatarPic)!}
+                              alt={`${company.companyName} logo`}
+                              fill
+                              className="object-cover rounded-lg"
+                            />
+                          ) : (
+                            <Building className="w-8 h-8 text-primary/60" />
+                          )}
+                        </div>
                       </div>
 
-                      <div className="flex items-center justify-center text-sm text-primary space-x-1">
-                        <span>{company.jobCount} việc làm</span>
-                      </div>
-                    </div>
+                      {/* Company Info - Same as homepage */}
+                      <div className="text-center space-y-2">
+                        <h3 className="font-semibold text-foreground">
+                          {company.nameCompany}
+                        </h3>
+                        
+                        <div className="flex items-center justify-center text-sm text-muted-foreground">
+                          <MapPin className="w-4 h-4 mr-2" />
+                          {company.provinceName || company.provinceFullName || 'Chưa cập nhật'}
+                        </div>
 
-                    {/* Follow Button */}
-                    <div className="flex justify-center mt-4">
-                      <Button variant="outline" size="sm" className="border-red-200 text-red-500 hover:bg-red-50">
-                        <Heart className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                        <div className="text-sm font-medium text-blue-600">
+                          {company.jobCount || 0} việc làm
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
 
             {/* Pagination */}
-            <div className="flex justify-center items-center gap-2 mt-8">
-              <Button 
-                variant="outline" 
-                size="icon"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(currentPage - 1)}
-              >
-                <ChevronDown className="w-4 h-4 rotate-90" />
-              </Button>
-              
-              <Button 
-                variant={currentPage === 1 ? "default" : "outline"}
-                size="icon"
-                onClick={() => setCurrentPage(1)}
-              >
-                1
-              </Button>
-              
-              <Button 
-                variant={currentPage === 2 ? "default" : "outline"}
-                size="icon"
-                onClick={() => setCurrentPage(2)}
-              >
-                2
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="icon"
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(currentPage + 1)}
-              >
-                <ChevronDown className="w-4 h-4 -rotate-90" />
-              </Button>
-            </div>
+            {!isLoadingCompanies && totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                >
+                  <ChevronDown className="w-4 h-4 rotate-90" />
+                </Button>
+                
+                {/* Page Numbers */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <Button 
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="icon"
+                      onClick={() => setCurrentPage(pageNum)}
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+                
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                >
+                  <ChevronDown className="w-4 h-4 -rotate-90" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

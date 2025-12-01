@@ -9,7 +9,7 @@ export const useCompanies = (params?: CompanySearchParams) => {
     queryKey: [QUERY_KEYS.COMPANIES, params],
     queryFn: async (): Promise<PaginatedResponse<Company>> => {
       const response = await apiClient.get('/companies', { params });
-      return response.data.data; // Backend wraps response in { success, data, message }
+      return response.data.data; // Backend: { success, data: PaginatedResponse, message }
     },
     staleTime: 5 * 60 * 1000, // 5 phút
   });

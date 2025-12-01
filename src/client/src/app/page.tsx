@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/carousel";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useJobs } from "@/hooks/useJobs";
-import { useProvinces, useFields } from "@/hooks/useReferenceData";
+import { useProvinces } from "@/hooks/useProvinces";
+import { useFields } from "@/hooks/useFields";
 import {
   Select,
   SelectContent,
@@ -54,8 +55,11 @@ export default function Home() {
   });
 
   // Fetch provinces and fields for search form
-  const { data: provinces } = useProvinces();
-  const { data: fields } = useFields();
+  const { data: provincesResponse } = useProvinces();
+  const { data: fieldsResponse } = useFields();
+  
+  const provinces = provincesResponse?.data || [];
+  const fields = fieldsResponse?.data || [];
 
   // Handle search form submission
   const handleSearch = () => {

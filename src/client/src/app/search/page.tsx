@@ -17,7 +17,8 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { useJobs } from "@/hooks/useJobs";
-import { useProvinces, useFields } from "@/hooks/useReferenceData";
+import { useProvinces } from "@/hooks/useProvinces";
+import { useFields } from "@/hooks/useFields";
 import { Job } from "@/types";
 
 // Utility function to format salary
@@ -68,8 +69,11 @@ export default function TimKiemPage() {
   const [jobsPerPage] = useState(12);
 
   // Fetch data using hooks
-  const { data: provinces, isLoading: isLoadingProvinces } = useProvinces();
-  const { data: fields, isLoading: isLoadingFields } = useFields();
+  const { data: provincesResponse, isLoading: isLoadingProvinces } = useProvinces();
+  const { data: fieldsResponse, isLoading: isLoadingFields } = useFields();
+  
+  const provinces = provincesResponse?.data || [];
+  const fields = fieldsResponse?.data || [];
   
   // Build search parameters - luôn load jobs, kể cả khi chưa search
   const searchParamsForAPI = {
