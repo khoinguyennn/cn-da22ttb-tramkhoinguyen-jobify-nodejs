@@ -23,8 +23,8 @@ interface JobFormData {
   
   // Yêu cầu chung
   gender: 'Nam' | 'Nữ' | 'Cả hai' | null;
-  minAge: number | null;
-  maxAge: number | null;
+  salaryMin: number | null;
+  salaryMax: number | null;
   negotiable: boolean;
   
   // Hình thức làm việc
@@ -56,8 +56,8 @@ export default function CreateJobPage() {
     fieldId: null,
     locationId: null,
     gender: null,
-    minAge: null,
-    maxAge: null,
+    salaryMin: null,
+    salaryMax: null,
     negotiable: false,
     workType: null,
     education: null,
@@ -68,10 +68,20 @@ export default function CreateJobPage() {
   });
 
   const handleInputChange = (field: keyof JobFormData, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Khi chọn "thỏa thuận", clear các field lương
+      if (field === 'negotiable' && value) {
+        newData.salaryMin = null;
+        newData.salaryMax = null;
+      }
+      
+      return newData;
+    });
   };
 
   const handleSubmit = async () => {
@@ -124,8 +134,8 @@ export default function CreateJobPage() {
         idField: formData.fieldId,
         idProvince: formData.locationId,
         sex: formData.gender || 'Không yêu cầu',
-        salaryMin: formData.minAge || undefined,
-        salaryMax: formData.maxAge || undefined,
+        salaryMin: formData.negotiable ? null : formData.salaryMin,
+        salaryMax: formData.negotiable ? null : formData.salaryMax,
         typeWork: formData.workType || 'Nhân viên chính thức',
         education: formData.education || 'Không yêu cầu',
         experience: formData.experience || 'Không yêu cầu',
@@ -274,21 +284,23 @@ export default function CreateJobPage() {
                   <Input
                     type="number"
                     placeholder="0"
-                    value={formData.minAge || ''}
-                    onChange={(e) => handleInputChange('minAge', e.target.value ? parseInt(e.target.value) : null)}
+                    value={formData.salaryMin || ''}
+                    onChange={(e) => handleInputChange('salaryMin', e.target.value ? parseInt(e.target.value) : null)}
                     className="w-32"
                     min="0"
                     max="100"
+                    disabled={formData.negotiable}
                   />
                   <span className="text-gray-500">-</span>
                   <Input
                     type="number"
                     placeholder="0"
-                    value={formData.maxAge || ''}
-                    onChange={(e) => handleInputChange('maxAge', e.target.value ? parseInt(e.target.value) : null)}
+                    value={formData.salaryMax || ''}
+                    onChange={(e) => handleInputChange('salaryMax', e.target.value ? parseInt(e.target.value) : null)}
                     className="w-32"
                     min="0"
                     max="100"
+                    disabled={formData.negotiable}
                   />
                   <span className="text-sm text-gray-500">triệu VNĐ</span>
                   <label className="flex items-center gap-2 cursor-pointer">

@@ -31,20 +31,27 @@ export class JobModel {
   static toRow(job: Job | CreateJobDTO | UpdateJobDTO): any {
     const row: any = {};
 
+    // Helper function để chuyển undefined thành null
+    const safeValue = (value: any) => value === undefined ? null : value;
+
     if ('id' in job && job.id) row.id = job.id;
-    if ('idCompany' in job && job.idCompany !== undefined) row.idCompany = job.idCompany;
-    if (job.idField !== undefined) row.idField = job.idField;
-    if (job.idProvince !== undefined) row.idProvince = job.idProvince;
-    if (job.nameJob) row.nameJob = job.nameJob;
-    if (job.request) row.request = job.request;
-    if (job.desc) row.desc = job.desc;
-    if (job.other !== undefined) row.other = job.other;
-    if (job.salaryMin !== undefined) row.salaryMin = job.salaryMin;
-    if (job.salaryMax !== undefined) row.salaryMax = job.salaryMax;
-    if (job.sex !== undefined) row.sex = job.sex;
-    if (job.typeWork) row.typeWork = job.typeWork;
-    if (job.education) row.education = job.education;
-    if (job.experience) row.experience = job.experience;
+    
+    // Các field bắt buộc
+    if ('idCompany' in job) row.idCompany = job.idCompany;
+    row.idField = job.idField;
+    row.idProvince = job.idProvince;
+    row.nameJob = job.nameJob;
+    row.request = job.request;
+    row.desc = job.desc;
+    row.typeWork = job.typeWork;
+    row.education = job.education;
+    row.experience = job.experience;
+    
+    // Các field optional
+    row.other = safeValue(job.other);
+    row.salaryMin = safeValue(job.salaryMin);
+    row.salaryMax = safeValue(job.salaryMax);
+    row.sex = safeValue(job.sex);
 
     // Tự động set createdAt cho job mới
     if ('id' in job && !job.id) {

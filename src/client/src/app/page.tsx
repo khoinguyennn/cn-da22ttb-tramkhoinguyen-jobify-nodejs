@@ -24,6 +24,8 @@ import { useCompanies } from "@/hooks/useCompanies";
 import { useJobs } from "@/hooks/useJobs";
 import { useProvinces } from "@/hooks/useProvinces";
 import { useFields } from "@/hooks/useFields";
+import { SavedJobButton } from "@/components/SavedJobButton";
+import { FollowCompanyButton } from "@/components/FollowCompanyButton";
 import {
   Select,
   SelectContent,
@@ -53,6 +55,7 @@ export default function Home() {
     page: 1, 
     limit: 4 
   });
+
 
   // Fetch provinces and fields for search form
   const { data: provincesResponse } = useProvinces();
@@ -406,9 +409,7 @@ export default function Home() {
                   <CardContent className="p-6">
                     {/* Heart Button - Top Right */}
                     <div className="flex justify-end mb-4">
-                      <button className="text-muted-foreground hover:text-red-500 transition-colors">
-                        <Heart className="w-5 h-5" />
-                      </button>
+                      <FollowCompanyButton companyId={company.id} />
                     </div>
                     
                     {/* Large Company Logo - Center */}
@@ -457,7 +458,7 @@ export default function Home() {
           
           {/* View All Companies Button */}
           <div className="text-center mt-8">
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" onClick={() => router.push('/companies')}>
               Xem tất cả công ty
             </Button>
           </div>
@@ -591,7 +592,7 @@ export default function Home() {
                           <CardDescription>{job.company?.nameCompany}</CardDescription>
                         </div>
                       </div>
-                      <Heart className="w-5 h-5 text-muted-foreground hover:text-destructive cursor-pointer" />
+                      <SavedJobButton jobId={job.id} />
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <div className="flex items-center space-x-4 text-sm text-muted-foreground">

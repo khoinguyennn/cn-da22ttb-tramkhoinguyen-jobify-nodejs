@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useProvinces } from "@/hooks/useReferenceData";
+import { useProvinces } from "@/hooks/useProvinces";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { showToast } from "@/utils/toast";
@@ -34,10 +34,10 @@ export default function EmployerRegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Lấy dữ liệu provinces từ API
-  const { data: provincesData = [], isLoading: provincesLoading, error: provincesError } = useProvinces();
+  const { data: provincesResponse, isLoading: provincesLoading, error: provincesError } = useProvinces();
   
   // Đảm bảo provinces luôn là array
-  const provinces = Array.isArray(provincesData) ? provincesData : [];
+  const provinces = provincesResponse?.data || [];
 
   // Hiển thị lỗi nếu không thể tải provinces
   useEffect(() => {

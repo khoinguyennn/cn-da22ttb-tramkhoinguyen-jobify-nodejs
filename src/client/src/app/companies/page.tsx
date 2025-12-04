@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Heart, Users, ChevronDown, Building } from 'lucide-react';
+import { Search, MapPin, Users, ChevronDown, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useProvinces } from '@/hooks/useProvinces';
+import { FollowCompanyButton } from '@/components/FollowCompanyButton';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -246,17 +247,9 @@ export default function CompaniesPage() {
                     onClick={() => handleCompanyClick(company.id)}
                   >
                     <CardContent className="p-6">
-                      {/* Heart Button - Top Right (same as homepage) */}
+                      {/* Follow Button - Top Right (same as homepage) */}
                       <div className="flex justify-end mb-4">
-                        <button 
-                          className="text-muted-foreground hover:text-red-500 transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // TODO: Implement follow functionality
-                          }}
-                        >
-                          <Heart className="w-5 h-5" />
-                        </button>
+                        <FollowCompanyButton companyId={company.id} />
                       </div>
                       
                       {/* Company Logo */}

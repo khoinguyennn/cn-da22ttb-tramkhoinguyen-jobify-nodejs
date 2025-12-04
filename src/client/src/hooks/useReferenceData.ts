@@ -11,8 +11,10 @@ export const useProvinces = () => {
       const response = await apiClient.get('/provinces');
       return response.data.data; // API trả về { success, data, message }
     },
-    staleTime: 10 * 60 * 1000, // 10 phút - dữ liệu ít thay đổi
-    gcTime: 30 * 60 * 1000, // 30 phút - giữ trong cache lâu hơn
+    staleTime: 2 * 60 * 1000, // 2 phút - giảm thời gian cache
+    gcTime: 5 * 60 * 1000, // 5 phút - garbage collection
+    refetchOnWindowFocus: true, // Refetch khi focus lại window
+    refetchOnMount: true, // Refetch khi mount component
   });
 };
 
@@ -24,8 +26,10 @@ export const useFields = () => {
       const response = await apiClient.get('/fields');
       return response.data.data; // API trả về { success, data, message }
     },
-    staleTime: 10 * 60 * 1000, // 10 phút - dữ liệu ít thay đổi
-    gcTime: 30 * 60 * 1000, // 30 phút - giữ trong cache lâu hơn
+    staleTime: 2 * 60 * 1000, // 2 phút - giảm thời gian cache
+    gcTime: 5 * 60 * 1000, // 5 phút - garbage collection
+    refetchOnWindowFocus: true, // Refetch khi focus lại window
+    refetchOnMount: true, // Refetch khi mount component
   });
 };
 
@@ -38,7 +42,10 @@ export const useProvince = (provinceId: number) => {
       return response.data.data; // API trả về { success, data, message }
     },
     enabled: !!provinceId,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 2 * 60 * 1000, // 2 phút
+    gcTime: 5 * 60 * 1000, // 5 phút
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 };
 
@@ -51,6 +58,9 @@ export const useField = (fieldId: number) => {
       return response.data.data; // API trả về { success, data, message }
     },
     enabled: !!fieldId,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 2 * 60 * 1000, // 2 phút
+    gcTime: 5 * 60 * 1000, // 5 phút
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 };

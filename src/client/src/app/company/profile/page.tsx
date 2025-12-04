@@ -29,7 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 // import { Textarea } from "@/components/ui/textarea";
 import { showToast } from "@/utils/toast";
-import { useProvinces } from "@/hooks/useReferenceData";
+import { useProvinces } from "@/hooks/useProvinces";
 
 // Component để render select field có thể edit
 const EditableSelectField = ({ 
@@ -245,7 +245,8 @@ export default function CompanyProfilePage() {
   const updateAvatarMutation = useUpdateCompanyAvatar();
   const updateIntroMutation = useUpdateCompanyIntro();
   const updatePasswordMutation = useUpdateCompanyPassword();
-  const { data: provincesData = [], isLoading: provincesLoading } = useProvinces();
+  const { data: provincesResponse, isLoading: provincesLoading } = useProvinces();
+  const provincesData = provincesResponse?.data || [];
   const { data: companyJobs = [], isLoading: jobsLoading, error: jobsError } = useCompanyJobs(companyData?.id);
   
   // Job management hooks

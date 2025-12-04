@@ -36,12 +36,12 @@ import { useUpdateUserIntro } from '@/hooks/useUpdateUserIntro';
 import { useUpdateUserAvatar } from '@/hooks/useUpdateUserAvatar';
 import { useUpdateUserPassword } from '@/hooks/useUpdateUserPassword';
 import { useUserApplications } from '@/hooks/useUserApplications';
-import { useSavedJobs } from '@/hooks/useSavedJobs';
-import { useFollowedCompanies } from '@/hooks/useFollowedCompanies';
+import { useSavedJobs, useSavedJobsCount } from '@/hooks/useSavedJobs';
+import { useFollowedCompanies, useFollowedCompaniesCount } from '@/hooks/useFollowedCompanies';
 import { UserAvatar } from '@/components/UserAvatar';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { showToast } from '@/utils/toast';
-import { useProvinces } from '@/hooks/useReferenceData';
+import { useProvinces } from '@/hooks/useProvinces';
 
 // Component để render field có thể edit
 const EditableField = ({ 
@@ -365,7 +365,10 @@ export default function UserProfilePage() {
   const { data: applications, isLoading: applicationsLoading } = useUserApplications();
   const { data: savedJobs, isLoading: savedJobsLoading } = useSavedJobs();
   const { data: followedCompanies, isLoading: followedLoading } = useFollowedCompanies();
-  const { data: provinces, isLoading: provincesLoading } = useProvinces();
+  const { data: savedJobsCount } = useSavedJobsCount();
+  const { data: followedCompaniesCount } = useFollowedCompaniesCount();
+  const { data: provincesResponse, isLoading: provincesLoading } = useProvinces();
+  const provinces = provincesResponse?.data || [];
 
 
   const [passwordData, setPasswordData] = useState({
@@ -735,11 +738,11 @@ export default function UserProfilePage() {
                       </div>
                       <div className="flex items-center gap-1">
                         <Heart className="w-4 h-4" />
-                        <span>{savedJobs?.length || 0} việc làm đã lưu</span>
+                        <span>{savedJobsCount?.count || 0} việc làm đã lưu</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Building className="w-4 h-4" />
-                        <span>{followedCompanies?.length || 0} công ty theo dõi</span>
+                        <span>{followedCompaniesCount?.count || 0} công ty theo dõi</span>
                       </div>
                     </div>
                   </div>

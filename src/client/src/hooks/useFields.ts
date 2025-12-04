@@ -20,7 +20,10 @@ export const useFields = () => {
       const response = await apiClient.get('/fields');
       return response.data;
     },
-    staleTime: 10 * 60 * 1000, // 10 phút - dữ liệu ngành nghề ít thay đổi
+    staleTime: 2 * 60 * 1000, // 2 phút - giảm thời gian cache
+    gcTime: 5 * 60 * 1000, // 5 phút - garbage collection
+    refetchOnWindowFocus: true, // Refetch khi focus lại window
+    refetchOnMount: true, // Refetch khi mount component
   });
 };
 

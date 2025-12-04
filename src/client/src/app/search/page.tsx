@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, MapPin, Briefcase, DollarSign, Clock, GraduationCap, Users, Heart, ChevronDown, Building, X } from "lucide-react";
+import { Search, MapPin, Briefcase, DollarSign, Clock, GraduationCap, Users, ChevronDown, Building, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +19,7 @@ import Image from "next/image";
 import { useJobs } from "@/hooks/useJobs";
 import { useProvinces } from "@/hooks/useProvinces";
 import { useFields } from "@/hooks/useFields";
+import { SavedJobButton } from "@/components/SavedJobButton";
 import { Job } from "@/types";
 
 // Utility function to format salary
@@ -608,9 +609,7 @@ export default function TimKiemPage() {
                         {job.company?.nameCompany}
                       </p>
                     </div>
-                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-red-500">
-                      <Heart className="w-5 h-5" />
-                    </Button>
+                    <SavedJobButton jobId={job.id} />
                   </div>
 
                   {/* Job Details */}

@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { useRouter, useParams } from 'next/navigation';
-import { useFields, useProvinces } from '@/hooks/useReferenceData';
+import { useFields } from '@/hooks/useFields';
+import { useProvinces } from '@/hooks/useProvinces';
 import { useJob, useUpdateJob } from '@/hooks/useJobs';
 import { showToast } from '@/utils/toast';
 
@@ -46,8 +47,11 @@ export default function EditJobPage() {
   const params = useParams();
   const jobId = parseInt(params.id as string);
   
-  const { data: fields = [] } = useFields();
-  const { data: provinces = [] } = useProvinces();
+  const { data: fieldsResponse } = useFields();
+  const { data: provincesResponse } = useProvinces();
+  
+  const fields = fieldsResponse?.data || [];
+  const provinces = provincesResponse?.data || [];
   const { data: jobData, isLoading, error } = useJob(jobId);
   const updateJobMutation = useUpdateJob();
   
