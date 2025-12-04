@@ -23,12 +23,14 @@ import {
   User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BirthDatePicker } from '@/components/ui/birth-date-picker';
+import Image from 'next/image';
+import { SavedJobButton } from '@/components/SavedJobButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUpdateUserProfile } from '@/hooks/useUpdateUserProfile';
@@ -42,6 +44,7 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { showToast } from '@/utils/toast';
 import { useProvinces } from '@/hooks/useProvinces';
+import { FollowCompanyButton } from '@/components/FollowCompanyButton';
 
 // Component để render field có thể edit
 const EditableField = ({ 
@@ -1120,40 +1123,55 @@ export default function UserProfilePage() {
                   ) : savedJobs && savedJobs.length > 0 ? (
                     <div className="space-y-4">
                       {savedJobs.map((savedJob: any) => (
-                        <Card key={savedJob.id} className="border-l-4 border-l-red-500">
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-lg mb-2">
-                                  {savedJob.job?.nameJob}
-                                </h3>
-                                <div className="flex items-center text-sm text-gray-600 mb-2">
-                                  <Building className="w-4 h-4 mr-2" />
-                                  {savedJob.job?.company?.nameCompany}
-                                </div>
-                                <div className="flex items-center text-sm text-gray-600 mb-2">
-                                  <MapPin className="w-4 h-4 mr-2" />
-                                  {savedJob.job?.province?.nameWithType}
-                                </div>
-                                <div className="flex items-center text-sm text-gray-600 mb-2">
-                                  <DollarSign className="w-4 h-4 mr-2" />
-                                  {formatSalary(savedJob.job?.salaryMin, savedJob.job?.salaryMax)}
-                                </div>
-                                <div className="flex items-center text-sm text-gray-500">
-                                  <Clock className="w-4 h-4 mr-2" />
-                                  Lưu {formatTimeAgo(savedJob.createdAt)}
-                                </div>
+                        <Card key={savedJob.id} className="bg-card border border-border hover:shadow-lg transition-shadow">
+                          <CardHeader className="flex flex-row items-start justify-between">
+                            <div className="flex items-start space-x-3">
+                              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 relative">
+                                {savedJob.job?.company?.avatarPic ? (
+                                  <>
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                      <Building className="w-6 h-6 text-gray-400" />
+                                    </div>
+                                    <Image
+                                      src={`/api/uploads/${savedJob.job.company.avatarPic}`}
+                                      alt={`${savedJob.job.company.nameCompany} logo`}
+                                      width={48}
+                                      height={48}
+                                      className="object-cover relative z-10"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                      }}
+                                    />
+                                  </>
+                                ) : (
+                                  <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+                                    <Building className="w-6 h-6 text-primary" />
+                                  </div>
+                                )}
                               </div>
-                              <div className="flex gap-2">
-                                <Button size="sm" variant="outline">
-                                  <Eye className="w-4 h-4 mr-2" />
-                                  Xem
-                                </Button>
-                                <Button size="sm">
-                                  <Briefcase className="w-4 h-4 mr-2" />
-                                  Ứng tuyển
-                                </Button>
+                              <div>
+                                <CardTitle className="text-lg">{savedJob.job?.nameJob}</CardTitle>
+                                <CardDescription>{savedJob.job?.company?.nameCompany}</CardDescription>
                               </div>
+                            </div>
+                            <SavedJobButton jobId={savedJob.job?.id} />
+                          </CardHeader>
+                          <CardContent className="space-y-2">
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                              <span className="flex items-center">
+                                <MapPin className="w-4 h-4 mr-1" />
+                                {savedJob.job?.province?.nameWithType || 'Không xác định'}
+                              </span>
+                              <span>{formatSalary(savedJob.job?.salaryMin, savedJob.job?.salaryMax)}</span>
+                              <span>{savedJob.job?.experience}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Badge variant="secondary">{savedJob.job?.typeWork}</Badge>
+                              <Button size="sm" className="bg-primary hover:bg-primary/90">
+                                <Briefcase className="w-4 h-4 mr-2" />
+                                Ứng tuyển
+                              </Button>
                             </div>
                           </CardContent>
                         </Card>
@@ -1187,43 +1205,62 @@ export default function UserProfilePage() {
                       </div>
                     </div>
                   ) : followedCompanies && followedCompanies.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
                       {followedCompanies.map((follow: any) => (
-                        <Card key={follow.id} className="border-l-4 border-l-blue-600">
-                          <CardContent className="p-4">
-                            <div className="flex items-start gap-4">
-                              <UserAvatar 
-                                user={{
-                                  name: follow.company?.nameCompany,
-                                  avatarPic: follow.company?.avatarPic
-                                }}
-                                size="lg"
-                                className="w-12 h-12"
-                              />
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-lg mb-1">
-                                  {follow.company?.nameCompany}
-                                </h3>
-                                <p className="text-sm text-gray-600 mb-2">
-                                  {follow.company?.desc || 'Chưa có mô tả'}
-                                </p>
-                                <div className="flex items-center text-sm text-gray-500 mb-2">
-                                  <MapPin className="w-4 h-4 mr-2" />
-                                  {follow.company?.address}
-                                </div>
-                                <div className="flex items-center text-sm text-gray-500">
-                                  <Users className="w-4 h-4 mr-2" />
-                                  {follow.company?.jobCount || 0} việc làm
-                                </div>
+                        <Card key={follow.id} className="bg-card border border-border hover:shadow-lg transition-shadow">
+                          <CardHeader className="flex flex-row items-start justify-between">
+                            <div className="flex items-start space-x-3">
+                              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 relative">
+                                {follow.company?.avatarPic ? (
+                                  <>
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                      <Building className="w-6 h-6 text-gray-400" />
+                                    </div>
+                                    <Image
+                                      src={`/api/uploads/${follow.company.avatarPic}`}
+                                      alt={`${follow.company.nameCompany} logo`}
+                                      width={48}
+                                      height={48}
+                                      className="object-cover relative z-10"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                      }}
+                                    />
+                                  </>
+                                ) : (
+                                  <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+                                    <Building className="w-6 h-6 text-primary" />
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <CardTitle className="text-lg">{follow.company?.nameCompany}</CardTitle>
+                                <CardDescription>{follow.company?.province?.nameWithType || 'Không xác định'}</CardDescription>
                               </div>
                             </div>
-                            <div className="mt-4 flex gap-2">
-                              <Button size="sm" variant="outline" className="flex-1">
+                            <FollowCompanyButton companyId={follow.company?.id} />
+                          </CardHeader>
+                          <CardContent className="space-y-2">
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                              <span className="flex items-center">
+                                <MapPin className="w-4 h-4 mr-1" />
+                                {follow.company?.province?.nameWithType || 'Không xác định'}
+                              </span>
+                              <span className="flex items-center">
+                                <Briefcase className="w-4 h-4 mr-1" />
+                                {follow.company?.jobCount || 0} việc làm
+                              </span>
+                              <span className="flex items-center">
+                                <Users className="w-4 h-4 mr-1" />
+                                {follow.company?.scale || 'Không xác định'}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Badge variant="secondary">Đang theo dõi</Badge>
+                              <Button size="sm" className="bg-primary hover:bg-primary/90">
                                 <Eye className="w-4 h-4 mr-2" />
                                 Xem công ty
-                              </Button>
-                              <Button size="sm" variant="outline">
-                                <Star className="w-4 h-4" />
                               </Button>
                             </div>
                           </CardContent>

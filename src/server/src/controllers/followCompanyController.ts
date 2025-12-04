@@ -372,6 +372,56 @@ export class FollowCompanyController {
       next(error);
     }
   }
+
+  /**
+   * @swagger
+   * /followed-companies/company/{companyId}/count:
+   *   get:
+   *     summary: Lấy số lượng người theo dõi của công ty
+   *     description: Lấy tổng số người dùng đã theo dõi một công ty cụ thể
+   *     tags: [Công ty đã theo dõi]
+   *     parameters:
+   *       - in: path
+   *         name: companyId
+   *         required: true
+   *         schema:
+   *           type: integer
+   *         description: ID của công ty
+   *     responses:
+   *       200:
+   *         description: Lấy số lượng thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     count:
+   *                       type: integer
+   *                       example: 25
+   *       400:
+   *         description: ID công ty không hợp lệ
+   */
+  async getCompanyFollowerCount(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const companyId = parseInt(req.params.companyId);
+
+      if (!companyId || isNaN(companyId)) {
+        ResponseUtil.error(res, 'ID công ty không hợp lệ', 400);
+        return;
+      }
+
+      const result = await followCompanyService.getCompanyFollowerCount(companyId);
+      ResponseUtil.success(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const followCompanyController = new FollowCompanyController();

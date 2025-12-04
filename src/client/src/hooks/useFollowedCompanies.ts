@@ -13,9 +13,10 @@ const QUERY_KEYS = {
 export const useFollowedCompanies = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.FOLLOWED_COMPANIES],
-    queryFn: async (): Promise<Company[]> => {
+    queryFn: async (): Promise<any[]> => {
       const response = await apiClient.get('/followed-companies');
-      return response.data.data;
+      // API trả về PaginatedResponse với cấu trúc: { success, data: { data: [], total, page... } }
+      return response.data.data.data || [];
     },
     staleTime: 2 * 60 * 1000, // 2 phút
     gcTime: 5 * 60 * 1000, // 5 phút
@@ -57,6 +58,11 @@ export const useFollowCompany = () => {
         queryKey: [QUERY_KEYS.FOLLOWED_COMPANIES, 'count']
       });
       
+      // Cập nhật cache cho follower count của company
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.FOLLOWED_COMPANIES, 'company-follower-count', companyId]
+      });
+      
       // Cập nhật cache cho kiểm tra trạng thái company cụ thể
       queryClient.setQueryData(
         [QUERY_KEYS.FOLLOW_COMPANY_CHECK, companyId],
@@ -92,6 +98,11 @@ export const useUnfollowCompany = () => {
       // Cập nhật cache cho count
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.FOLLOWED_COMPANIES, 'count']
+      });
+      
+      // Cập nhật cache cho follower count của company
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.FOLLOWED_COMPANIES, 'company-follower-count', companyId]
       });
       
       // Cập nhật cache cho kiểm tra trạng thái company cụ thể
@@ -172,5 +183,20 @@ export const useMultipleFollowedCompaniesCheck = (companyIds: number[]) => {
     enabled: companyIds.length > 0,
     staleTime: 30 * 1000, // 30 giây
     gcTime: 2 * 60 * 1000, // 2 phút
+  });
+};
+
+// Lấy số lượng người theo dõi của một công ty
+export const useCompanyFollowerCount = (companyId: number | undefined) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.FOLLOWED_COMPANIES, 'company-follower-count', companyId],
+    queryFn: async (): Promise<{ count: number }> => {
+      if (!companyId) throw new Error('Company ID is required');
+      const response = await apiClient.get(`/followed-companies/company/${companyId}/count`);
+      return response.data.data;
+    },
+    enabled: !!companyId, // Chỉ chạy khi có companyId
+    staleTime: 2 * 60 * 1000, // 2 phút
+    gcTime: 5 * 60 * 1000, // 5 phút
   });
 };

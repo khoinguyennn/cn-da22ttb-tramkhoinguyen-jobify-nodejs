@@ -9,13 +9,14 @@ const QUERY_KEYS = {
   SAVED_JOB_CHECK: 'saved-job-check',
 } as const;
 
-// Lấy danh sách công việc đã lưu
+// Lấy danh sách công việc đã lưu  
 export const useSavedJobs = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.SAVED_JOBS],
-    queryFn: async (): Promise<Job[]> => {
+    queryFn: async (): Promise<any[]> => {
       const response = await apiClient.get('/saved-jobs');
-      return response.data.data;
+      // API trả về PaginatedResponse với cấu trúc: { success, data: { data: [], total, page... } }
+      return response.data.data.data || [];
     },
     staleTime: 2 * 60 * 1000, // 2 phút
     gcTime: 5 * 60 * 1000, // 5 phút

@@ -42,4 +42,11 @@ router.get('/count', authenticate, followCompanyController.getFollowedCompanyCou
  */
 router.get('/check/:companyId', authenticate, followCompanyController.checkFollowStatus);
 
+/**
+ * @route   GET /followed-companies/company/:companyId/count
+ * @desc    Lấy số lượng người theo dõi của một công ty
+ * @access  Public (Không cần auth - thông tin công khai)
+ */
+router.get('/company/:companyId/count', followCompanyController.getCompanyFollowerCount);
+
 export default router;

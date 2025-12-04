@@ -22,7 +22,9 @@ import { useUpdateCompanyPassword } from "@/hooks/useUpdateCompanyPassword";
 import { useCompanyJobs, CompanyJob } from "@/hooks/useCompanyJobs";
 import { useDeleteJob, useHideJob, useUnhideJob } from "@/hooks/useJobs";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCompanyFollowerCount } from "@/hooks/useFollowedCompanies";
 import { UserAvatar } from "@/components/UserAvatar";
+import { SavedJobButton } from "@/components/SavedJobButton";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Input } from "@/components/ui/input";
@@ -248,6 +250,9 @@ export default function CompanyProfilePage() {
   const { data: provincesResponse, isLoading: provincesLoading } = useProvinces();
   const provincesData = provincesResponse?.data || [];
   const { data: companyJobs = [], isLoading: jobsLoading, error: jobsError } = useCompanyJobs(companyData?.id);
+  
+  // Company follower count
+  const { data: followerCount } = useCompanyFollowerCount(companyData?.id);
   
   // Job management hooks
   const deleteJobMutation = useDeleteJob();
@@ -709,7 +714,7 @@ export default function CompanyProfilePage() {
                       )}
                       <div className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
-                        <span>0 người theo dõi</span>
+                        <span>{followerCount?.count || 0} người theo dõi</span>
                       </div>
                       {companyData?.web && (
                         <div className="flex items-center gap-1">
@@ -892,9 +897,7 @@ export default function CompanyProfilePage() {
                                     Ứng tuyển
                                   </Button>
                                 )}
-                                <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500">
-                                  <Heart className="w-4 h-4" />
-                                </Button>
+                                <SavedJobButton jobId={job.id} />
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600">
