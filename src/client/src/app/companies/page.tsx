@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useProvinces } from '@/hooks/useProvinces';
+import { useAuth } from '@/contexts/AuthContext';
 import { FollowCompanyButton } from '@/components/FollowCompanyButton';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -37,6 +38,7 @@ const companySizes = [
 
 export default function CompaniesPage() {
   const router = useRouter();
+  const { userType, isAuthenticated, company } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProvinces, setSelectedProvinces] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
@@ -95,7 +97,12 @@ export default function CompaniesPage() {
 
   // Handle company click
   const handleCompanyClick = (companyId: number) => {
-    router.push(`/company/${companyId}`);
+    // If current company is viewing their own card, redirect to profile
+    if (isAuthenticated && userType === 'company' && company?.id === companyId) {
+      router.push('/company/profile');
+    } else {
+      router.push(`/companies/${companyId}`);
+    }
   };
 
   // Get avatar URL with fallback (same logic as homepage)

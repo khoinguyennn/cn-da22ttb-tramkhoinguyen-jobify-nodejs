@@ -489,6 +489,11 @@ export default function CompanyProfilePage() {
     setIsEditingIntro(false);
   };
 
+  // Handle keyword click
+  const handleKeywordClick = (keyword: string) => {
+    router.push(`/search?q=${encodeURIComponent(keyword)}`);
+  };
+
   // Format job data for display
   const formatSalary = (min?: number, max?: number) => {
     if (!min && !max) return "Thỏa thuận";
@@ -719,7 +724,14 @@ export default function CompanyProfilePage() {
                       {companyData?.web && (
                         <div className="flex items-center gap-1">
                           <Globe className="w-4 h-4" />
-                          <span className="text-primary">{companyData.web}</span>
+                          <a 
+                            href={companyData.web.startsWith('http') ? companyData.web : `https://${companyData.web}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:text-primary/80 hover:underline transition-colors"
+                          >
+                            {companyData.web}
+                          </a>
                         </div>
                       )}
                     </div>
@@ -1237,7 +1249,8 @@ export default function CompanyProfilePage() {
                     <Badge 
                       key={index} 
                       variant="secondary" 
-                      className="bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer text-sm py-1 px-3"
+                      className="bg-gray-100 text-gray-700 hover:bg-primary/10 hover:text-primary cursor-pointer text-sm py-1 px-3 transition-colors"
+                      onClick={() => handleKeywordClick(keyword)}
                     >
                       {keyword}
                     </Badge>

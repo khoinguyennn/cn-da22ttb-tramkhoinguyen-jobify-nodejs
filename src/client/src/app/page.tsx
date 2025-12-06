@@ -24,6 +24,7 @@ import { useCompanies } from "@/hooks/useCompanies";
 import { useJobs } from "@/hooks/useJobs";
 import { useProvinces } from "@/hooks/useProvinces";
 import { useFields } from "@/hooks/useFields";
+import { useAuth } from "@/contexts/AuthContext";
 import { SavedJobButton } from "@/components/SavedJobButton";
 import { FollowCompanyButton } from "@/components/FollowCompanyButton";
 import {
@@ -37,6 +38,7 @@ import {
 export default function Home() {
   const [api, setApi] = useState<CarouselApi>();
   const router = useRouter();
+  const { userType, isAuthenticated, company } = useAuth();
   
   // Search form states
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -110,6 +112,16 @@ export default function Home() {
     const queryString = searchParams.toString();
     const searchUrl = `/search?${queryString}`;
     router.push(searchUrl);
+  };
+
+  // Handle company click
+  const handleCompanyClick = (companyId: number) => {
+    // If current company is viewing their own card, redirect to profile
+    if (isAuthenticated && userType === 'company' && company?.id === companyId) {
+      router.push('/company/profile');
+    } else {
+      router.push(`/companies/${companyId}`);
+    }
   };
 
   useEffect(() => {
@@ -405,7 +417,7 @@ export default function Home() {
               ))
             ) : (
               companiesResponse?.data?.map((company) => (
-                <Card key={company.id} className="bg-card border border-border hover:shadow-lg transition-shadow cursor-pointer group">
+                <Card key={company.id} className="bg-card border border-border hover:shadow-lg transition-shadow cursor-pointer group" onClick={() => handleCompanyClick(company.id)}>
                   <CardContent className="p-6">
                     {/* Heart Button - Top Right */}
                     <div className="flex justify-end mb-4">

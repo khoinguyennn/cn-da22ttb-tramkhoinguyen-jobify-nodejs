@@ -356,6 +356,16 @@ export default function UserProfilePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') || 'gioi-thieu';
+
+  // Handle company click
+  const handleCompanyClick = (companyId: number) => {
+    router.push(`/companies/${companyId}`);
+  };
+
+  // Handle keyword click
+  const handleKeywordClick = (keyword: string) => {
+    router.push(`/search?q=${encodeURIComponent(keyword)}`);
+  };
   
   const { user, avatarUpdateTime } = useAuth();
   const { data: userProfile, isLoading: profileLoading } = useUserProfile();
@@ -1207,7 +1217,7 @@ export default function UserProfilePage() {
                   ) : followedCompanies && followedCompanies.length > 0 ? (
                     <div className="space-y-4">
                       {followedCompanies.map((follow: any) => (
-                        <Card key={follow.id} className="bg-card border border-border hover:shadow-lg transition-shadow">
+                        <Card key={follow.id} className="bg-card border border-border hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleCompanyClick(follow.company?.id)}>
                           <CardHeader className="flex flex-row items-start justify-between">
                             <div className="flex items-start space-x-3">
                               <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 relative">
@@ -1239,7 +1249,9 @@ export default function UserProfilePage() {
                                 <CardDescription>{follow.company?.province?.nameWithType || 'Không xác định'}</CardDescription>
                               </div>
                             </div>
-                            <FollowCompanyButton companyId={follow.company?.id} />
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <FollowCompanyButton companyId={follow.company?.id} />
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-2">
                             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
@@ -1258,7 +1270,14 @@ export default function UserProfilePage() {
                             </div>
                             <div className="flex items-center justify-between">
                               <Badge variant="secondary">Đang theo dõi</Badge>
-                              <Button size="sm" className="bg-primary hover:bg-primary/90">
+                              <Button 
+                                size="sm" 
+                                className="bg-primary hover:bg-primary/90"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCompanyClick(follow.company?.id);
+                                }}
+                              >
                                 <Eye className="w-4 h-4 mr-2" />
                                 Xem công ty
                               </Button>
@@ -1321,7 +1340,8 @@ export default function UserProfilePage() {
                     <Badge 
                       key={index} 
                       variant="secondary" 
-                      className="bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer text-sm py-1 px-3"
+                      className="bg-gray-100 text-gray-700 hover:bg-primary/10 hover:text-primary cursor-pointer text-sm py-1 px-3 transition-colors"
+                      onClick={() => handleKeywordClick(keyword)}
                     >
                       {keyword}
                     </Badge>

@@ -1,4 +1,5 @@
-import { Heart } from 'lucide-react';
+import { Heart, UserPlus, UserCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useFollowCompanyCheck, useToggleFollowCompany } from '@/hooks/useFollowedCompanies';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -9,13 +10,15 @@ interface FollowCompanyButtonProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
+  variant?: 'icon' | 'button' | 'both';
 }
 
 export const FollowCompanyButton: React.FC<FollowCompanyButtonProps> = ({ 
   companyId, 
   className = '', 
   size = 'md',
-  showLabel = false 
+  showLabel = false,
+  variant = 'icon'
 }) => {
   const router = useRouter();
   const { userType, isAuthenticated } = useAuth();
@@ -29,6 +32,12 @@ export const FollowCompanyButton: React.FC<FollowCompanyButtonProps> = ({
     sm: 'w-4 h-4',
     md: 'w-5 h-5', 
     lg: 'w-6 h-6'
+  };
+  
+  const buttonSizeClasses = {
+    sm: 'text-sm px-3 py-1',
+    md: 'text-sm px-4 py-2', 
+    lg: 'text-base px-6 py-3'
   };
   
   const handleClick = (e: React.MouseEvent) => {
@@ -52,6 +61,57 @@ export const FollowCompanyButton: React.FC<FollowCompanyButtonProps> = ({
     }
   };
   
+  // Render dựa trên variant
+  if (variant === 'button') {
+    return (
+      <Button
+        onClick={handleClick}
+        disabled={isLoading}
+        variant={isFollowed ? 'outline' : 'default'}
+        className={`${buttonSizeClasses[size]} ${
+          isFollowed 
+            ? 'border-primary text-primary hover:bg-primary hover:text-primary-foreground' 
+            : 'bg-primary hover:bg-primary/90'
+        } ${className}`}
+        aria-label={isFollowed ? 'Hủy theo dõi công ty' : 'Theo dõi công ty'}
+      >
+        {isFollowed ? (
+          <>
+            <UserCheck className={`${sizeClasses[size]} mr-2`} />
+            Đang theo dõi
+          </>
+        ) : (
+          <>
+            <UserPlus className={`${sizeClasses[size]} mr-2`} />
+            Theo dõi
+          </>
+        )}
+      </Button>
+    );
+  }
+  
+  if (variant === 'both') {
+    return (
+      <Button
+        onClick={handleClick}
+        disabled={isLoading}
+        variant="outline"
+        className={`${buttonSizeClasses[size]} flex items-center gap-2 ${className}`}
+        aria-label={isFollowed ? 'Hủy theo dõi công ty' : 'Theo dõi công ty'}
+      >
+        <Heart 
+          className={`${sizeClasses[size]} ${
+            isFollowed 
+              ? 'text-red-500 fill-red-500' 
+              : 'text-muted-foreground'
+          }`}
+        />
+        <span>{isFollowed ? 'Đang theo dõi' : 'Theo dõi'}</span>
+      </Button>
+    );
+  }
+  
+  // Default variant = 'icon'
   return (
     <button
       onClick={handleClick}
