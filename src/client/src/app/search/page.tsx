@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import Image from "next/image";
 import { useJobs } from "@/hooks/useJobs";
 import { useProvinces } from "@/hooks/useProvinces";
@@ -65,6 +66,7 @@ export default function TimKiemPage() {
   const [selectedEducation, setSelectedEducation] = useState("");
   const [salaryRange, setSalaryRange] = useState([1, 50]);
   const [showSalaryRange, setShowSalaryRange] = useState(false);
+  const [isNegotiable, setIsNegotiable] = useState(false);
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const [jobsPerPage] = useState(12);
@@ -87,8 +89,9 @@ export default function TimKiemPage() {
     ...(selectedJobType && selectedJobType !== "all" && { typeWork: selectedJobType }),
     ...(selectedExperience && selectedExperience !== "all" && { experience: selectedExperience }),
     ...(selectedEducation && selectedEducation !== "all" && { education: selectedEducation }),
-    ...(salaryRange[0] > 1 && { salaryMin: salaryRange[0] }),
-    ...(salaryRange[1] < 50 && { salaryMax: salaryRange[1] }),
+    ...(isNegotiable && { negotiable: true }),
+    ...(!isNegotiable && salaryRange[0] > 1 && { salaryMin: salaryRange[0] }),
+    ...(!isNegotiable && salaryRange[1] < 50 && { salaryMax: salaryRange[1] }),
     ...(sortBy && sortBy !== "newest" && { 
       sortBy: sortBy === "salary-high" || sortBy === "salary-low" ? "salary" : 
              sortBy === "company" ? "company" : "createdAt",
@@ -158,6 +161,7 @@ export default function TimKiemPage() {
     setSelectedExperience("");
     setSelectedEducation("");
     setSalaryRange([1, 50]);
+    setIsNegotiable(false);
     setCurrentPage(1);
   };
 
@@ -168,7 +172,8 @@ export default function TimKiemPage() {
     (selectedJobType && selectedJobType !== "all") || 
     (selectedExperience && selectedExperience !== "all") || 
     (selectedEducation && selectedEducation !== "all") ||
-    (salaryRange[0] !== 1 || salaryRange[1] !== 50);
+    isNegotiable ||
+    (!isNegotiable && (salaryRange[0] !== 1 || salaryRange[1] !== 50));
 
   // Job types options
   const jobTypes = [
@@ -330,7 +335,8 @@ export default function TimKiemPage() {
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-gray-500" />
                   <span className="text-sm">
-                    {(salaryRange[0] > 1 || salaryRange[1] < 50) ? `${salaryRange[0]} - ${salaryRange[1]} triệu` : "Mức lương"}
+                    {isNegotiable ? "Thỏa thuận" : 
+                     (salaryRange[0] > 1 || salaryRange[1] < 50) ? `${salaryRange[0]} - ${salaryRange[1]} triệu` : "Mức lương"}
                   </span>
                 </div>
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showSalaryRange ? 'rotate-180' : ''}`} />
@@ -340,17 +346,40 @@ export default function TimKiemPage() {
               {showSalaryRange && (
                 <Card className="absolute top-full left-0 right-0 mt-2 z-10 p-4 bg-white shadow-lg">
                   <CardContent className="p-0">
-                    <Label className="text-sm font-medium mb-2 block">
-                      Mức lương: {salaryRange[0]} - {salaryRange[1]} triệu
-                    </Label>
-                    <Slider
-                      value={salaryRange}
-                      onValueChange={handleSalaryRangeChange}
-                      max={50}
-                      min={1}
-                      step={1}
-                      className="mt-2"
-                    />
+                    {/* Checkbox Thỏa thuận */}
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Checkbox
+                        id="negotiable"
+                        checked={isNegotiable}
+                        onCheckedChange={(checked) => {
+                          setIsNegotiable(checked as boolean);
+                          setCurrentPage(1);
+                        }}
+                      />
+                      <Label 
+                        htmlFor="negotiable" 
+                        className="text-sm font-medium cursor-pointer"
+                      >
+                        Thỏa thuận
+                      </Label>
+                    </div>
+                    
+                    {/* Salary Range Slider - disabled when negotiable is checked */}
+                    {!isNegotiable && (
+                      <>
+                        <Label className="text-sm font-medium mb-2 block">
+                          Mức lương: {salaryRange[0]} - {salaryRange[1]} triệu
+                        </Label>
+                        <Slider
+                          value={salaryRange}
+                          onValueChange={handleSalaryRangeChange}
+                          max={50}
+                          min={1}
+                          step={1}
+                          className="mt-2"
+                        />
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               )}
@@ -503,7 +532,20 @@ export default function TimKiemPage() {
                 </div>
               )}
               
-              {(salaryRange[0] !== 1 || salaryRange[1] !== 50) && (
+              {isNegotiable && (
+                <div className="flex items-center gap-1 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm">
+                  <DollarSign className="w-3 h-3" />
+                  <span>Thỏa thuận</span>
+                  <button 
+                    onClick={() => setIsNegotiable(false)}
+                    className="ml-1 hover:bg-emerald-200 rounded-full p-0.5"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+
+              {!isNegotiable && (salaryRange[0] !== 1 || salaryRange[1] !== 50) && (
                 <div className="flex items-center gap-1 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm">
                   <DollarSign className="w-3 h-3" />
                   <span>{salaryRange[0]} - {salaryRange[1]} triệu</span>

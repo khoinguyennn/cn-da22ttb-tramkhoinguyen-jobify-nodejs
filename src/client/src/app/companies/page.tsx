@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation';
 
 interface Company {
   id: number;
-  companyName: string;
+  nameCompany: string;
   avatarPic?: string;
   provinceId: number;
   companyScale: string;
@@ -265,7 +265,7 @@ export default function CompaniesPage() {
                           {getAvatarUrl(company.avatarPic) ? (
                             <Image
                               src={getAvatarUrl(company.avatarPic)!}
-                              alt={`${company.companyName} logo`}
+                              alt={`${company.nameCompany} logo`}
                               fill
                               className="object-cover rounded-lg"
                             />

@@ -242,6 +242,11 @@ export class JobRepository {
       queryParams.push(params.idProvince);
     }
 
+    // Filter cho việc làm thỏa thuận (negotiable)
+    if (params.negotiable) {
+      whereClause += ' AND j.salaryMin IS NULL AND j.salaryMax IS NULL';
+    }
+
     if (params.salaryMin) {
       whereClause += ' AND (j.salaryMin >= ? OR j.salaryMin IS NULL)';
       queryParams.push(params.salaryMin);

@@ -278,6 +278,7 @@ export interface JobQueryParams {
   limit?: number;
   idField?: number;
   idProvince?: number;
+  negotiable?: boolean;
   salaryMin?: number;
   salaryMax?: number;
   typeWork?: string;

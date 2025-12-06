@@ -261,14 +261,14 @@ export default function Home() {
                   ].map((item, index) => (
                     <Card 
                       key={index} 
-                      className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      className="text-center p-6 hover:shadow-md transition-shadow cursor-pointer"
                       onClick={() => handleFieldSearch(item.title)}
                     >
-                      <CardContent className="flex flex-col items-center space-y-3">
-                        <div className={`p-3 rounded-lg ${item.color}`}>
-                          <item.icon className="w-6 h-6" />
+                      <CardContent className="flex flex-col items-center space-y-4">
+                        <div className={`p-4 rounded-lg ${item.color}`}>
+                          <item.icon className="w-8 h-8" />
                         </div>
-                        <p className="text-sm font-medium text-foreground">{item.title}</p>
+                        <p className="text-base font-medium text-foreground">{item.title}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -288,14 +288,14 @@ export default function Home() {
                   ].map((item, index) => (
                     <Card 
                       key={index} 
-                      className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      className="text-center p-6 hover:shadow-md transition-shadow cursor-pointer"
                       onClick={() => handleFieldSearch(item.title)}
                     >
-                      <CardContent className="flex flex-col items-center space-y-3">
-                        <div className={`p-3 rounded-lg ${item.color}`}>
-                          <item.icon className="w-6 h-6" />
+                      <CardContent className="flex flex-col items-center space-y-4">
+                        <div className={`p-4 rounded-lg ${item.color}`}>
+                          <item.icon className="w-8 h-8" />
                         </div>
-                        <p className="text-sm font-medium text-foreground">{item.title}</p>
+                        <p className="text-base font-medium text-foreground">{item.title}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -315,14 +315,14 @@ export default function Home() {
                   ].map((item, index) => (
                     <Card 
                       key={index} 
-                      className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      className="text-center p-6 hover:shadow-md transition-shadow cursor-pointer"
                       onClick={() => handleFieldSearch(item.title)}
                     >
-                      <CardContent className="flex flex-col items-center space-y-3">
-                        <div className={`p-3 rounded-lg ${item.color}`}>
-                          <item.icon className="w-6 h-6" />
+                      <CardContent className="flex flex-col items-center space-y-4">
+                        <div className={`p-4 rounded-lg ${item.color}`}>
+                          <item.icon className="w-8 h-8" />
                         </div>
-                        <p className="text-sm font-medium text-foreground">{item.title}</p>
+                        <p className="text-base font-medium text-foreground">{item.title}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -376,10 +376,17 @@ export default function Home() {
                 những cơ hội việc làm chất lượng cao từ các doanh nghiệp uy tín hàng đầu Việt Nam.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="bg-primary hover:bg-primary/90">
+                <Button 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={() => router.push('/login')}
+                >
                   Tìm việc ngay
                 </Button>
-                <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                <Button 
+                  variant="outline" 
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  onClick={() => router.push('/employer/login')}
+                >
                   Đăng việc làm
                 </Button>
               </div>
@@ -581,7 +588,7 @@ export default function Home() {
                               <div className="absolute inset-0 flex items-center justify-center">
                                 <Building className="w-6 h-6 text-gray-400" />
                               </div>
-                              <Image
+            <Image
                                 src={`/api/uploads/${job.company.avatarPic}`}
                                 alt={`${job.company.nameCompany} logo`}
                                 width={48}

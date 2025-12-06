@@ -42,6 +42,11 @@ export class JobController {
    *           type: integer
    *         description: Filter theo tỉnh/thành phố
    *       - in: query
+   *         name: negotiable
+   *         schema:
+   *           type: boolean
+   *         description: Chỉ lấy việc làm có mức lương thỏa thuận
+   *       - in: query
    *         name: salaryMin
    *         schema:
    *           type: integer
@@ -71,6 +76,7 @@ export class JobController {
         limit,
         idField: req.query.idField ? parseInt(req.query.idField as string) : undefined,
         idProvince: req.query.idProvince ? parseInt(req.query.idProvince as string) : undefined,
+        negotiable: req.query.negotiable === 'true',
         salaryMin: req.query.salaryMin ? parseInt(req.query.salaryMin as string) : undefined,
         salaryMax: req.query.salaryMax ? parseInt(req.query.salaryMax as string) : undefined,
         typeWork: req.query.typeWork as string,
