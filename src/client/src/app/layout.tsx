@@ -5,6 +5,7 @@ import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NavBar } from "@/components/NavBar";
+import { MainContent } from "@/components/MainContent";
 import { Facebook, Twitter, Music, Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToastContainer } from 'react-toastify';
@@ -38,9 +39,9 @@ export default function RootLayout({
               <NavBar />
 
               {/* Main Content */}
-              <main>
+              <MainContent>
                 {children}
-              </main>
+              </MainContent>
 
             {/* Footer */}
             <footer className="bg-muted py-12 -mx-8 lg:-mx-16">

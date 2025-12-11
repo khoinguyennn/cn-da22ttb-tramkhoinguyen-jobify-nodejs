@@ -689,9 +689,25 @@ export default function TimKiemPage() {
               </Card>
             ))
           ) : !isLoadingJobs ? (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-500 text-lg">Không tìm thấy việc làm nào</p>
-              <p className="text-gray-400 text-sm mt-2">Hãy thử thay đổi từ khóa tìm kiếm hoặc bộ lọc</p>
+            <div className="col-span-full text-center py-16">
+              <div className="flex flex-col items-center space-y-6">
+                <div className="w-40 h-40 mx-auto">
+                  <Image
+                    src="/no-data.svg"
+                    alt="Không tìm thấy dữ liệu"
+                    width={160}
+                    height={160}
+                    className="w-full h-full object-contain"
+                    priority
+                  />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold text-gray-600">Không tìm thấy việc làm nào</h3>
+                  <p className="text-gray-400 text-sm max-w-md mx-auto">
+                    Hãy thử thay đổi từ khóa tìm kiếm hoặc điều chỉnh bộ lọc để tìm thấy công việc phù hợp với bạn
+                  </p>
+                </div>
+              </div>
             </div>
           ) : null}
         </div>

@@ -245,16 +245,19 @@ export class JobRepository {
     // Filter cho việc làm thỏa thuận (negotiable)
     if (params.negotiable) {
       whereClause += ' AND j.salaryMin IS NULL AND j.salaryMax IS NULL';
-    }
+    } else if (params.salaryMin || params.salaryMax) {
+      // Khi filter theo mức lương cụ thể, loại bỏ job thỏa thuận
+      whereClause += ' AND j.salaryMin IS NOT NULL AND j.salaryMax IS NOT NULL';
+      
+      if (params.salaryMin) {
+        whereClause += ' AND j.salaryMin >= ?';
+        queryParams.push(params.salaryMin);
+      }
 
-    if (params.salaryMin) {
-      whereClause += ' AND (j.salaryMin >= ? OR j.salaryMin IS NULL)';
-      queryParams.push(params.salaryMin);
-    }
-
-    if (params.salaryMax) {
-      whereClause += ' AND (j.salaryMax <= ? OR j.salaryMax IS NULL)';
-      queryParams.push(params.salaryMax);
+      if (params.salaryMax) {
+        whereClause += ' AND j.salaryMax <= ?';
+        queryParams.push(params.salaryMax);
+      }
     }
 
     if (params.typeWork) {
