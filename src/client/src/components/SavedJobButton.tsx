@@ -11,7 +11,7 @@ interface SavedJobButtonProps {
   showLabel?: boolean;
 }
 
-export const SavedJobButton: React.FC<SavedJobButtonProps> = ({ 
+const SavedJobButton: React.FC<SavedJobButtonProps> = ({ 
   jobId, 
   className = '', 
   size = 'md',
@@ -76,3 +76,6 @@ export const SavedJobButton: React.FC<SavedJobButtonProps> = ({
     </button>
   );
 };
+
+export default SavedJobButton;
+export { SavedJobButton };

@@ -4,21 +4,32 @@ import { apiClient } from '@/services/api';
 export interface Job {
   id: number;
   nameJob: string;
+  title?: string; // Alias for nameJob
   idField: number;
+  fieldId?: number; // Alias for idField
   idProvince: number;
+  provinceId?: number; // Alias for idProvince
   sex?: string;
+  gender?: string; // Alias for sex
   salaryMin?: number;
   salaryMax?: number;
   typeWork: string;
+  workingType?: string; // Alias for typeWork
   education: string;
   experience: string;
   desc: string;
+  description?: string; // Alias for desc
   request: string;
+  requirement?: string; // Alias for request
+  skills?: string; // New field for skills
+  benefit?: string; // Alias for other
   other?: string;
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string;
   idCompany: number;
+  companyId?: number; // Alias for idCompany
+  nameCompany?: string; // Company name directly
   // Relations
   field?: {
     id: number;

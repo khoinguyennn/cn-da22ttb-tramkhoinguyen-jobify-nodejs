@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Search, MapPin, Briefcase, DollarSign, Clock, GraduationCap, Users, ChevronDown, Building, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +55,7 @@ const formatTimeAgo = (dateString: string): string => {
 
 export default function TimKiemPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSearchQuery, setActiveSearchQuery] = useState(""); // Query thực tế được gửi đi
@@ -614,7 +615,11 @@ export default function TimKiemPage() {
             ))
           ) : !isLoadingJobs && jobs.length > 0 ? (
             jobs.map((job: Job) => (
-              <Card key={job.id} className="hover:shadow-lg transition-shadow">
+              <Card 
+                key={job.id} 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => router.push(`/jobs/${job.id}`)}
+              >
                 <CardContent className="p-6">
                   {/* Job Header */}
                   <div className="flex items-start gap-4 mb-4">
@@ -651,7 +656,9 @@ export default function TimKiemPage() {
                         {job.company?.nameCompany}
                       </p>
                     </div>
-                    <SavedJobButton jobId={job.id} />
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <SavedJobButton jobId={job.id} />
+                    </div>
                   </div>
 
                   {/* Job Details */}
@@ -681,7 +688,13 @@ export default function TimKiemPage() {
                     <span className="text-xs text-gray-500">
                       {formatTimeAgo(job.createdAt)}
                     </span>
-                    <Button className="bg-primary hover:bg-primary/90 text-white">
+                    <Button 
+                      className="bg-primary hover:bg-primary/90 text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // TODO: Handle apply job functionality
+                      }}
+                    >
                       Ứng tuyển
                     </Button>
                   </div>

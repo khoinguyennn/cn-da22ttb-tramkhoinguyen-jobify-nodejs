@@ -579,7 +579,11 @@ export default function Home() {
                 };
 
                 return (
-                  <Card key={job.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                  <Card 
+                    key={job.id} 
+                    className="hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => router.push(`/jobs/${job.id}`)}
+                  >
                     <CardHeader className="flex flex-row items-start justify-between">
                       <div className="flex items-start space-x-3">
                         <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 relative">
@@ -611,7 +615,9 @@ export default function Home() {
                           <CardDescription>{job.company?.nameCompany}</CardDescription>
                         </div>
                       </div>
-                      <SavedJobButton jobId={job.id} />
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <SavedJobButton jobId={job.id} />
+                      </div>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <div className="flex items-center space-x-4 text-sm text-muted-foreground">
@@ -623,8 +629,15 @@ export default function Home() {
                         <span>{job.experience}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <Badge variant="secondary">{job.typeWork}</Badge>
-                        <Button size="sm" className="bg-primary hover:bg-primary/90">
+                        <Badge variant="secondary" onClick={(e) => e.stopPropagation()}>{job.typeWork}</Badge>
+                        <Button 
+                          size="sm" 
+                          className="bg-primary hover:bg-primary/90"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // TODO: Handle apply job functionality
+                          }}
+                        >
                           Ứng tuyển
                         </Button>
                       </div>
