@@ -106,7 +106,7 @@ export interface ApplyJob {
   letter?: string;
   cv?: string;
   createdAt: Date;
-  deletedAt?: Date;
+  deletedAt?: Date; // Khi nhà tuyển dụng ẩn đơn ứng tuyển (soft delete)
 }
 
 export interface Province {
@@ -324,9 +324,11 @@ export interface FollowCompanyWithDetails extends FollowCompany {
 
 // Enum types
 export enum ApplyStatus {
-  PENDING = 0,
-  APPROVED = 1,
-  REJECTED = 2
+  NOT_VIEWED = 1,    // Chưa xem
+  VIEWED = 2,        // Đã xem  
+  INTERVIEW = 3,     // Phỏng vấn
+  REJECTED = 4,      // Từ chối
+  ACCEPTED = 5       // Chấp nhận
 }
 
 export enum NotificationType {

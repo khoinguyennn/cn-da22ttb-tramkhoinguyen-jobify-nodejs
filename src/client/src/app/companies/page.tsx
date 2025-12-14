@@ -286,7 +286,7 @@ export default function CompaniesPage() {
                           {company.provinceName || company.provinceFullName || 'Chưa cập nhật'}
                         </div>
 
-                        <div className="text-sm font-medium text-blue-600">
+                        <div className="text-sm font-medium text-purple-600">
                           {company.jobCount || 0} việc làm
                         </div>
                       </div>

@@ -86,7 +86,17 @@ export default function JobDetailPage() {
     return (
       <div className="container mx-auto px-4 py-6">
         <div className="text-center py-12">
-          <h2 className="text-xl font-semibold mb-4">Không tìm thấy công việc</h2>
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/not-found.svg"
+              alt="Không tìm thấy công việc"
+              width={200}
+              height={200}
+              className="opacity-80"
+            />
+          </div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-700">Không tìm thấy công việc</h2>
+          <p className="text-gray-500 mb-6">Công việc bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
           <Button onClick={() => router.push('/')}>Quay về trang chủ</Button>
         </div>
       </div>

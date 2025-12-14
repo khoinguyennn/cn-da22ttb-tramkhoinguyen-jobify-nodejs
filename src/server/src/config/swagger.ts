@@ -209,6 +209,82 @@ const swaggerOptions = {
             },
           },
         },
+        ApplyJob: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1, description: 'ID ứng tuyển' },
+            idUser: { type: 'integer', example: 1, description: 'ID ứng viên' },
+            idJob: { type: 'integer', example: 1, description: 'ID công việc' },
+            name: { type: 'string', example: 'Nguyễn Văn A', description: 'Họ tên ứng viên' },
+            email: { type: 'string', example: 'user@example.com', description: 'Email ứng viên' },
+            phone: { type: 'string', example: '0123456789', description: 'Số điện thoại ứng viên' },
+            letter: { type: 'string', example: 'Thư xin việc...', description: 'Thư xin việc' },
+            cv: { type: 'string', example: 'cv-123.pdf', description: 'File CV' },
+            status: { 
+              type: 'integer', 
+              enum: [1, 2, 3, 4, 5], 
+              example: 1, 
+              description: 'Trạng thái ứng tuyển (1: Chưa xem, 2: Đã xem, 3: Phỏng vấn, 4: Từ chối, 5: Chấp nhận)' 
+            },
+            createdAt: { type: 'string', format: 'date-time', example: '2023-01-01T00:00:00Z', description: 'Thời gian ứng tuyển' },
+            updatedAt: { type: 'string', format: 'date-time', example: '2023-01-01T00:00:00Z', description: 'Thời gian cập nhật' },
+          },
+          required: ['idUser', 'idJob', 'name', 'email', 'phone']
+        },
+        ApplyJobWithDetails: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/ApplyJob' },
+            {
+              type: 'object',
+              properties: {
+                job: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'integer', example: 1 },
+                    nameJob: { type: 'string', example: 'Lập trình viên React' },
+                    desc: { type: 'string', example: 'Mô tả công việc' },
+                    salaryMin: { type: 'integer', example: 10000000 },
+                    salaryMax: { type: 'integer', example: 20000000 },
+                    typeWork: { type: 'string', example: 'Toàn thời gian' },
+                    education: { type: 'string', example: 'Đại học' },
+                    experience: { type: 'string', example: '2-5 năm' },
+                    createdAt: { type: 'string', format: 'date-time' },
+                    company: { $ref: '#/components/schemas/Company' },
+                    field: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'integer', example: 1 },
+                        name: { type: 'string', example: 'Công nghệ thông tin' },
+                        typeField: { type: 'string', example: 'IT' },
+                      },
+                    },
+                    province: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'integer', example: 1 },
+                        name: { type: 'string', example: 'Hà Nội' },
+                        nameWithType: { type: 'string', example: 'Thành phố Hà Nội' },
+                      },
+                    },
+                  },
+                },
+                user: { $ref: '#/components/schemas/User' },
+              },
+            }
+          ]
+        },
+        ApplyJobStats: {
+          type: 'object',
+          properties: {
+            total: { type: 'integer', example: 100, description: 'Tổng số ứng tuyển' },
+            pending: { type: 'integer', example: 20, description: 'Chờ duyệt' },
+            viewed: { type: 'integer', example: 30, description: 'Đã xem' },
+            interview: { type: 'integer', example: 25, description: 'Phỏng vấn' },
+            rejected: { type: 'integer', example: 15, description: 'Từ chối' },
+            accepted: { type: 'integer', example: 10, description: 'Chấp nhận' },
+          }
+        },
       },
     },
     security: [{ bearerAuth: [] }],
@@ -261,7 +337,6 @@ export const setupSwagger = (app: Application): void => {
 
   console.log('📚 Swagger UI đã được setup tại: /api-docs');
 };
-
 
 
 

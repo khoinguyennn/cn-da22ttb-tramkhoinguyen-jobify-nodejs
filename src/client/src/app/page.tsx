@@ -360,8 +360,8 @@ export default function Home() {
                 <Image
                   src="/undraw_hiring_8szx.svg"
                   alt="Hiring illustration"
-                  width={350}
-                  height={300}
+                  width={150}
+                  height={100}
                   className="object-contain w-full h-auto max-w-md"
                   priority
                 />
@@ -465,7 +465,7 @@ export default function Home() {
                         <MapPin className="w-4 h-4 mr-2" />
                         {company.provinceName || company.provinceFullName || 'Chưa cập nhật'}
                       </div>
-                      <div className="text-sm font-medium text-blue-600">
+                      <div className="text-sm font-medium text-purple-600">
                         {company.jobCount || 0} việc làm
                       </div>
                     </div>

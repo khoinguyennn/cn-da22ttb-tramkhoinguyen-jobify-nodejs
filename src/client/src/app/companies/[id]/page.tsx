@@ -282,7 +282,11 @@ export default function CompanyDetailPage() {
                 ) : companyJobs.length > 0 ? (
                   <div className="space-y-4">
                     {currentJobs.map((job) => (
-                      <div key={job.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div 
+                        key={job.id} 
+                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => router.push(`/jobs/${job.id}`)}
+                      >
                         <div className="flex items-start justify-between">
                           <div className="flex gap-4">
                             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-100">
@@ -321,20 +325,29 @@ export default function CompanyDetailPage() {
                             </div>
                           </div>
                           
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                             {job.deletedAt ? (
                               <Button 
                                 disabled 
                                 className="bg-red-600 hover:bg-red-600 text-white text-sm px-4 py-2 cursor-not-allowed"
+                                onClick={(e) => e.stopPropagation()}
                               >
                                 Ngừng ứng tuyển
                               </Button>
                             ) : (
-                              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm px-4 py-2">
+                              <Button 
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm px-4 py-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // TODO: Handle apply job functionality
+                                }}
+                              >
                                 Ứng tuyển
                               </Button>
                             )}
-                            <SavedJobButton jobId={job.id} />
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <SavedJobButton jobId={job.id} />
+                            </div>
                           </div>
                         </div>
                       </div>

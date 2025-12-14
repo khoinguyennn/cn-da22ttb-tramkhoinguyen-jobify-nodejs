@@ -1133,7 +1133,11 @@ export default function UserProfilePage() {
                   ) : savedJobs && savedJobs.length > 0 ? (
                     <div className="space-y-4">
                       {savedJobs.map((savedJob: any) => (
-                        <Card key={savedJob.id} className="bg-card border border-border hover:shadow-lg transition-shadow">
+                        <Card 
+                          key={savedJob.id} 
+                          className="bg-card border border-border hover:shadow-lg transition-shadow cursor-pointer"
+                          onClick={() => router.push(`/jobs/${savedJob.job?.id}`)}
+                        >
                           <CardHeader className="flex flex-row items-start justify-between">
                             <div className="flex items-start space-x-3">
                               <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 relative">
@@ -1165,7 +1169,9 @@ export default function UserProfilePage() {
                                 <CardDescription>{savedJob.job?.company?.nameCompany}</CardDescription>
                               </div>
                             </div>
-                            <SavedJobButton jobId={savedJob.job?.id} />
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <SavedJobButton jobId={savedJob.job?.id} />
+                            </div>
                           </CardHeader>
                           <CardContent className="space-y-2">
                             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
@@ -1177,9 +1183,18 @@ export default function UserProfilePage() {
                               <span>{savedJob.job?.experience}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <Badge variant="secondary">{savedJob.job?.typeWork}</Badge>
-                              <Button size="sm" className="bg-primary hover:bg-primary/90">
-                                <Briefcase className="w-4 h-4 mr-2" />
+                              <Badge variant="secondary" onClick={(e) => e.stopPropagation()}>
+                                {savedJob.job?.typeWork}
+                              </Badge>
+                              <Button 
+                                size="sm" 
+                                className="bg-primary hover:bg-primary/90"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // TODO: Handle apply job functionality
+                                }}
+                              >
+                                {/* <Briefcase className="w-4 h-4 mr-2" /> */}
                                 Ứng tuyển
                               </Button>
                             </div>

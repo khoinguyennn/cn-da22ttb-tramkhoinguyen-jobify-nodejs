@@ -39,7 +39,7 @@ export class ApplyJobModel {
     // Tự động set createdAt và status cho đơn ứng tuyển mới
     if (!('id' in applyJob) || !applyJob.id) {
       row.createdAt = new Date();
-      row.status = row.status || ApplyStatus.PENDING;
+      row.status = row.status || ApplyStatus.NOT_VIEWED;
     }
 
     return row;
@@ -90,12 +90,16 @@ export class ApplyJobModel {
   // Status helper functions
   static getStatusText(status: ApplyStatus): string {
     switch (status) {
-      case ApplyStatus.PENDING:
-        return 'Đang chờ duyệt';
-      case ApplyStatus.APPROVED:
-        return 'Đã duyệt';
+      case ApplyStatus.NOT_VIEWED:
+        return 'Chưa xem';
+      case ApplyStatus.VIEWED:
+        return 'Đã xem';
+      case ApplyStatus.INTERVIEW:
+        return 'Phỏng vấn';
       case ApplyStatus.REJECTED:
-        return 'Đã từ chối';
+        return 'Từ chối';
+      case ApplyStatus.ACCEPTED:
+        return 'Chấp nhận';
       default:
         return 'Không xác định';
     }
@@ -103,12 +107,16 @@ export class ApplyJobModel {
 
   static getStatusColor(status: ApplyStatus): string {
     switch (status) {
-      case ApplyStatus.PENDING:
+      case ApplyStatus.NOT_VIEWED:
+        return 'secondary';
+      case ApplyStatus.VIEWED:
+        return 'info';
+      case ApplyStatus.INTERVIEW:
         return 'warning';
-      case ApplyStatus.APPROVED:
-        return 'success';
       case ApplyStatus.REJECTED:
         return 'danger';
+      case ApplyStatus.ACCEPTED:
+        return 'success';
       default:
         return 'secondary';
     }
@@ -119,19 +127,37 @@ export class ApplyJobModel {
   }
 
   // Utility functions
-  static isPending(applyJob: ApplyJob): boolean {
-    return applyJob.status === ApplyStatus.PENDING;
+  static isNotViewed(applyJob: ApplyJob): boolean {
+    return applyJob.status === ApplyStatus.NOT_VIEWED;
   }
 
-  static isApproved(applyJob: ApplyJob): boolean {
-    return applyJob.status === ApplyStatus.APPROVED;
+  static isViewed(applyJob: ApplyJob): boolean {
+    return applyJob.status === ApplyStatus.VIEWED;
+  }
+
+  static isInterview(applyJob: ApplyJob): boolean {
+    return applyJob.status === ApplyStatus.INTERVIEW;
   }
 
   static isRejected(applyJob: ApplyJob): boolean {
     return applyJob.status === ApplyStatus.REJECTED;
   }
 
+  static isAccepted(applyJob: ApplyJob): boolean {
+    return applyJob.status === ApplyStatus.ACCEPTED;
+  }
+
   static isActive(applyJob: ApplyJob): boolean {
+    return !applyJob.deletedAt; // Active khi chưa bị soft delete
+  }
+
+  // Kiểm tra xem đơn ứng tuyển có bị ẩn bởi nhà tuyển dụng không
+  static isHidden(applyJob: ApplyJob): boolean {
+    return !!applyJob.deletedAt;
+  }
+
+  // Kiểm tra xem đơn ứng tuyển có visible với nhà tuyển dụng không
+  static isVisibleToCompany(applyJob: ApplyJob): boolean {
     return !applyJob.deletedAt;
   }
 
