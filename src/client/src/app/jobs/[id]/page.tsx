@@ -15,6 +15,7 @@ import SavedJobButton from '@/components/SavedJobButton';
 import { useAuth } from '@/hooks/useAuth';
 import { showToast } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import RelatedJobs from '@/components/RelatedJobs';
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -297,7 +298,21 @@ export default function JobDetailPage() {
         </div>
 
         {/* Sidebar */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
+          
+          {/* Công việc liên quan */}
+          {(jobData.fieldId || jobData.idField) && (
+            <Card>
+              <CardContent className="p-6">
+                <RelatedJobs 
+                  currentJobId={jobData.id}
+                  fieldId={jobData.fieldId || jobData.idField}
+                  fieldName={jobData.field?.name || field?.name}
+                />
+              </CardContent>
+            </Card>
+          )}
+          {/* Gợi ý từ khóa */}
           <Card>
             <CardContent className="p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Gợi ý từ khóa</h3>

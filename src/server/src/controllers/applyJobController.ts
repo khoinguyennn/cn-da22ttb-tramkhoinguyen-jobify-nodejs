@@ -358,27 +358,90 @@ export class ApplyJobController {
    *   get:
    *     tags: [Ứng tuyển]
    *     summary: Lấy danh sách ứng tuyển của user
-   *     description: Lấy danh sách ứng tuyển của user với pagination cơ bản
+   *     description: Lấy danh sách ứng tuyển của user với thông tin chi tiết công việc và công ty
    *     security:
    *       - bearerAuth: []
    *     parameters:
    *       - in: query
    *         name: page
    *         schema:
-   *           type: string
-   *         description: Số trang
+   *           type: integer
+   *           default: 1
+   *         description: Số trang (mặc định 1)
    *       - in: query
    *         name: limit
    *         schema:
-   *           type: string
-   *         description: Số lượng item mỗi trang
+   *           type: integer
+   *           default: 10
+   *           minimum: 1
+   *           maximum: 100
+   *         description: Số lượng bản ghi mỗi trang (mặc định 10)
    *     responses:
    *       200:
-   *         description: OK
+   *         description: Lấy danh sách ứng tuyển thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - $ref: '#/components/schemas/PaginatedResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         data:
+   *                           type: array
+   *                           items:
+   *                             type: object
+   *                             properties:
+   *                               id:
+   *                                 type: integer
+   *                                 example: 36
+   *                               idJob:
+   *                                 type: integer
+   *                                 example: 28
+   *                               nameJob:
+   *                                 type: string
+   *                                 example: "ádasdasdas"
+   *                               salaryMax:
+   *                                 type: integer
+   *                                 nullable: true
+   *                                 example: 3
+   *                               salaryMin:
+   *                                 type: integer
+   *                                 nullable: true
+   *                                 example: 2
+   *                               typeWork:
+   *                                 type: string
+   *                                 example: "Nhân viên chính thức"
+   *                               idCompany:
+   *                                 type: integer
+   *                                 example: 15
+   *                               province:
+   *                                 type: string
+   *                                 example: "Cao Bằng"
+   *                               nameCompany:
+   *                                 type: string
+   *                                 example: "Công ty Test"
+   *                               avatarPic:
+   *                                 type: string
+   *                                 nullable: true
+   *                                 example: "1759903909746blob"
+   *                               nameFields:
+   *                                 type: string
+   *                                 example: "Nhân sự"
+   *                               createdAt:
+   *                                 type: string
+   *                                 format: date-time
+   *                                 example: "2025-12-13T13:40:54.000Z"
+   *                               status:
+   *                                 type: integer
+   *                                 example: 1
    *       401:
-   *         description: Unauthorized
-   *       409:
-   *         description: Conflict
+   *         description: Chưa đăng nhập
+   *       500:
+   *         description: Lỗi server
    */
   getUserApplicationsSimple = catchAsync(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
@@ -412,7 +475,7 @@ export class ApplyJobController {
    *   get:
    *     tags: [Ứng tuyển]
    *     summary: Lấy chi tiết ứng tuyển
-   *     description: Xem chi tiết một đơn ứng tuyển (dành cho user hoặc company)
+   *     description: Xem chi tiết một đơn ứng tuyển (chỉ dành cho nhà tuyển dụng)
    *     security:
    *       - bearerAuth: []
    *     parameters:
@@ -422,7 +485,7 @@ export class ApplyJobController {
    *         schema:
    *           type: integer
    *         description: ID của đơn ứng tuyển
-   *         example: 1
+   *         example: 36
    *     responses:
    *       200:
    *         description: Lấy chi tiết ứng tuyển thành công
@@ -434,7 +497,55 @@ export class ApplyJobController {
    *                 - type: object
    *                   properties:
    *                     data:
-   *                       $ref: '#/components/schemas/ApplyJobWithDetails'
+   *                       type: object
+   *                       properties:
+   *                         id:
+   *                           type: integer
+   *                           example: 36
+   *                         idUser:
+   *                           type: integer
+   *                           example: 24
+   *                         idJob:
+   *                           type: integer
+   *                           example: 28
+   *                         name:
+   *                           type: string
+   *                           example: "Trầm Khôi Nguyên"
+   *                         email:
+   *                           type: string
+   *                           example: "tramkhoinguyen27122@gmail.com"
+   *                         phone:
+   *                           type: string
+   *                           example: "0987769860"
+   *                         status:
+   *                           type: integer
+   *                           example: 1
+   *                         letter:
+   *                           type: string
+   *                           example: "<p>sdsd</p>"
+   *                         cv:
+   *                           type: string
+   *                           example: "1765633254270cv.docx"
+   *                         createdAt:
+   *                           type: string
+   *                           format: date-time
+   *                           example: "2025-12-13T13:40:54.000Z"
+   *                         deletedAt:
+   *                           type: string
+   *                           format: date-time
+   *                           nullable: true
+   *                           example: null
+   *                         nameJob:
+   *                           type: string
+   *                           example: "ádasdasdas"
+   *                         avatarPic:
+   *                           type: string
+   *                           nullable: true
+   *                           example: null
+   *                         sex:
+   *                           type: string
+   *                           nullable: true
+   *                           example: null
    *       400:
    *         description: Dữ liệu không hợp lệ
    *       401:
@@ -452,13 +563,14 @@ export class ApplyJobController {
       return ResponseUtil.error(res, 'ID ứng tuyển là bắt buộc', 400);
     }
 
-    // authenticate middleware đã kiểm tra user có tồn tại
-    const userId = req.user?.userType === 'user' ? req.user.id : undefined;
-    const companyId = req.user?.userType === 'company' ? req.user.id : undefined;
+    // Chỉ cho phép nhà tuyển dụng xem
+    const companyId = req.user?.id;
+    if (!companyId) {
+      return ResponseUtil.error(res, 'Chưa đăng nhập', 401);
+    }
 
     const application = await this.applyJobService.getApplicationById(
       Number(id),
-      userId,
       companyId
     );
 

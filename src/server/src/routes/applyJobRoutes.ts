@@ -98,9 +98,9 @@ router.put('/unHidden', authenticate, authorize('company'), applyJobController.u
 
 /**
  * GET /apply/:id - Lấy chi tiết ứng tuyển
- * Xem chi tiết một đơn ứng tuyển (dành cho user hoặc company)
- * @access Private (User hoặc Company)
+ * Xem chi tiết một đơn ứng tuyển (chỉ dành cho nhà tuyển dụng)
+ * @access Private (Company only)
  */
-router.get('/:id', authenticate, applyJobController.getApplicationDetail);
+router.get('/:id', authenticate, authorize('company'), applyJobController.getApplicationDetail);
 
 export default router;

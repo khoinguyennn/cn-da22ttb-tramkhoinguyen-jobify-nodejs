@@ -173,7 +173,7 @@ export class ApplyJobRepository {
   /**
    * Lấy danh sách ứng tuyển của user với phân trang
    */
-  async findByUser(idUser: number, params: ApplyJobQueryParams = {}): Promise<PaginatedResponse<ApplyJobWithDetails>> {
+  async findByUser(idUser: number, params: ApplyJobQueryParams = {}): Promise<PaginatedResponse<any>> {
     const {
       page = 1,
       limit = 10,
@@ -216,14 +216,27 @@ export class ApplyJobRepository {
         break;
     }
 
-    // Query với JOIN để lấy thông tin job và company
+    // Query với JOIN để lấy đầy đủ thông tin theo format yêu cầu
     const dataQuery = `
       SELECT 
-        aj.*,
+        aj.id,
+        aj.idJob,
         j.nameJob,
-        j.idCompany as companyId
+        j.salaryMax,
+        j.salaryMin,
+        j.typeWork,
+        j.idCompany,
+        p.name as province,
+        c.nameCompany,
+        c.avatarPic,
+        f.name as nameFields,
+        aj.createdAt,
+        aj.status
       FROM apply_job aj
       INNER JOIN jobs j ON aj.idJob = j.id
+      INNER JOIN companies c ON j.idCompany = c.id
+      INNER JOIN provinces p ON j.idProvince = p.id
+      INNER JOIN fields f ON j.idField = f.id
       WHERE ${whereClause}
       ${orderByClause}
       LIMIT ${limitInt} OFFSET ${offset}
@@ -238,17 +251,26 @@ export class ApplyJobRepository {
 
     // Execute queries
     const [dataRows] = await pool.execute<RowDataPacket[]>(dataQuery, queryParams);
-
     const [countRows] = await pool.execute<RowDataPacket[]>(countQuery, queryParams);
 
     const total = countRows[0].total;
     const totalPages = Math.ceil(total / limitInt);
 
+    // Map data theo format yêu cầu
     const data = dataRows.map(row => ({
-      ...ApplyJobModel.fromRow(row),
-      jobName: row.nameJob,
-      companyName: row.nameCompany,
-      companyId: row.companyId
+      id: row.id,
+      idJob: row.idJob,
+      nameJob: row.nameJob,
+      salaryMax: row.salaryMax,
+      salaryMin: row.salaryMin,
+      typeWork: row.typeWork,
+      idCompany: row.idCompany,
+      province: row.province,
+      nameCompany: row.nameCompany,
+      avatarPic: row.avatarPic,
+      nameFields: row.nameFields,
+      createdAt: row.createdAt,
+      status: row.status
     }));
 
     return {

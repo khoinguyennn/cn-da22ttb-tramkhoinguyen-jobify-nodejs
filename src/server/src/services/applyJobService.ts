@@ -160,7 +160,7 @@ export class ApplyJobService {
   async getApplicationsForUser(
     userId: number,
     params: ApplyJobQueryParams = {}
-  ): Promise<PaginatedResponse<ApplyJobWithDetails>> {
+  ): Promise<PaginatedResponse<any>> {
     // Kiểm tra xem user có tồn tại không
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -171,39 +171,39 @@ export class ApplyJobService {
   }
 
   /**
-   * Lấy chi tiết ứng tuyển
+   * Lấy chi tiết ứng tuyển cho nhà tuyển dụng
    */
-  async getApplicationById(applicationId: number, userId?: number, companyId?: number): Promise<ApplyJobWithDetails> {
+  async getApplicationById(applicationId: number, companyId: number): Promise<any> {
     const application = await this.applyJobRepository.findById(applicationId);
     if (!application) {
       throw new Error('Không tìm thấy đơn ứng tuyển');
     }
 
-    // Kiểm tra quyền truy cập
-    if (userId && application.idUser !== userId) {
+    // Kiểm tra quyền truy cập - chỉ cho phép company xem đơn của công ty mình
+    const job = await this.jobRepository.findById(application.idJob);
+    if (!job || job.idCompany !== companyId) {
       throw new Error('Bạn không có quyền xem đơn ứng tuyển này');
     }
 
-    if (companyId) {
-      const job = await this.jobRepository.findById(application.idJob);
-      if (!job || job.idCompany !== companyId) {
-        throw new Error('Bạn không có quyền xem đơn ứng tuyển này');
-      }
-    }
-
-    // Lấy thông tin chi tiết
-    const job = await this.jobRepository.findById(application.idJob);
+    // Lấy thông tin user
     const user = await this.userRepository.findById(application.idUser);
 
+    // Trả về format theo yêu cầu
     return {
-      ...application,
-      jobName: job?.nameJob,
-      companyName: job ? (await this.companyRepository.findById(job.idCompany))?.nameCompany : undefined,
-      companyId: job?.idCompany,
-      userName: user?.name,
-      userEmail: user?.email,
-      userPhone: user?.phone,
-      userAvatar: user?.avatarPic
+      id: application.id,
+      idUser: application.idUser,
+      idJob: application.idJob,
+      name: application.name,
+      email: application.email,
+      phone: application.phone,
+      status: application.status,
+      letter: application.letter,
+      cv: application.cv,
+      createdAt: application.createdAt,
+      deletedAt: application.deletedAt,
+      nameJob: job.nameJob,
+      avatarPic: user?.avatarPic || null,
+      sex: user?.sex || null
     };
   }
 
