@@ -248,24 +248,26 @@ export class ApplyJobService {
   private isValidStatusTransition(currentStatus: ApplyStatus, newStatus: ApplyStatus): boolean {
     // Luồng chuyển trạng thái hợp lý:
     // NOT_VIEWED -> VIEWED, REJECTED
-    // VIEWED -> INTERVIEW, REJECTED  
-    // INTERVIEW -> ACCEPTED, REJECTED
-    // REJECTED -> không thể chuyển sang trạng thái khác
-    // ACCEPTED -> không thể chuyển sang trạng thái khác
+    // VIEWED -> NOT_VIEWED, INTERVIEW, REJECTED (cho phép chuyển ngược)  
+    // INTERVIEW -> VIEWED, ACCEPTED, REJECTED (cho phép chuyển ngược)
+    // REJECTED -> có thể chuyển lại các trạng thái khác (cho phép chuyển ngược)
+    // ACCEPTED -> có thể chuyển lại các trạng thái khác (cho phép chuyển ngược)
 
     switch (currentStatus) {
       case ApplyStatus.NOT_VIEWED:
         return [ApplyStatus.VIEWED, ApplyStatus.REJECTED].includes(newStatus);
       
       case ApplyStatus.VIEWED:
-        return [ApplyStatus.INTERVIEW, ApplyStatus.REJECTED].includes(newStatus);
+        return [ApplyStatus.NOT_VIEWED, ApplyStatus.INTERVIEW, ApplyStatus.REJECTED].includes(newStatus);
       
       case ApplyStatus.INTERVIEW:
-        return [ApplyStatus.ACCEPTED, ApplyStatus.REJECTED].includes(newStatus);
+        return [ApplyStatus.VIEWED, ApplyStatus.ACCEPTED, ApplyStatus.REJECTED].includes(newStatus);
       
       case ApplyStatus.REJECTED:
+        return [ApplyStatus.NOT_VIEWED, ApplyStatus.VIEWED, ApplyStatus.INTERVIEW, ApplyStatus.ACCEPTED].includes(newStatus);
+        
       case ApplyStatus.ACCEPTED:
-        return false; // Không thể chuyển từ trạng thái cuối
+        return [ApplyStatus.NOT_VIEWED, ApplyStatus.VIEWED, ApplyStatus.INTERVIEW, ApplyStatus.REJECTED].includes(newStatus);
       
       default:
         return false;

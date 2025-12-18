@@ -37,11 +37,12 @@ import { useUpdateUserProfile } from '@/hooks/useUpdateUserProfile';
 import { useUpdateUserIntro } from '@/hooks/useUpdateUserIntro';
 import { useUpdateUserAvatar } from '@/hooks/useUpdateUserAvatar';
 import { useUpdateUserPassword } from '@/hooks/useUpdateUserPassword';
-import { useUserApplications } from '@/hooks/useUserApplications';
+import { useApplicationsCount } from '@/hooks/useApplications';
 import { useSavedJobs, useSavedJobsCount } from '@/hooks/useSavedJobs';
 import { useFollowedCompanies, useFollowedCompaniesCount } from '@/hooks/useFollowedCompanies';
 import { UserAvatar } from '@/components/UserAvatar';
 import { RichTextEditor } from '@/components/RichTextEditor';
+import ApplicationsList from '@/components/ApplicationsList';
 import { showToast } from '@/utils/toast';
 import { useProvinces } from '@/hooks/useProvinces';
 import { FollowCompanyButton } from '@/components/FollowCompanyButton';
@@ -375,7 +376,7 @@ export default function UserProfilePage() {
   const updateIntroMutation = useUpdateUserIntro(userId);
   const updateAvatarMutation = useUpdateUserAvatar();
   const updatePasswordMutation = useUpdateUserPassword();
-  const { data: applications, isLoading: applicationsLoading } = useUserApplications();
+  const { data: applicationsCount } = useApplicationsCount();
   const { data: savedJobs, isLoading: savedJobsLoading } = useSavedJobs();
   const { data: followedCompanies, isLoading: followedLoading } = useFollowedCompanies();
   const { data: savedJobsCount } = useSavedJobsCount();
@@ -747,7 +748,7 @@ export default function UserProfilePage() {
                     <div className="flex items-center gap-6 text-sm text-gray-600 mb-4">
                       <div className="flex items-center gap-1">
                         <Briefcase className="w-4 h-4" />
-                        <span>{applications?.length || 0} ứng tuyển</span>
+                        <span>{applicationsCount || 0} ứng tuyển</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Heart className="w-4 h-4" />
@@ -1049,71 +1050,7 @@ export default function UserProfilePage() {
             {activeTab === "ung-tuyen" && (
               <Card>
                 <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Danh sách ứng tuyển</h2>
-                  
-                  {applicationsLoading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                        <span className="text-gray-600">Đang tải...</span>
-                      </div>
-                    </div>
-                  ) : applications && applications.length > 0 ? (
-                    <div className="space-y-4">
-                      {applications.map((application: any) => (
-                        <Card key={application.id} className="border-l-4 border-l-purple-600">
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-lg mb-2">
-                                  {application.job?.nameJob}
-                                </h3>
-                                <div className="flex items-center text-sm text-gray-600 mb-2">
-                                  <Building className="w-4 h-4 mr-2" />
-                                  {application.job?.company?.nameCompany}
-                                </div>
-                                <div className="flex items-center text-sm text-gray-600 mb-2">
-                                  <MapPin className="w-4 h-4 mr-2" />
-                                  {application.job?.province?.nameWithType}
-                                </div>
-                                <div className="flex items-center text-sm text-gray-600 mb-2">
-                                  <DollarSign className="w-4 h-4 mr-2" />
-                                  {formatSalary(application.job?.salaryMin, application.job?.salaryMax)}
-                                </div>
-                                <div className="flex items-center text-sm text-gray-500">
-                                  <Clock className="w-4 h-4 mr-2" />
-                                  Ứng tuyển {formatTimeAgo(application.createdAt)}
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <Badge 
-                                  variant={
-                                    application.status === 'pending' ? 'secondary' :
-                                    application.status === 'accepted' ? 'default' :
-                                    'destructive'
-                                  }
-                                >
-                                  {application.status === 'pending' ? 'Đang chờ' :
-                                   application.status === 'accepted' ? 'Được chấp nhận' :
-                                   'Bị từ chối'}
-                                </Badge>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        Chưa có ứng tuyển nào
-                      </h3>
-                      <p className="text-gray-600">
-                        Bạn chưa ứng tuyển công việc nào. Hãy tìm kiếm và ứng tuyển ngay!
-                      </p>
-                    </div>
-                  )}
+                  <ApplicationsList limit={10} page={1} />
                 </CardContent>
               </Card>
             )}

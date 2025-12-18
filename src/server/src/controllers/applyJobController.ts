@@ -89,7 +89,8 @@ export class ApplyJobController {
       return ResponseUtil.error(res, 'Vui lòng đăng nhập để ứng tuyển', 401);
     }
 
-    const { idJob, name, email, phone, letter, cv } = req.body;
+    const { idJob, name, email, phone, letter } = req.body;
+    const cvFile = req.file; // File được upload bởi multer
 
     if (!idJob) {
       return ResponseUtil.error(res, 'ID công việc là bắt buộc', 400);
@@ -102,7 +103,7 @@ export class ApplyJobController {
       email,
       phone,
       letter,
-      cv
+      cv: cvFile?.filename // Lấy filename từ multer
     });
 
     ResponseUtil.created(res, application, 'Ứng tuyển thành công');

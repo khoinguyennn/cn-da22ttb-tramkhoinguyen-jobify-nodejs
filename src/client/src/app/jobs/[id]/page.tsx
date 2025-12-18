@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,17 +14,25 @@ import { Province, Field } from '@/types';
 import { formatSalary, formatTimeAgo } from '@/utils';
 import SavedJobButton from '@/components/SavedJobButton';
 import { useAuth } from '@/hooks/useAuth';
+import { useApplicationStatus } from '@/hooks/useApplications';
 import { showToast } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import RelatedJobs from '@/components/RelatedJobs';
+import ApplicationDialog from '@/components/ApplicationDialog';
 
 export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
   const jobId = params.id as string;
   
+  const [isApplicationDialogOpen, setIsApplicationDialogOpen] = useState(false);
+  
   const { user, isAuthenticated, userType } = useAuth();
   const { data: job, isLoading: jobLoading, error: jobError } = useJob(parseInt(jobId));
+  const { data: applicationStatus, isLoading: statusLoading } = useApplicationStatus(
+    parseInt(jobId),
+    isAuthenticated && userType === 'user' // Chỉ check status cho user đã login
+  );
   const { data: provincesResponse } = useProvinces();
   const { data: fieldsResponse } = useFields();
 
@@ -47,8 +56,7 @@ export default function JobDetailPage() {
       return;
     }
 
-    // TODO: Implement apply job functionality
-    showToast.success('Ứng tuyển thành công!');
+    setIsApplicationDialogOpen(true);
   };
 
   const handleKeywordClick = (keyword: string) => {
@@ -161,12 +169,32 @@ export default function JobDetailPage() {
                 </div>
                 
                 <div className="flex space-x-3">
-                  <Button 
-                    onClick={handleApply}
-                    className="bg-primary hover:bg-primary/90 text-white px-6"
-                  >
-                    Ứng tuyển
-                  </Button>
+                  {!isAuthenticated || userType === 'company' ? (
+                    <Button 
+                      onClick={handleApply}
+                      className="bg-primary hover:bg-primary/90 text-white px-6"
+                    >
+                      Ứng tuyển
+                    </Button>
+                  ) : statusLoading ? (
+                    <Button disabled className="bg-primary text-white px-6">
+                      Đang kiểm tra...
+                    </Button>
+                  ) : applicationStatus?.hasApplied ? (
+                    <Button 
+                      disabled 
+                      className="bg-gray-400 text-white px-6 cursor-not-allowed"
+                    >
+                      Đã ứng tuyển
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={handleApply}
+                      className="bg-primary hover:bg-primary/90 text-white px-6"
+                    >
+                      Ứng tuyển
+                    </Button>
+                  )}
                   <SavedJobButton jobId={jobData.id} />
                 </div>
               </div>
@@ -332,6 +360,13 @@ export default function JobDetailPage() {
           </Card>
         </div>
       </div>
+
+      {/* Application Dialog */}
+      <ApplicationDialog
+        isOpen={isApplicationDialogOpen}
+        onClose={() => setIsApplicationDialogOpen(false)}
+        job={jobData}
+      />
     </div>
   );
 }

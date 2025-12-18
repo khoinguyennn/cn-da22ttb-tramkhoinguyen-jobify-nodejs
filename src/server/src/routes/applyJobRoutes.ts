@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ApplyJobController } from '@/controllers/applyJobController';
 import { authenticate, authorize } from '@/middlewares/auth';
+import { uploadCV } from '@/middlewares/upload';
 
 const router = Router();
 const applyJobController = new ApplyJobController();
@@ -41,7 +42,7 @@ router.get('/', authenticate, authorize('user'), applyJobController.getUserAppli
  * Cho phép ứng viên ứng tuyển vào một công việc
  * @access Private (User only)
  */
-router.post('/', authenticate, authorize('user'), applyJobController.applyForJob);
+router.post('/', authenticate, authorize('user'), uploadCV, applyJobController.applyForJob);
 
 /**
  * DELETE /apply/:idJob - Hủy ứng tuyển

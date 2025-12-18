@@ -32,6 +32,7 @@ export interface JWTPayload {
 
 export interface AuthenticatedRequest extends Request {
   user?: JWTPayload;
+  file?: Express.Multer.File; // File upload từ multer
 }
 
 // Database entities (tương ứng với CSDL.txt)
