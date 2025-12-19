@@ -234,6 +234,7 @@ export class ApplyJobRepository {
         aj.status
       FROM apply_job aj
       INNER JOIN jobs j ON aj.idJob = j.id
+      LEFT JOIN users u ON aj.idUser = u.id
       INNER JOIN companies c ON j.idCompany = c.id
       INNER JOIN provinces p ON j.idProvince = p.id
       INNER JOIN fields f ON j.idField = f.id
@@ -246,6 +247,7 @@ export class ApplyJobRepository {
       SELECT COUNT(*) as total
       FROM apply_job aj
       INNER JOIN jobs j ON aj.idJob = j.id
+      LEFT JOIN users u ON aj.idUser = u.id
       WHERE ${whereClause}
     `;
 
@@ -317,22 +319,6 @@ export class ApplyJobRepository {
       queryParams.push(searchTerm, searchTerm, searchTerm);
     }
 
-    if (idJob) {
-      whereClause += ' AND aj.idJob = ?';
-      queryParams.push(idJob);
-    }
-
-    if (status !== undefined) {
-      whereClause += ' AND aj.status = ?';
-      queryParams.push(status);
-    }
-
-    if (search) {
-      whereClause += ' AND (aj.name LIKE ? OR aj.email LIKE ? OR j.nameJob LIKE ?)';
-      const searchTerm = `%${search}%`;
-      queryParams.push(searchTerm, searchTerm, searchTerm);
-    }
-
     // Build ORDER BY clause với alias đúng
     let orderByClause = '';
     switch (sort) {
@@ -361,9 +347,14 @@ export class ApplyJobRepository {
         j.salaryMax,
         j.typeWork,
         j.education,
-        j.experience
+        j.experience,
+        u.avatarPic as userAvatar,
+        u.name as userName,
+        u.email as userEmail,
+        u.phone as userPhone
       FROM apply_job aj
       INNER JOIN jobs j ON aj.idJob = j.id
+      LEFT JOIN users u ON aj.idUser = u.id
       WHERE ${whereClause}
       ${orderByClause}
       LIMIT ${limitInt} OFFSET ${offsetInt}
@@ -373,6 +364,7 @@ export class ApplyJobRepository {
       SELECT COUNT(*) as total
       FROM apply_job aj
       INNER JOIN jobs j ON aj.idJob = j.id
+      LEFT JOIN users u ON aj.idUser = u.id
       WHERE ${whereClause}
     `;
 
@@ -392,6 +384,12 @@ export class ApplyJobRepository {
           typeWork: row.typeWork,
           education: row.education,
           experience: row.experience
+        },
+        user: {
+          name: row.userName,
+          email: row.userEmail,
+          phone: row.userPhone,
+          avatar: row.userAvatar
         }
       }));
 
