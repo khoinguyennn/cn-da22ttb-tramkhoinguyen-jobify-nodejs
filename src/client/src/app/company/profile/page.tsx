@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -32,6 +32,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 // import { Textarea } from "@/components/ui/textarea";
 import { showToast } from "@/utils/toast";
 import { useProvinces } from "@/hooks/useProvinces";
+import { useApplicationStatus } from "@/hooks/useApplications";
 
 // Component để render select field có thể edit
 const EditableSelectField = ({ 
@@ -119,6 +120,85 @@ const EditableSelectField = ({
         </Button>
       )}
     </div>
+  );
+};
+
+// Component để handle nút ứng tuyển với kiểm tra trạng thái
+const ApplyButton: React.FC<{ jobId: number }> = ({ jobId }) => {
+  const router = useRouter();
+  const { isAuthenticated, userType, isLoading: authLoading, user, company, refreshUser } = useAuth();
+
+  // Centralized localStorage checks với useMemo
+  const { token, storedUserType, isActuallyAuthenticated, actualUserType } = useMemo(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const storedUserType = typeof window !== 'undefined' ? localStorage.getItem('userType') : null;
+    const isActuallyAuthenticated = isAuthenticated || !!(token && storedUserType);
+    const actualUserType = userType || storedUserType;
+    
+    return { token, storedUserType, isActuallyAuthenticated, actualUserType };
+  }, [isAuthenticated, userType]);
+  
+  
+  const shouldQueryStatus = !authLoading && isActuallyAuthenticated && actualUserType === 'user';
+
+  const { data: applicationStatus, isLoading: statusLoading } = useApplicationStatus(
+    jobId,
+    shouldQueryStatus
+  );
+
+  // Auto refresh auth nếu cần
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated && token && storedUserType) {
+      refreshUser();
+    }
+  }, [authLoading, isAuthenticated, token, storedUserType, refreshUser]);
+
+  // Không render button khi auth đang loading
+  if (authLoading) {
+    return (
+      <Button disabled className="bg-gray-300 text-sm px-4 py-2">
+        Đang tải...
+      </Button>
+    );
+  }
+
+  const handleApplyClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (statusLoading || authLoading) return;
+
+    if (applicationStatus?.hasApplied === true) {
+      showToast.info('Bạn đã ứng tuyển công việc này rồi');
+      return;
+    }
+
+    if (!isActuallyAuthenticated) {
+      showToast.warning('Vui lòng đăng nhập để ứng tuyển');
+      return;
+    }
+
+    if (actualUserType !== 'user') {
+      showToast.warning('Chỉ người tìm việc mới có thể ứng tuyển!');
+      return;
+    }
+
+    router.push(`/jobs/${jobId}?apply=true`);
+  };
+
+  return (
+    <Button 
+      className={`${
+        applicationStatus?.hasApplied 
+          ? 'bg-gray-400 cursor-not-allowed' 
+          : 'bg-primary hover:bg-primary/90'
+      } text-primary-foreground text-sm px-4 py-2`}
+      onClick={handleApplyClick}
+      disabled={statusLoading || authLoading || applicationStatus?.hasApplied}
+    >
+      {authLoading ? 'Đang tải...' :
+       statusLoading ? 'Đang kiểm tra...' : 
+       applicationStatus?.hasApplied ? 'Đã ứng tuyển' : 'Ứng tuyển'}
+    </Button>
   );
 };
 
@@ -857,7 +937,11 @@ export default function CompanyProfilePage() {
                     ) : companyJobs.length > 0 ? (
                       <div className="space-y-4">
                         {currentJobs.map((job) => (
-                          <div key={job.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                          <div 
+                            key={job.id} 
+                            className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => router.push(`/jobs/${job.id}`)}
+                          >
                             <div className="flex items-start justify-between">
                               <div className="flex gap-4">
                                 <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-100">
@@ -896,7 +980,7 @@ export default function CompanyProfilePage() {
                                 </div>
                               </div>
                               
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                 {job.deletedAt ? (
                                   <Button 
                                     disabled 
@@ -905,9 +989,7 @@ export default function CompanyProfilePage() {
                                     Ngừng ứng tuyển
                                   </Button>
                                 ) : (
-                                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm px-4 py-2">
-                                    Ứng tuyển
-                                  </Button>
+                                  <ApplyButton jobId={job.id} />
                                 )}
                                 <SavedJobButton jobId={job.id} />
                                 <DropdownMenu>

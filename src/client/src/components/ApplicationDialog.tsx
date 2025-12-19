@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { Job } from '@/types';
 import { useApplyJob, ApplyJobData } from '@/hooks/useApplications';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { showToast } from '@/utils/toast';
 
 interface ApplicationDialogProps {
@@ -311,14 +311,14 @@ const ApplicationDialog: React.FC<ApplicationDialogProps> = ({ isOpen, onClose, 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-h-[90vh] overflow-y-auto custom-application-dialog custom-wide-dialog"
+        className="max-h-[90vh] overflow-y-auto custom-application-dialog custom-wide-dialog px-8 py-8"
       >
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-primary">
-            Ứng tuyển: {job.title || job.nameJob}
+            Ứng tuyển: {job.nameJob}
           </DialogTitle>
           <p className="text-sm text-gray-600 mt-1">
-            {job.nameCompany || job.company?.nameCompany}
+            {job.company?.nameCompany}
           </p>
         </DialogHeader>
 
@@ -481,7 +481,7 @@ export default ApplicationDialog;
 const dialogCloseStyles = `
   .custom-wide-dialog {
     width: 75vw !important;
-    max-width: 1200px !important;
+    max-width: 1000px !important;
   }
   
   .custom-application-dialog [data-slot="dialog-close"] {

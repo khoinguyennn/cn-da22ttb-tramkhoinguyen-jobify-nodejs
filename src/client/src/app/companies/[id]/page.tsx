@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { MapPin, Users, Globe, Heart } from "lucide-react";
@@ -15,6 +15,99 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { FollowCompanyButton } from "@/components/FollowCompanyButton";
 import { SavedJobButton } from "@/components/SavedJobButton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useApplicationStatus } from "@/hooks/useApplications";
+import { showToast } from "@/utils/toast";
+
+// Component để handle nút ứng tuyển với kiểm tra trạng thái
+const ApplyButton: React.FC<{ jobId: number }> = ({ jobId }) => {
+  const router = useRouter();
+  const { isAuthenticated, userType, isLoading: authLoading, user, company, refreshUser } = useAuth();
+
+  // Centralized localStorage checks với useMemo
+  const { token, storedUserType, isActuallyAuthenticated, actualUserType } = useMemo(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const storedUserType = typeof window !== 'undefined' ? localStorage.getItem('userType') : null;
+    const isActuallyAuthenticated = isAuthenticated || !!(token && storedUserType);
+    const actualUserType = userType || storedUserType;
+    
+    return { token, storedUserType, isActuallyAuthenticated, actualUserType };
+  }, [isAuthenticated, userType]);
+  
+  
+  const shouldQueryStatus = !authLoading && isActuallyAuthenticated && actualUserType === 'user';
+
+  const { data: applicationStatus, isLoading: statusLoading } = useApplicationStatus(
+    jobId,
+    shouldQueryStatus
+  );
+
+  // Auto refresh auth nếu cần
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated && token && storedUserType) {
+      refreshUser();
+    }
+  }, [authLoading, isAuthenticated, token, storedUserType, refreshUser]);
+
+  // Không render button khi auth đang loading
+  if (authLoading) {
+    return (
+      <Button size="sm" disabled className="bg-gray-300 text-sm px-4 py-2">
+        Đang tải...
+      </Button>
+    );
+  }
+
+  // Hiển thị button tùy theo user type (không phụ thuộc auth state)
+  if (isActuallyAuthenticated && actualUserType !== 'user') {
+    return (
+      <Button 
+        disabled
+        className="bg-gray-300 cursor-not-allowed text-sm px-4 py-2"
+      >
+        Chỉ dành cho ứng viên
+      </Button>
+    );
+  }
+
+  const handleApplyClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (statusLoading || authLoading) return;
+
+    if (applicationStatus?.hasApplied === true) {
+      showToast.info('Bạn đã ứng tuyển công việc này rồi');
+      return;
+    }
+
+    if (!isActuallyAuthenticated) {
+      showToast.warning('Vui lòng đăng nhập để ứng tuyển');
+      return;
+    }
+
+    if (actualUserType !== 'user') {
+      showToast.warning('Chỉ ứng viên mới có thể ứng tuyển');
+      return;
+    }
+
+    router.push(`/jobs/${jobId}?apply=true`);
+  };
+
+  return (
+    <Button 
+      className={`${
+        applicationStatus?.hasApplied 
+          ? 'bg-gray-400 cursor-not-allowed' 
+          : 'bg-primary hover:bg-primary/90'
+      } text-primary-foreground text-sm px-4 py-2`}
+      onClick={handleApplyClick}
+      disabled={statusLoading || authLoading || applicationStatus?.hasApplied}
+    >
+      {authLoading ? 'Đang tải...' :
+       statusLoading ? 'Đang kiểm tra...' : 
+       applicationStatus?.hasApplied ? 'Đã ứng tuyển' : 'Ứng tuyển'}
+    </Button>
+  );
+};
 
 export default function CompanyDetailPage() {
   const params = useParams();
@@ -335,15 +428,7 @@ export default function CompanyDetailPage() {
                                 Ngừng ứng tuyển
                               </Button>
                             ) : (
-                              <Button 
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm px-4 py-2"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  // TODO: Handle apply job functionality
-                                }}
-                              >
-                                Ứng tuyển
-                              </Button>
+                              <ApplyButton jobId={job.id} />
                             )}
                             <div onClick={(e) => e.stopPropagation()}>
                               <SavedJobButton jobId={job.id} />

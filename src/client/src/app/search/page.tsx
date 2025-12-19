@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search, MapPin, Briefcase, DollarSign, Clock, GraduationCap, Users, ChevronDown, Building, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,9 @@ import { useJobs } from "@/hooks/useJobs";
 import { useProvinces } from "@/hooks/useProvinces";
 import { useFields } from "@/hooks/useFields";
 import { SavedJobButton } from "@/components/SavedJobButton";
+import { useAuth } from "@/contexts/AuthContext";
+import { useApplicationStatus } from "@/hooks/useApplications";
+import { showToast } from "@/utils/toast";
 import { Job } from "@/types";
 
 // Utility function to format salary
@@ -51,6 +54,95 @@ const formatTimeAgo = (dateString: string): string => {
   
   const diffInYears = Math.floor(diffInMonths / 12);
   return `${diffInYears} năm trước`;
+};
+
+// Component để handle nút ứng tuyển với kiểm tra trạng thái
+const ApplyButton: React.FC<{ jobId: number }> = ({ jobId }) => {
+  const router = useRouter();
+  const { isAuthenticated, userType, isLoading: authLoading, user, company, refreshUser } = useAuth();
+
+  // Centralized localStorage checks với useMemo
+  const { token, storedUserType, isActuallyAuthenticated, actualUserType } = useMemo(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const storedUserType = typeof window !== 'undefined' ? localStorage.getItem('userType') : null;
+    const isActuallyAuthenticated = isAuthenticated || !!(token && storedUserType);
+    const actualUserType = userType || storedUserType;
+    
+    return { token, storedUserType, isActuallyAuthenticated, actualUserType };
+  }, [isAuthenticated, userType]);
+  
+  
+  const shouldQueryStatus = !authLoading && isActuallyAuthenticated && actualUserType === 'user';
+
+  const { data: applicationStatus, isLoading: statusLoading } = useApplicationStatus(
+    jobId,
+    shouldQueryStatus
+  );
+
+  // Auto refresh auth nếu cần
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated && token && storedUserType) {
+      refreshUser();
+    }
+  }, [authLoading, isAuthenticated, token, storedUserType, refreshUser]);
+
+  // Không render button khi auth đang loading
+  if (authLoading) {
+    return (
+      <Button size="sm" disabled className="bg-gray-300">
+        Đang tải...
+      </Button>
+    );
+  }
+
+  // Hiển thị button tùy theo user type (không phụ thuộc auth state)
+  if (isActuallyAuthenticated && actualUserType !== 'user') {
+    return (
+      <Button 
+        size="sm" 
+        disabled
+        className="bg-gray-300 cursor-not-allowed"
+      >
+        Chỉ dành cho ứng viên
+      </Button>
+    );
+  }
+
+  const handleApplyClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (statusLoading || authLoading) return;
+
+    if (applicationStatus?.hasApplied === true) {
+      showToast.info('Bạn đã ứng tuyển công việc này rồi');
+      return;
+    }
+
+    if (!isActuallyAuthenticated) {
+      showToast.warning('Vui lòng đăng nhập để ứng tuyển');
+      return;
+    }
+
+    if (actualUserType !== 'user') {
+      showToast.warning('Chỉ ứng viên mới có thể ứng tuyển');
+      return;
+    }
+
+    router.push(`/jobs/${jobId}?apply=true`);
+  };
+
+  return (
+    <Button 
+      size="sm" 
+      className={`${applicationStatus?.hasApplied ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-primary/90'}`}
+      onClick={handleApplyClick}
+      disabled={statusLoading || authLoading || applicationStatus?.hasApplied}
+    >
+      {authLoading ? 'Đang tải...' :
+       statusLoading ? 'Đang kiểm tra...' : 
+       applicationStatus?.hasApplied ? 'Đã ứng tuyển' : 'Ứng tuyển'}
+    </Button>
+  );
 };
 
 export default function TimKiemPage() {
@@ -688,15 +780,9 @@ export default function TimKiemPage() {
                     <span className="text-xs text-gray-500">
                       {formatTimeAgo(job.createdAt)}
                     </span>
-                    <Button 
-                      className="bg-primary hover:bg-primary/90 text-white"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // TODO: Handle apply job functionality
-                      }}
-                    >
-                      Ứng tuyển
-                    </Button>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ApplyButton jobId={job.id} />
+                    </div>
                   </div>
                 </CardContent>
               </Card>

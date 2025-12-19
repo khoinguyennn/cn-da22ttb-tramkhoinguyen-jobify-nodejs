@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, MapPin, Calendar, DollarSign, Users, GraduationCap, User, Clock, Building } from 'lucide-react';
@@ -13,7 +13,7 @@ import { useProvinces, useFields } from '@/hooks/useReferenceData';
 import { Province, Field } from '@/types';
 import { formatSalary, formatTimeAgo } from '@/utils';
 import SavedJobButton from '@/components/SavedJobButton';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useApplicationStatus } from '@/hooks/useApplications';
 import { showToast } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,6 +23,7 @@ import ApplicationDialog from '@/components/ApplicationDialog';
 export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const jobId = params.id as string;
   
   const [isApplicationDialogOpen, setIsApplicationDialogOpen] = useState(false);
@@ -44,6 +45,31 @@ export default function JobDetailPage() {
 
   const provinces = (provincesResponse as any)?.data || [];
   const fields = (fieldsResponse as any)?.data || [];
+
+  // Auto-open dialog when accessed with apply=true query parameter
+  useEffect(() => {
+    const shouldApply = searchParams.get('apply');
+    if (shouldApply === 'true' && !statusLoading && job) {
+      const cleanUrl = () => {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      };
+
+      if (isAuthenticated && userType === 'user') {
+        if (applicationStatus?.hasApplied === false) {
+          setIsApplicationDialogOpen(true);
+        } else if (applicationStatus?.hasApplied === true) {
+          showToast.info('Bạn đã ứng tuyển vị trí này rồi');
+        }
+      } else if (!isAuthenticated) {
+        showToast.warning('Vui lòng đăng nhập để ứng tuyển');
+      } else {
+        showToast.warning('Chỉ ứng viên mới có thể ứng tuyển');
+      }
+      
+      cleanUrl();
+    }
+  }, [searchParams, statusLoading, job, isAuthenticated, userType, applicationStatus]);
 
   const handleApply = () => {
     if (!isAuthenticated) {

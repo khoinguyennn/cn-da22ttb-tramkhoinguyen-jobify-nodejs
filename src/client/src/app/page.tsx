@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { 
@@ -27,6 +27,8 @@ import { useFields } from "@/hooks/useFields";
 import { useAuth } from "@/contexts/AuthContext";
 import { SavedJobButton } from "@/components/SavedJobButton";
 import { FollowCompanyButton } from "@/components/FollowCompanyButton";
+import { useApplicationStatus } from "@/hooks/useApplications";
+import { showToast } from "@/utils/toast";
 import {
   Select,
   SelectContent,
@@ -34,6 +36,83 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+// Component để handle nút ứng tuyển với kiểm tra trạng thái
+const ApplyButton: React.FC<{ jobId: number }> = ({ jobId }) => {
+  const router = useRouter();
+  const { isAuthenticated, userType, isLoading: authLoading, user, company, refreshUser } = useAuth();
+
+  // Centralized localStorage checks với useMemo
+  const { token, storedUserType, isActuallyAuthenticated, actualUserType } = useMemo(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const storedUserType = typeof window !== 'undefined' ? localStorage.getItem('userType') : null;
+    const isActuallyAuthenticated = isAuthenticated || !!(token && storedUserType);
+    const actualUserType = userType || storedUserType;
+    
+    return { token, storedUserType, isActuallyAuthenticated, actualUserType };
+  }, [isAuthenticated, userType]);
+  
+  
+  const shouldQueryStatus = !authLoading && isActuallyAuthenticated && actualUserType === 'user';
+
+  const { data: applicationStatus, isLoading: statusLoading } = useApplicationStatus(
+    jobId,
+    shouldQueryStatus
+  );
+
+  // Auto refresh auth nếu cần
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated && token && storedUserType) {
+      refreshUser();
+    }
+  }, [authLoading, isAuthenticated, token, storedUserType, refreshUser]);
+
+  // Không render button khi auth đang loading
+  if (authLoading) {
+    return (
+      <Button size="sm" disabled className="bg-gray-300">
+        Đang tải...
+      </Button>
+    );
+  }
+
+
+  const handleApplyClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (statusLoading || authLoading) return;
+
+    if (applicationStatus?.hasApplied === true) {
+      showToast.info('Bạn đã ứng tuyển công việc này rồi');
+      return;
+    }
+
+    if (!isActuallyAuthenticated) {
+      showToast.warning('Vui lòng đăng nhập để ứng tuyển');
+      return;
+    }
+
+    if (actualUserType !== 'user') {
+      showToast.warning('Chỉ ứng viên mới có thể ứng tuyển');
+      return;
+    }
+
+    router.push(`/jobs/${jobId}?apply=true`);
+  };
+
+  return (
+    <Button 
+      size="sm" 
+      className={`${applicationStatus?.hasApplied ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-primary/90'}`}
+      onClick={handleApplyClick}
+      disabled={statusLoading || authLoading || applicationStatus?.hasApplied}
+    >
+      {authLoading ? 'Đang tải...' :
+       statusLoading ? 'Đang kiểm tra...' : 
+       applicationStatus?.hasApplied ? 'Đã ứng tuyển' : 'Ứng tuyển'}
+    </Button>
+  );
+};
 
 export default function Home() {
   const [api, setApi] = useState<CarouselApi>();
@@ -630,16 +709,7 @@ export default function Home() {
                       </div>
                       <div className="flex items-center justify-between">
                         <Badge variant="secondary" onClick={(e) => e.stopPropagation()}>{job.typeWork}</Badge>
-                        <Button 
-                          size="sm" 
-                          className="bg-primary hover:bg-primary/90"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // TODO: Handle apply job functionality
-                          }}
-                        >
-                          Ứng tuyển
-                        </Button>
+                        <ApplyButton jobId={job.id} />
                       </div>
                     </CardContent>
                   </Card>
