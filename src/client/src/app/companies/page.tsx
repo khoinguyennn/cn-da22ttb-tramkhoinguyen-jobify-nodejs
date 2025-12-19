@@ -27,14 +27,38 @@ interface Company {
 }
 
 const companySizes = [
-  { id: 'under-10', label: 'Ít hơn 10 nhân viên' },
-  { id: '10-20', label: '10 - 20 nhân viên' },
-  { id: '20-100', label: '20 - 100 nhân viên' },
-  { id: '100-500', label: '100 - 500 nhân viên' },
-  { id: '500-1000', label: '500 - 1000 nhân viên' },
-  { id: '1000-5000', label: '1000 - 5000 nhân viên' },
-  { id: 'over-5000', label: 'Nhiều hơn 5000 nhân viên' },
+  { id: 'under-10', label: 'Ít hơn 10 nhân viên', backendValue: null }, // Not supported by backend
+  { id: '10-20', label: '10 - 20 nhân viên', backendValue: null }, // Not supported by backend
+  { id: '20-100', label: '20 - 100 nhân viên', backendValue: '20 - 100' },
+  { id: '100-500', label: '100 - 500 nhân viên', backendValue: '100 - 500' },
+  { id: '500-1000', label: '500 - 1000 nhân viên', backendValue: '500 - 1000' },
+  { id: '1000-5000', label: '1000 - 5000 nhân viên', backendValue: '1000 - 5000' },
+  { id: 'over-5000', label: 'Nhiều hơn 5000 nhân viên', backendValue: 'nhiều hơn 5000' },
 ];
+
+// Helper function to get backend scale value from selected sizes
+const getBackendScaleValue = (selectedSizes: string[]): string | undefined => {
+  // Only use the first selected size that has a backend value
+  const selectedSize = selectedSizes.find(sizeId => {
+    const size = companySizes.find(s => s.id === sizeId);
+    return size?.backendValue;
+  });
+  
+  if (selectedSize) {
+    const size = companySizes.find(s => s.id === selectedSize);
+    return size?.backendValue || undefined;
+  }
+  
+  return undefined;
+};
+
+// Helper function to check if selected size is unsupported
+const hasUnsupportedScaleSelected = (selectedSizes: string[]): boolean => {
+  return selectedSizes.some(sizeId => {
+    const size = companySizes.find(s => s.id === sizeId);
+    return size && !size.backendValue;
+  });
+};
 
 export default function CompaniesPage() {
   const router = useRouter();
@@ -48,11 +72,15 @@ export default function CompaniesPage() {
   const companiesPerPage = 6;
 
   // Build search params (same logic as homepage)
+  const backendScaleValue = getBackendScaleValue(selectedSizes);
+  const isUnsupportedScaleSelected = hasUnsupportedScaleSelected(selectedSizes);
+  
   const searchParams = {
     page: currentPage,
     limit: companiesPerPage,
     ...(activeSearchTerm && { keyword: activeSearchTerm }),
     ...(selectedProvinces.length > 0 && { province: parseInt(selectedProvinces[0]) }),
+    ...(backendScaleValue && { scale: backendScaleValue }),
   };
 
   // API calls (same logic as homepage)
@@ -60,8 +88,8 @@ export default function CompaniesPage() {
   const { data: provincesResponse, isLoading: isLoadingProvinces } = useProvinces();
 
   // Data extraction (same logic as homepage)
-  const companies = companiesResponse?.data || [];
-  const totalCompanies = companiesResponse?.total || 0;
+  const companies = isUnsupportedScaleSelected ? [] : (companiesResponse?.data || []);
+  const totalCompanies = isUnsupportedScaleSelected ? 0 : (companiesResponse?.total || 0);
   const totalPages = Math.ceil(totalCompanies / companiesPerPage);
   const provinces = provincesResponse?.data || [];
 
@@ -88,9 +116,10 @@ export default function CompaniesPage() {
 
   const handleSizeChange = (sizeId: string, checked: boolean) => {
     if (checked) {
-      setSelectedSizes([...selectedSizes, sizeId]);
+      // Only allow one size selection at a time (like provinces)
+      setSelectedSizes([sizeId]);
     } else {
-      setSelectedSizes(selectedSizes.filter(id => id !== sizeId));
+      setSelectedSizes([]);
     }
     setCurrentPage(1);
   };
@@ -214,12 +243,26 @@ export default function CompaniesPage() {
                   {activeSearchTerm && (
                     <span> cho từ khóa "<span className="font-semibold">{activeSearchTerm}</span>"</span>
                   )}
+                  {backendScaleValue && (
+                    <span> với quy mô "<span className="font-semibold">{backendScaleValue}</span>"</span>
+                  )}
+                  {isUnsupportedScaleSelected && selectedSizes.length > 0 && (
+                    <span> với quy mô "<span className="font-semibold">
+                      {companySizes.find(s => s.id === selectedSizes[0])?.label}
+                    </span>"</span>
+                  )}
                 </p>
               </div>
             )}
 
             {/* Companies Grid */}
-            {isLoadingCompanies ? (
+            {isUnsupportedScaleSelected ? (
+              <div className="text-center py-12">
+                <Building className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy công ty</h3>
+                <p className="text-gray-500">Quy mô này hiện chưa được hệ thống hỗ trợ</p>
+              </div>
+            ) : isLoadingCompanies ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, index) => (
                   <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
@@ -297,7 +340,7 @@ export default function CompaniesPage() {
             )}
 
             {/* Pagination */}
-            {!isLoadingCompanies && totalPages > 1 && (
+            {!isLoadingCompanies && !isUnsupportedScaleSelected && totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-8">
                 <Button 
                   variant="outline" 

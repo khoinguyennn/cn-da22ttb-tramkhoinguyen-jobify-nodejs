@@ -654,6 +654,8 @@ export default function CompanyProfilePage() {
   const handleTabClick = (tabId: string) => {
     if (tabId === "tuyen-dung") {
       router.push("/company/jobs/create");
+    } else if (tabId === "ung-vien") {
+      router.push("/company/applications");
     } else {
       setActiveTab(tabId);
     }
@@ -1278,16 +1280,6 @@ export default function CompanyProfilePage() {
                         Hủy bỏ
                       </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {activeTab === "ung-vien" && (
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">Nội dung đang được phát triển</p>
                   </div>
                 </CardContent>
               </Card>

@@ -154,3 +154,5 @@ export const ApplicationStatusMap = {
 } as const;
 
 export type ApplicationStatus = keyof typeof ApplicationStatusMap;
+
+
