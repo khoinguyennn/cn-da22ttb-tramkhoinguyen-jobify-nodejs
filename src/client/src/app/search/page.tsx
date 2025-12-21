@@ -95,15 +95,21 @@ const ApplyButton: React.FC<{ jobId: number }> = ({ jobId }) => {
     );
   }
 
-  // Hiển thị button tùy theo user type (không phụ thuộc auth state)
+  // Xử lý click cho company user
+  const handleCompanyClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    showToast.warning('Chỉ ứng viên mới có thể ứng tuyển');
+  };
+
+  // Hiển thị button giống hệt user nhưng khác xử lý
   if (isActuallyAuthenticated && actualUserType !== 'user') {
     return (
       <Button 
         size="sm" 
-        disabled
-        className="bg-gray-300 cursor-not-allowed"
+        className="bg-primary hover:bg-primary/90"
+        onClick={handleCompanyClick}
       >
-        Chỉ dành cho ứng viên
+        Ứng tuyển
       </Button>
     );
   }
@@ -373,50 +379,72 @@ export default function TimKiemPage() {
           {/* Filters */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
             {/* Province Filter */}
-            <Select value={selectedProvince} onValueChange={(value) => handleFilterChange('province', value)}>
-              <SelectTrigger className="bg-white border-0 rounded-lg shadow-sm">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-gray-500" />
-                  <SelectValue placeholder="Tỉnh thành" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả tỉnh thành</SelectItem>
-                {isLoadingProvinces ? (
-                  <SelectItem value="loading" disabled>Đang tải...</SelectItem>
-                ) : (
-                  (provinces || []).map((province) => (
-                    <SelectItem key={province.id} value={province.id.toString()}>
-                      {province.nameWithType || province.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+            <Select
+  value={selectedProvince}
+  onValueChange={(value) => handleFilterChange("province", value)}
+>
+  <SelectTrigger className="bg-white border-0 rounded-lg shadow-sm">
+    <div className="flex items-center gap-2 w-full overflow-hidden">
+      <MapPin className="w-4 h-4 text-gray-500 flex-shrink-0" />
+
+      <SelectValue
+        placeholder="Tỉnh thành"
+        className="
+          block
+          truncate
+          overflow-hidden
+          whitespace-nowrap
+          max-w-[calc(100%-1.5rem)]
+          text-left
+        "
+      />
+    </div>
+  </SelectTrigger>
+
+  <SelectContent>
+    <SelectItem value="all">Tất cả tỉnh thành</SelectItem>
+    {provinces.map((province) => (
+      <SelectItem key={province.id} value={province.id.toString()}>
+        {province.nameWithType || province.name}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
 
             {/* Field Filter */}
-            <Select value={selectedField} onValueChange={(value) => handleFilterChange('field', value)}>
-              <SelectTrigger className="bg-white border-0 rounded-lg shadow-sm">
-                <div className="flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-gray-500" />
-                  <SelectValue placeholder="Ngành nghề" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả ngành nghề</SelectItem>
-                {isLoadingFields ? (
-                  <SelectItem value="loading" disabled>
-                    Đang tải...
-                  </SelectItem>
-                ) : (
-                  (fields || []).map((field) => (
-                    <SelectItem key={field.id} value={field.id.toString()}>
-                      {field.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+            <Select
+  value={selectedField}
+  onValueChange={(value) => handleFilterChange("field", value)}
+>
+  <SelectTrigger className="bg-white border-0 rounded-lg shadow-sm">
+    <div className="flex items-center gap-2 w-full overflow-hidden">
+      <Briefcase className="w-4 h-4 text-gray-500 flex-shrink-0" />
+
+      <SelectValue
+        placeholder="Ngành nghề"
+        className="
+          block
+          truncate
+          overflow-hidden
+          whitespace-nowrap
+          max-w-[calc(100%-1.5rem)]
+          text-left
+        "
+      />
+    </div>
+  </SelectTrigger>
+
+  <SelectContent>
+    <SelectItem value="all">Tất cả ngành nghề</SelectItem>
+    {fields.map((field) => (
+      <SelectItem key={field.id} value={field.id.toString()}>
+        {field.name}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
 
             {/* Salary Filter */}
             <div className="relative">
@@ -479,22 +507,38 @@ export default function TimKiemPage() {
             </div>
 
             {/* Job Type Filter */}
-            <Select value={selectedJobType} onValueChange={(value) => handleFilterChange('jobType', value)}>
-              <SelectTrigger className="bg-white border-0 rounded-lg shadow-sm">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-500" />
-                  <SelectValue placeholder="Loại công việc" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả loại</SelectItem>
-                {jobTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Select
+  value={selectedJobType}
+  onValueChange={(value) => handleFilterChange("jobType", value)}
+>
+  <SelectTrigger className="bg-white border-0 rounded-lg shadow-sm">
+    <div className="flex items-center gap-2 w-full overflow-hidden">
+      <Users className="w-4 h-4 text-gray-500 flex-shrink-0" />
+
+      <SelectValue
+        placeholder="Loại công việc"
+        className="
+          block
+          truncate
+          overflow-hidden
+          whitespace-nowrap
+          max-w-[calc(100%-1.5rem)]
+          text-left
+        "
+      />
+    </div>
+  </SelectTrigger>
+
+  <SelectContent>
+    <SelectItem value="all">Tất cả loại công việc</SelectItem>
+    {jobTypes.map((type) => (
+      <SelectItem key={type} value={type}>
+        {type}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
 
             {/* Experience Filter */}
             <Select value={selectedExperience} onValueChange={(value) => handleFilterChange('experience', value)}>

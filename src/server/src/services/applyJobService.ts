@@ -327,4 +327,14 @@ export class ApplyJobService {
       throw new Error('Không thể hủy ẩn đơn ứng tuyển');
     }
   }
+
+  /**
+   * Lấy danh sách đơn ứng tuyển đã ẩn của công ty
+   */
+  async getHiddenApplications(
+    companyId: number,
+    params: { page: number; limit: number }
+  ): Promise<PaginatedResponse<any>> {
+    return await this.applyJobRepository.findHiddenByCompany(companyId, params);
+  }
 }

@@ -57,14 +57,20 @@ const ApplyButton: React.FC<{ jobId: number }> = ({ jobId }) => {
     );
   }
 
-  // Hiển thị button tùy theo user type (không phụ thuộc auth state)
+  // Xử lý click cho company user
+  const handleCompanyClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    showToast.warning('Chỉ ứng viên mới có thể ứng tuyển');
+  };
+
+  // Hiển thị button giống hệt user nhưng khác xử lý
   if (isActuallyAuthenticated && actualUserType !== 'user') {
     return (
       <Button 
-        disabled
-        className="bg-gray-300 cursor-not-allowed text-sm px-4 py-2"
+        className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm px-4 py-2"
+        onClick={handleCompanyClick}
       >
-        Chỉ dành cho ứng viên
+        Ứng tuyển
       </Button>
     );
   }

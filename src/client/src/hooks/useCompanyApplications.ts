@@ -57,24 +57,27 @@ export interface CompanyApplicationQueryParams {
  * Hook để lấy danh sách ứng tuyển của công ty
  * Sử dụng API GET /apply/company
  */
-export const useCompanyApplications = (params: CompanyApplicationQueryParams = {}) => {
+export const useCompanyApplications = (params: CompanyApplicationQueryParams & { enabled?: boolean } = {}) => {
+  const { enabled = true, ...queryParams } = params;
+  
   return useQuery({
-    queryKey: ['company-applications', params],
+    queryKey: ['company-applications', queryParams],
     queryFn: async (): Promise<CompanyApplicationsResponse> => {
       const queryString = new URLSearchParams();
       
-      if (params.page) queryString.append('page', params.page.toString());
-      if (params.limit) queryString.append('limit', params.limit.toString());
-      if (params.idJob) queryString.append('idJob', params.idJob.toString());
-      if (params.status) queryString.append('status', params.status.toString());
-      if (params.search) queryString.append('search', params.search);
-      if (params.sort) queryString.append('sort', params.sort);
+      if (queryParams.page) queryString.append('page', queryParams.page.toString());
+      if (queryParams.limit) queryString.append('limit', queryParams.limit.toString());
+      if (queryParams.idJob) queryString.append('idJob', queryParams.idJob.toString());
+      if (queryParams.status) queryString.append('status', queryParams.status.toString());
+      if (queryParams.search) queryString.append('search', queryParams.search);
+      if (queryParams.sort) queryString.append('sort', queryParams.sort);
       
       const url = `/apply/company${queryString.toString() ? `?${queryString.toString()}` : ''}`;
       const response = await apiClient.get(url);
       
       return response.data.data;
     },
+    enabled,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 };
@@ -127,15 +130,23 @@ export const useToggleApplicationVisibility = () => {
       hidden: boolean;
     }) => {
       const endpoint = hidden ? '/apply/hidden' : '/apply/unHidden';
-      const response = await apiClient.put(endpoint, { applicationIds });
-      return response.data;
+      
+      // Gọi API cho từng application ID
+      const promises = applicationIds.map(id => 
+        apiClient.put(endpoint, { id })
+      );
+      
+      const responses = await Promise.all(promises);
+      return responses.map(response => response.data);
     },
     onSuccess: (data, variables) => {
       // Invalidate và refetch company applications queries
       queryClient.invalidateQueries({ queryKey: ['company-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['hidden-applications'] });
       
       const action = variables.hidden ? 'ẩn' : 'hiện';
-      showToast.success(`Đã ${action} các đơn ứng tuyển được chọn!`);
+      const count = variables.applicationIds.length;
+      showToast.success(`Đã ${action} ${count} đơn ứng tuyển được chọn!`);
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message || 'Có lỗi xảy ra khi thay đổi trạng thái hiển thị';
@@ -154,5 +165,48 @@ export const ApplicationStatusMap = {
 } as const;
 
 export type ApplicationStatus = keyof typeof ApplicationStatusMap;
+
+// Interface cho hidden application (cấu trúc đơn giản hơn)
+export interface HiddenApplication {
+  id: number;
+  idUser: number;
+  name: string;
+  status: number;
+  createdAt: string;
+  nameJob: string;
+  avatarPic?: string;
+}
+
+// Response interface cho hidden applications
+export interface HiddenApplicationsResponse {
+  data: HiddenApplication[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+/**
+ * Hook để lấy danh sách đơn ứng tuyển đã ẩn
+ * Sử dụng API GET /apply/userHideApply
+ */
+export const useHiddenApplications = (params: { page?: number; limit?: number; enabled?: boolean }) => {
+  const { page = 1, limit = 10, enabled = true } = params;
+
+  return useQuery({
+    queryKey: ['hidden-applications', { page, limit }],
+    queryFn: async (): Promise<HiddenApplicationsResponse> => {
+      const response = await apiClient.get('/apply/userHideApply', {
+        params: { page, limit }
+      });
+      return response.data.data;
+    },
+    enabled,
+    staleTime: 30000, // 30 seconds
+  });
+};
+
+
+
 
 

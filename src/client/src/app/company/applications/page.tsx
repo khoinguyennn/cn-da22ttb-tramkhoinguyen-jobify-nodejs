@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Search, Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Search, Eye, EyeOff, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,9 +12,11 @@ import {
   useCompanyApplications, 
   useUpdateApplicationStatus,
   useToggleApplicationVisibility,
+  useHiddenApplications,
   ApplicationStatusMap,
   CompanyApplication,
-  CompanyApplicationQueryParams
+  CompanyApplicationQueryParams,
+  HiddenApplication
 } from "@/hooks/useCompanyApplications";
 import { useCompanyJobs } from "@/hooks/useCompanyJobs";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,6 +35,7 @@ export default function CompanyApplicationsPage() {
   });
   
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedJob, setSelectedJob] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [selectedSort, setSelectedSort] = useState<string>('newest');
@@ -43,10 +46,28 @@ export default function CompanyApplicationsPage() {
   
   // State cho hide mode
   const [hideMode, setHideMode] = useState(false);
+  
+  // Debounce ref cho search
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch data
-  const { data: applicationsResponse, isLoading, error } = useCompanyApplications(queryParams);
+  // Fetch data - conditional based on hideMode
+  const { data: applicationsResponse, isLoading: isLoadingApplications, error: applicationsError } = useCompanyApplications({
+    ...queryParams,
+    enabled: !hideMode
+  });
+  
+  const { data: hiddenApplicationsResponse, isLoading: isLoadingHidden, error: hiddenError } = useHiddenApplications({
+    page: queryParams.page,
+    limit: queryParams.limit,
+    enabled: hideMode
+  });
+  
   const { data: companyJobs } = useCompanyJobs(company?.id);
+
+  // Determine which data to use based on hideMode
+  const isLoading = hideMode ? isLoadingHidden : isLoadingApplications;
+  const error = hideMode ? hiddenError : applicationsError;
+  const dataResponse = hideMode ? hiddenApplicationsResponse : applicationsResponse;
   
   // Mutations
   const updateStatusMutation = useUpdateApplicationStatus();
@@ -60,8 +81,8 @@ export default function CompanyApplicationsPage() {
       sort: selectedSort as 'newest' | 'oldest' | 'status'
     };
     
-    if (searchTerm.trim()) {
-      newParams.search = searchTerm.trim();
+    if (debouncedSearchTerm.trim()) {
+      newParams.search = debouncedSearchTerm.trim();
     }
     
     if (selectedJob && selectedJob !== 'all') {
@@ -73,18 +94,38 @@ export default function CompanyApplicationsPage() {
     }
     
     setQueryParams(newParams);
-  }, [searchTerm, selectedJob, selectedStatus, selectedSort]);
+  }, [debouncedSearchTerm, selectedJob, selectedStatus, selectedSort]);
 
   // Handle search input with debounce
   const handleSearchChange = (value: string) => {
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Set search term immediately for UI responsiveness
     setSearchTerm(value);
+    
+    // Debounce the actual search (500ms delay)
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(value);
+    }, 500);
   };
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Handle select all
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
-    if (checked && applicationsResponse?.data) {
-      setSelectedApplications(new Set(applicationsResponse.data.map(app => app.id)));
+    if (checked && dataResponse?.data) {
+      setSelectedApplications(new Set(dataResponse.data.map(app => app.id)));
     } else {
       setSelectedApplications(new Set());
     }
@@ -141,10 +182,39 @@ export default function CompanyApplicationsPage() {
     setQueryParams(prev => ({ ...prev, page }));
   };
 
-  const applications = applicationsResponse?.data || [];
-  const totalPages = applicationsResponse?.totalPages || 0;
-  const currentPage = applicationsResponse?.page || 1;
-  const total = applicationsResponse?.total || 0;
+  const applications = dataResponse?.data || [];
+  const totalPages = dataResponse?.totalPages || 0;
+  const currentPage = dataResponse?.page || 1;
+  const total = dataResponse?.total || 0;
+
+  // Helper function to normalize application data
+  const normalizeApplication = (app: any) => {
+    if (hideMode) {
+      // HiddenApplication structure
+      return {
+        id: app.id,
+        name: app.name,
+        avatarPic: app.avatarPic,
+        status: app.status,
+        createdAt: app.createdAt,
+        nameJob: app.nameJob,
+        email: '', // Hidden applications don't have email
+        phone: '', // Hidden applications don't have phone
+      };
+    } else {
+      // CompanyApplication structure
+      return {
+        id: app.id,
+        name: app.name || app.user?.name || 'N/A',
+        avatarPic: app.user?.avatar || app.avatarPic,
+        status: app.status,
+        createdAt: app.createdAt,
+        nameJob: app.job?.nameJob || '',
+        email: app.email || app.user?.email || '',
+        phone: app.phone || app.user?.phone || '',
+      };
+    }
+  };
 
   // Jobs options for filter
   const jobOptions = useMemo(() => {
@@ -215,18 +285,25 @@ export default function CompanyApplicationsPage() {
               <div className="flex-1 flex justify-end">
                 <Button 
                   variant={hideMode ? "default" : "outline"}
-                  onClick={() => setHideMode(!hideMode)}
+                  onClick={() => {
+                    setHideMode(!hideMode);
+                    // Reset selections when switching modes
+                    setSelectedApplications(new Set());
+                    setSelectAll(false);
+                    // Reset to first page
+                    setQueryParams(prev => ({ ...prev, page: 1 }));
+                  }}
                   className={hideMode ? "bg-purple-600 hover:bg-purple-700" : ""}
                 >
                   {hideMode ? (
                     <>
                       <Eye className="w-4 h-4 mr-2" />
-                      Hiện
+                      Hiện đơn thường
                     </>
                   ) : (
                     <>
                       <EyeOff className="w-4 h-4 mr-2" />
-                      Ẩn
+                      Xem đơn đã ẩn
                     </>
                   )}
                 </Button>
@@ -238,66 +315,96 @@ export default function CompanyApplicationsPage() {
           <div className="p-6 bg-gray-50 border-b border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="Tìm kiếm ứng viên..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-10"
-                />
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Tìm kiếm</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="Tên, email, số điện thoại..."
+                    value={searchTerm}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-10 pr-10 h-10"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => {
+                        setSearchTerm('');
+                        setDebouncedSearchTerm('');
+                        if (searchTimeoutRef.current) {
+                          clearTimeout(searchTimeoutRef.current);
+                        }
+                      }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      type="button"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Job Filter */}
-              <Select value={selectedJob} onValueChange={setSelectedJob}>
-                <SelectTrigger>
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-sm font-medium text-gray-700">Công việc</span>
-                    <span className="text-gray-600">{jobOptions.find(opt => opt.value === selectedJob)?.label || 'Tất cả'}</span>
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {jobOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Công việc</label>
+                <Select value={selectedJob} onValueChange={setSelectedJob}>
+                  <SelectTrigger className="w-full h-10">
+                    <SelectValue placeholder="Tất cả công việc">
+                      <span className="truncate">
+                        {jobOptions.find(opt => opt.value === selectedJob)?.label || 'Tất cả công việc'}
+                      </span>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {jobOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <span className="truncate">{option.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* Status Filter */}
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger>
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-sm font-medium text-gray-700">Trạng thái</span>
-                    <span className="text-gray-600">{statusOptions.find(opt => opt.value === selectedStatus)?.label || 'Tất cả'}</span>
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Trạng thái</label>
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger className="w-full h-10">
+                    <SelectValue placeholder="Tất cả trạng thái">
+                      <span className="truncate">
+                        {statusOptions.find(opt => opt.value === selectedStatus)?.label || 'Tất cả trạng thái'}
+                      </span>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <span className="truncate">{option.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* Sort */}
-              <Select value={selectedSort} onValueChange={setSelectedSort}>
-                <SelectTrigger>
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-sm font-medium text-gray-700">Mới nhất</span>
-                    <span className="text-gray-600">{sortOptions.find(opt => opt.value === selectedSort)?.label}</span>
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {sortOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Sắp xếp</label>
+                <Select value={selectedSort} onValueChange={setSelectedSort}>
+                  <SelectTrigger className="w-full h-10">
+                    <SelectValue placeholder="Mới nhất">
+                      <span className="truncate">
+                        {sortOptions.find(opt => opt.value === selectedSort)?.label || 'Mới nhất'}
+                      </span>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <span className="truncate">{option.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Select All */}
@@ -340,7 +447,9 @@ export default function CompanyApplicationsPage() {
               </div>
             ) : applications.length === 0 ? (
               <div className="p-8 text-center">
-                <p className="text-gray-600">Không có đơn ứng tuyển nào</p>
+                <p className="text-gray-600">
+                  {hideMode ? 'Không có đơn ứng tuyển đã ẩn nào' : 'Không có đơn ứng tuyển nào'}
+                </p>
               </div>
             ) : (
               <table className="w-full">
@@ -354,12 +463,15 @@ export default function CompanyApplicationsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {applications.map((application, index) => (
-                    <tr 
-                      key={application.id} 
-                      className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-                      onClick={() => router.push(`/company/applications/${application.id}`)}
-                    >
+                  {applications.map((application, index) => {
+                    const normalizedApp = normalizeApplication(application);
+                    
+                    return (
+                      <tr 
+                        key={application.id} 
+                        className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => !hideMode && router.push(`/company/applications/${application.id}`)}
+                      >
                       <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-center gap-2">
                           <Checkbox
@@ -375,22 +487,29 @@ export default function CompanyApplicationsPage() {
                         <div className="flex items-center gap-3">
                           <UserAvatar 
                             user={{ 
-                              name: application.name || application.user?.name || 'N/A', 
-                              avatarPic: application.user?.avatar 
+                              name: normalizedApp.name, 
+                              avatarPic: normalizedApp.avatarPic 
                             }} 
                             size="sm"
                             className="w-8 h-8"
                           />
-                          <span className="font-medium text-gray-900">
-                            {application.name || application.user?.name || 'N/A'}
-                          </span>
+                          <div>
+                            <span className="font-medium text-gray-900">
+                              {normalizedApp.name}
+                            </span>
+                            {hideMode && (
+                              <p className="text-xs text-red-500 italic">
+                                Đơn đã ẩn
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="p-4 text-sm text-gray-600">
                         {formatDate(application.createdAt)}
                       </td>
                       <td className="p-4 text-sm text-gray-900">
-                        {application.job?.nameJob || 'N/A'}
+                        {normalizedApp.nameJob || 'N/A'}
                       </td>
                       <td className="p-4" onClick={(e) => e.stopPropagation()}>
                         <Select
@@ -419,7 +538,8 @@ export default function CompanyApplicationsPage() {
                         </Select>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             )}

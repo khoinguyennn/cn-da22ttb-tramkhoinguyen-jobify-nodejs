@@ -23,6 +23,7 @@ const applyJobController = new ApplyJobController();
  * PUT /apply/:id/status - Cập nhật trạng thái ứng tuyển
  * PUT /apply/hidden - Ẩn đơn ứng tuyển
  * PUT /apply/unHidden - Hủy ẩn đơn ứng tuyển
+ * GET /apply/userHideApply - Danh sách đơn ứng tuyển đã ẩn
  * 
  * Shared Routes:
  * GET /apply/:id - Chi tiết ứng tuyển (User hoặc Company)
@@ -89,6 +90,13 @@ router.put('/hidden', authenticate, authorize('company'), applyJobController.hid
  * @access Private (Company only)
  */
 router.put('/unHidden', authenticate, authorize('company'), applyJobController.unhideApplication);
+
+/**
+ * GET /apply/userHideApply - Lấy danh sách đơn ứng tuyển đã ẩn
+ * Cho phép nhà tuyển dụng xem danh sách các đơn ứng tuyển đã ẩn
+ * @access Private (Company only)
+ */
+router.get('/userHideApply', authenticate, authorize('company'), applyJobController.getHiddenApplications);
 
 // ===== SHARED ROUTES (User hoặc Company) =====
 

@@ -748,4 +748,102 @@ export class ApplyJobController {
 
     ResponseUtil.success(res, null, 'Hủy ẩn đơn ứng tuyển thành công');
   });
+
+  /**
+   * @swagger
+   * /apply/userHideApply:
+   *   get:
+   *     tags: [Ứng tuyển]
+   *     summary: Lấy danh sách đơn ứng tuyển đã ẩn
+   *     description: Cho phép nhà tuyển dụng xem danh sách các đơn ứng tuyển đã bị ẩn
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           default: 1
+   *         description: Số trang (mặc định 1)
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           default: 10
+   *           minimum: 1
+   *           maximum: 100
+   *         description: Số lượng bản ghi mỗi trang (mặc định 10)
+   *     responses:
+   *       200:
+   *         description: Lấy danh sách đơn ứng tuyển đã ẩn thành công
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - $ref: '#/components/schemas/PaginatedResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         data:
+   *                           type: array
+   *                           items:
+   *                             type: object
+   *                             properties:
+   *                               id:
+   *                                 type: integer
+   *                                 example: 36
+   *                               idUser:
+   *                                 type: integer
+   *                                 example: 24
+   *                               name:
+   *                                 type: string
+   *                                 example: "Trầm Khôi Nguyên"
+   *                               status:
+   *                                 type: integer
+   *                                 example: 1
+   *                               createdAt:
+   *                                 type: string
+   *                                 format: date-time
+   *                                 example: "2025-12-13T13:40:54.000Z"
+   *                               nameJob:
+   *                                 type: string
+   *                                 example: "ádasdasdas"
+   *                               avatarPic:
+   *                                 type: string
+   *                                 nullable: true
+   *                                 example: "1766114182365blob"
+   *       401:
+   *         description: Chưa đăng nhập
+   *       403:
+   *         description: Không có quyền truy cập
+   *       500:
+   *         description: Lỗi server
+   */
+  getHiddenApplications = catchAsync(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const companyId = req.user?.id;
+    if (!companyId) {
+      return ResponseUtil.error(res, 'Vui lòng đăng nhập', 401);
+    }
+
+    const { page, limit } = req.query;
+
+    const params = {
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 10
+    };
+
+    const result = await this.applyJobService.getHiddenApplications(companyId, params);
+
+    ResponseUtil.paginated(
+      res,
+      result.data,
+      result.total,
+      result.page,
+      result.limit,
+      'Lấy danh sách đơn ứng tuyển đã ẩn thành công'
+    );
+  });
 }

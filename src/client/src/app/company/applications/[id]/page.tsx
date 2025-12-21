@@ -63,8 +63,8 @@ export default function ApplicationDetailPage() {
     if (application?.cv) {
       // Create download link
       const link = document.createElement('a');
-      link.href = `/api/uploads/${application.cv}`;
-      link.download = `CV_${application.name}_${application.nameJob || 'Job'}.pdf`;
+      link.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/uploads/cvs/${application.cv}`;
+      link.download = `CV_${application.name}_${application.nameJob || 'Job'}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -238,6 +238,10 @@ export default function ApplicationDetailPage() {
                 <CardTitle>Thông tin ứng tuyển</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div>
+                  <span className="text-sm text-gray-600">Vị trí ứng tuyển:</span>
+                  <p className="font-medium text-primary">{application.nameJob}</p>
+                </div>
                 <div>
                   <span className="text-sm text-gray-600">Ngày ứng tuyển:</span>
                   <p className="font-medium">{formatDate(application.createdAt)}</p>

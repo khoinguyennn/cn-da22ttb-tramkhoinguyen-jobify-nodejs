@@ -484,4 +484,70 @@ export class ApplyJobRepository {
     
     return result;
   }
+
+  // Lấy danh sách đơn ứng tuyển đã ẩn của công ty
+  async findHiddenByCompany(
+    companyId: number, 
+    params: { page: number; limit: number }
+  ): Promise<PaginatedResponse<any>> {
+    const { page = 1, limit = 10 } = params;
+    const offset = (page - 1) * limit;
+
+    // Đảm bảo các giá trị là số nguyên
+    const safeCompanyId = parseInt(companyId.toString());
+    const safeOffset = parseInt(offset.toString());
+    const safeLimit = parseInt(limit.toString());
+
+    // Query để lấy đơn ứng tuyển đã ẩn - sử dụng string interpolation cho LIMIT
+    const query = `
+      SELECT 
+        aj.id,
+        aj.idUser,
+        aj.name,
+        aj.status,
+        aj.createdAt,
+        j.nameJob,
+        u.avatarPic
+      FROM apply_job aj
+      INNER JOIN jobs j ON aj.idJob = j.id
+      LEFT JOIN users u ON aj.idUser = u.id
+      WHERE j.idCompany = ? 
+        AND aj.deletedAt IS NOT NULL
+      ORDER BY aj.deletedAt DESC
+      LIMIT ${safeOffset}, ${safeLimit}
+    `;
+
+    // Query để đếm tổng số
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM apply_job aj
+      INNER JOIN jobs j ON aj.idJob = j.id
+      WHERE j.idCompany = ? 
+        AND aj.deletedAt IS NOT NULL
+    `;
+
+    try {
+      console.log('Query parameters:', { companyId: safeCompanyId, offset: safeOffset, limit: safeLimit });
+      
+      // Lấy dữ liệu
+      const [rows] = await pool.execute<RowDataPacket[]>(query, [safeCompanyId]);
+      
+      // Đếm tổng số
+      const [countRows] = await pool.execute<RowDataPacket[]>(countQuery, [safeCompanyId]);
+      const total = countRows[0]?.total || 0;
+
+      console.log('Query results:', { rowCount: rows.length, total });
+
+      return {
+        data: rows,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      };
+    } catch (error) {
+      console.error('Error finding hidden applications by company:', error);
+      throw new Error('Không thể lấy danh sách đơn ứng tuyển đã ẩn');
+    }
+  }
 }

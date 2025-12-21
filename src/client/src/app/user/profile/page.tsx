@@ -855,10 +855,16 @@ export default function UserProfilePage() {
                         {!userProfile?.intro || userProfile.intro.trim() === "" ? (
                           <span className="text-gray-400 italic">Chưa có thông tin giới thiệu</span>
                         ) : (
-                          <div 
-                            className="prose prose-sm max-w-none"
-                            dangerouslySetInnerHTML={{ __html: userProfile.intro }}
-                          />
+<div className="text-gray-600 leading-relaxed">
+  {!userProfile?.intro || userProfile.intro.trim() === "" ? (
+    <span className="text-gray-400 italic">Chưa có thông tin giới thiệu</span>
+  ) : (
+    <div
+      className="user-intro-content"
+      dangerouslySetInnerHTML={{ __html: userProfile.intro }}
+    />
+  )}
+</div>
                         )}
                       </div>
                     )}

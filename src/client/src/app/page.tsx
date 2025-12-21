@@ -76,6 +76,24 @@ const ApplyButton: React.FC<{ jobId: number }> = ({ jobId }) => {
     );
   }
 
+  // Xử lý click cho company user
+  const handleCompanyClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    showToast.warning('Chỉ ứng viên mới có thể ứng tuyển');
+  };
+
+  // Hiển thị button giống hệt user nhưng khác xử lý
+  if (isActuallyAuthenticated && actualUserType !== 'user') {
+    return (
+      <Button 
+        size="sm" 
+        className="bg-primary hover:bg-primary/90"
+        onClick={handleCompanyClick}
+      >
+        Ứng tuyển
+      </Button>
+    );
+  }
 
   const handleApplyClick = (e: React.MouseEvent) => {
     e.stopPropagation();

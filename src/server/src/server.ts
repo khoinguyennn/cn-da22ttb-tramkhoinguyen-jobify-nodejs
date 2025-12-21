@@ -57,11 +57,11 @@ class Server {
       }
     });
     
-    // Static files serving (cho uploaded images)
+    // Static files serving (cho uploaded images và CV files)
     this.app.use('/uploads', express.static('uploads', {
       maxAge: '1d', // Cache 1 ngày
       setHeaders: (res, path) => {
-        // Set proper content type headers
+        // Set proper content type headers cho images
         if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
           res.setHeader('Content-Type', 'image/jpeg');
         } else if (path.endsWith('.png')) {
@@ -70,6 +70,17 @@ class Server {
           res.setHeader('Content-Type', 'image/gif');
         } else if (path.endsWith('.webp')) {
           res.setHeader('Content-Type', 'image/webp');
+        }
+        // Set proper content type headers cho CV files
+        else if (path.endsWith('.pdf')) {
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', 'attachment');
+        } else if (path.endsWith('.doc')) {
+          res.setHeader('Content-Type', 'application/msword');
+          res.setHeader('Content-Disposition', 'attachment');
+        } else if (path.endsWith('.docx')) {
+          res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+          res.setHeader('Content-Disposition', 'attachment');
         }
       }
     }));
