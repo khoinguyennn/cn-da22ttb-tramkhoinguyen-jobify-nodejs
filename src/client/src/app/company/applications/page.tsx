@@ -200,6 +200,7 @@ export default function CompanyApplicationsPage() {
         nameJob: app.nameJob,
         email: '', // Hidden applications don't have email
         phone: '', // Hidden applications don't have phone
+        idUser: app.idUser, // For navigation to user profile
       };
     } else {
       // CompanyApplication structure
@@ -212,6 +213,7 @@ export default function CompanyApplicationsPage() {
         nameJob: app.job?.nameJob || '',
         email: app.email || app.user?.email || '',
         phone: app.phone || app.user?.phone || '',
+        idUser: app.idUser, // For navigation to user profile
       };
     }
   };
@@ -485,16 +487,36 @@ export default function CompanyApplicationsPage() {
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <UserAvatar 
-                            user={{ 
-                              name: normalizedApp.name, 
-                              avatarPic: normalizedApp.avatarPic 
-                            }} 
-                            size="sm"
-                            className="w-8 h-8"
-                          />
+                          <div 
+                            className="cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (normalizedApp.idUser) {
+                                router.push(`/users/${normalizedApp.idUser}`);
+                              }
+                            }}
+                            title="Xem hồ sơ ứng viên"
+                          >
+                            <UserAvatar 
+                              user={{ 
+                                name: normalizedApp.name, 
+                                avatarPic: normalizedApp.avatarPic 
+                              }} 
+                              size="sm"
+                              className="w-8 h-8 hover:ring-2 hover:ring-primary/20 transition-all"
+                            />
+                          </div>
                           <div>
-                            <span className="font-medium text-gray-900">
+                            <span 
+                              className="font-medium text-gray-900 hover:text-primary cursor-pointer transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (normalizedApp.idUser) {
+                                router.push(`/users/${normalizedApp.idUser}`);
+                              }
+                            }}
+                              title="Xem hồ sơ ứng viên"
+                            >
                               {normalizedApp.name}
                             </span>
                             {hideMode && (

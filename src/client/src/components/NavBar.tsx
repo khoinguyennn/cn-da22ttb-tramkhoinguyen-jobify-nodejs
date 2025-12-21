@@ -27,7 +27,8 @@ import {
   Briefcase, 
   Heart, 
   Lock,
-  ChevronDown
+  ChevronDown,
+  Bot
 } from "lucide-react";
 
 export function NavBar() {
@@ -42,6 +43,7 @@ export function NavBar() {
     { href: "/fields", label: "Ngành nghề/Địa điểm", icon: MapPin },
     { href: "/search", label: "Tìm kiếm", icon: Search },
     { href: "/companies", label: "Công ty", icon: Building },
+    { href: "/cv-evaluation", label: "Đánh giá CV với AI", icon: Bot },
   ];
 
   const handleLogout = async () => {
