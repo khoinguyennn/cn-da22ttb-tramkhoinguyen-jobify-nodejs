@@ -3,8 +3,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
 import { testConnection } from '@/config/database';
 import { setupSwagger } from '@/config/swagger';
+import { setupSocket } from '@/config/socket';
 import { errorHandler, notFound } from '@/middlewares/errorHandler';
 import { handleUploadError } from '@/middlewares/upload';
 import { ResponseUtil } from '@/utils/response';
@@ -19,20 +21,24 @@ import jobRoutes from '@/routes/jobRoutes';
 import jobSaveRoutes from '@/routes/jobSaveRoutes';
 import followCompanyRoutes from '@/routes/followCompanyRoutes';
 import applyJobRoutes from '@/routes/applyJobRoutes';
+import notificationRoutes from '@/routes/notificationRoutes';
 
 // Load environment variables
 dotenv.config();
 
 class Server {
   private app: Application;
+  private server: any;
   private port: number;
 
   constructor() {
     this.app = express();
+    this.server = createServer(this.app);
     this.port = parseInt(process.env.PORT || '5000');
     
     this.initializeMiddlewares();
     this.initializeRoutes();
+    this.initializeSocket();
     this.initializeErrorHandling();
   }
 
@@ -142,6 +148,7 @@ class Server {
     this.app.use(`${apiPrefix}/saved-jobs`, jobSaveRoutes);
     this.app.use(`${apiPrefix}/followed-companies`, followCompanyRoutes);
     this.app.use(`${apiPrefix}/apply`, applyJobRoutes);
+    this.app.use(`${apiPrefix}/notifications`, notificationRoutes);
 
     // Test route
     this.app.get(`${apiPrefix}/test`, (req, res) => {
@@ -159,6 +166,11 @@ class Server {
         ],
       }, 'Test API thành công');
     });
+  }
+
+  private initializeSocket(): void {
+    // Setup Socket.IO server
+    setupSocket(this.server);
   }
 
   private initializeErrorHandling(): void {
@@ -181,12 +193,13 @@ class Server {
       const emailService = new EmailService();
       await emailService.verifyConnection();
       
-      // Start server
-      this.app.listen(this.port, () => {
+      // Start server with Socket.IO support
+      this.server.listen(this.port, () => {
         console.log('🚀================================🚀');
         console.log(`🌟 Server Jobify đang chạy!`);
         console.log(`📍 URL: http://localhost:${this.port}`);
         console.log(`🌐 API: http://localhost:${this.port}${process.env.API_PREFIX || '/api'}`);
+        console.log(`🔌 Socket.IO: Enabled`);
         console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
         console.log('🚀================================🚀');
       });

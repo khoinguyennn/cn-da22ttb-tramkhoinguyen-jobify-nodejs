@@ -4,6 +4,7 @@ import Image from "next/image";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SocketProvider } from "@/contexts/SocketContext";
 import { NavBar } from "@/components/NavBar";
 import { MainContent } from "@/components/MainContent";
 import { Facebook, Twitter, Music, Mail, MapPin, Phone } from "lucide-react";
@@ -34,14 +35,15 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
-            <div className="px-8 lg:px-16">
-              {/* Header Navigation */}
-              <NavBar />
+            <SocketProvider>
+              <div className="px-8 lg:px-16">
+                {/* Header Navigation */}
+                <NavBar />
 
-              {/* Main Content */}
-              <MainContent>
-                {children}
-              </MainContent>
+                {/* Main Content */}
+                <MainContent>
+                  {children}
+                </MainContent>
 
             {/* Footer */}
             <footer className="bg-muted py-12 -mx-8 lg:-mx-16">
@@ -145,7 +147,8 @@ export default function RootLayout({
                 </div>
               </div>
             </footer>
-            </div>
+              </div>
+            </SocketProvider>
           </AuthProvider>
         </QueryProvider>
         

@@ -6,6 +6,7 @@ import { ApplyJob, ApplyJobDTO, ApplyStatus, PaginatedResponse } from '@/types';
 import { ApplyJobModel } from '@/models/ApplyJob';
 import { pool } from '@/config/database';
 import { RowDataPacket } from 'mysql2';
+import { NotificationService } from './notificationService';
 
 /**
  * ApplyJobService - Business logic cho ApplyJob
@@ -67,6 +68,18 @@ export class ApplyJobService {
       email: applyJobData.email || user.email,
       phone: applyJobData.phone || user.phone,
     });
+
+    // Tạo thông báo cho nhà tuyển dụng
+    try {
+      await NotificationService.notifyJobApplication(
+        job.idCompany,
+        job.nameJob,
+        user.name
+      );
+    } catch (notificationError) {
+      // Log lỗi nhưng không fail toàn bộ process
+      console.error('Failed to send job application notification:', notificationError);
+    }
 
     return newApplyJob;
   }
@@ -133,6 +146,40 @@ export class ApplyJobService {
     const updatedApplication = await this.applyJobRepository.findById(applicationId);
     if (!updatedApplication) {
       throw new Error('Lỗi khi lấy thông tin ứng tuyển đã cập nhật');
+    }
+
+    // Tạo thông báo cho ứng viên về việc cập nhật trạng thái
+    try {
+      const user = await this.userRepository.findById(updatedApplication.idUser);
+      const company = await this.companyRepository.findById(job!.idCompany);
+      
+      let statusText = 'đã được cập nhật';
+      switch (newStatus) {
+        case ApplyStatus.ACCEPTED:
+          statusText = 'accepted';
+          break;
+        case ApplyStatus.REJECTED:
+          statusText = 'rejected';
+          break;
+        case ApplyStatus.VIEWED:
+          statusText = 'under_review';
+          break;
+        case ApplyStatus.INTERVIEW:
+          statusText = 'under_review';
+          break;
+      }
+
+      if (user) {
+        await NotificationService.notifyApplicationStatusUpdate(
+          user.id,
+          job!.nameJob,
+          statusText,
+          company?.nameCompany || 'Công ty'
+        );
+      }
+    } catch (notificationError) {
+      // Log lỗi nhưng không fail toàn bộ process
+      console.error('Failed to send application status update notification:', notificationError);
     }
 
     return updatedApplication;
