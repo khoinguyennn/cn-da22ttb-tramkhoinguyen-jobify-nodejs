@@ -37,23 +37,24 @@ const formatSalary = (salaryMin?: number, salaryMax?: number): string => {
   return "Thỏa thuận";
 };
 
-// Utility function to format time ago
+// Utility function to format time ago (similar to company profile)
 const formatTimeAgo = (dateString: string): string => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInMs = now.getTime() - date.getTime();
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
   
-  if (diffInDays === 0) return "Hôm nay";
-  if (diffInDays === 1) return "1 ngày trước";
-  if (diffInDays < 30) return `${diffInDays} ngày trước`;
-  
-  const diffInMonths = Math.floor(diffInDays / 30);
-  if (diffInMonths === 1) return "1 tháng trước";
-  if (diffInMonths < 12) return `${diffInMonths} tháng trước`;
-  
-  const diffInYears = Math.floor(diffInMonths / 12);
-  return `${diffInYears} năm trước`;
+  const diffMinutes = Math.floor(diffInMs / (1000 * 60));
+  const diffHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffMinutes < 1) return "Vừa xong";
+  if (diffMinutes < 60) return `${diffMinutes} phút trước`;
+  if (diffHours < 24) return `${diffHours} giờ trước`;
+  if (diffDays === 1) return "1 ngày trước";
+  if (diffDays < 7) return `${diffDays} ngày trước`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} tuần trước`;
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} tháng trước`;
+  return `${Math.floor(diffDays / 365)} năm trước`;
 };
 
 // Component để handle nút ứng tuyển với kiểm tra trạng thái
