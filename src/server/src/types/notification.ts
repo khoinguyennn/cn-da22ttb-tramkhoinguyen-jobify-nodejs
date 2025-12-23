@@ -22,3 +22,9 @@ export interface NotificationQueryParams {
   limit?: number;
   isRead?: boolean;
 }
+
+
+
+
+
+

@@ -344,3 +344,71 @@ export enum UserType {
   USER = 'user',
   COMPANY = 'company'
 }
+
+export interface GeminiConfig {
+  apiKey: string;
+  model: string;
+  maxTokens?: number;
+  temperature?: number;
+}
+
+export interface CVScoringPromptData {
+  cvAnalysis: {
+    extractedText: string;
+    skills: string[];
+    experience: string;
+    education: string;
+    keyPoints: string[];
+  };
+  job: {
+    nameJob: string;
+    companyName?: string;
+    request: string;
+    desc: string;
+    experience?: string;
+    education?: string;
+    typeWork?: string;
+  };
+}
+
+export interface GeminiCVScoringResponse {
+  score: number;
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  matchingSkills: string[];
+  missingSkills: string[];
+  suggestions: string[];
+  experienceMatch: string;
+  educationMatch: string;
+}
+
+// CV Scoring Types
+export interface CVScoringRequest {
+  cvFile: Express.Multer.File;
+  jobId: number;
+}
+
+export interface CVScoringResult {
+  score: number;
+  suggestions: string[];
+  analysis: {
+    strengths: string[];
+    weaknesses: string[];
+    matchingSkills: string[];
+    missingSkills: string[];
+  };
+  jobMatch: {
+    jobTitle: string;
+    companyName: string;
+    requirements: string[];
+  };
+}
+
+export interface CVAnalysis {
+  extractedText: string;
+  skills: string[];
+  experience: string;
+  education: string;
+  keyPoints: string[];
+}

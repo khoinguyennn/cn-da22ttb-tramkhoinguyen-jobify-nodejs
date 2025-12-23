@@ -22,6 +22,7 @@ import jobSaveRoutes from '@/routes/jobSaveRoutes';
 import followCompanyRoutes from '@/routes/followCompanyRoutes';
 import applyJobRoutes from '@/routes/applyJobRoutes';
 import notificationRoutes from '@/routes/notificationRoutes';
+import cvScoringRoutes from '@/routes/cvScoringRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -149,6 +150,7 @@ class Server {
     this.app.use(`${apiPrefix}/followed-companies`, followCompanyRoutes);
     this.app.use(`${apiPrefix}/apply`, applyJobRoutes);
     this.app.use(`${apiPrefix}/notifications`, notificationRoutes);
+    this.app.use(apiPrefix, cvScoringRoutes);
 
     // Test route
     this.app.get(`${apiPrefix}/test`, (req, res) => {
