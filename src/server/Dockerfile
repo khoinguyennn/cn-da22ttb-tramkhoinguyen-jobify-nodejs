@@ -110,3 +110,5 @@ ENV PORT=5000
 # Start the application with dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/server.js"]
+
+

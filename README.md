@@ -1,14 +1,14 @@
 # 🚀 Jobify - Website tìm kiếm và ứng tuyển việc làm tích hợp đánh giá CV với AI
-
+![Dashboard](thesis/img/Jobify.png)
 [![GitHub Repo Stars](https://img.shields.io/github/stars/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs?style=social)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/stargazers) [![GitHub Forks](https://img.shields.io/github/forks/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs?style=social)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/network/members) [![GitHub License](https://img.shields.io/github/license/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/blob/main/LICENSE)
 [![GitHub Issues](https://img.shields.io/github/issues/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/issues) [![GitHub Last Commit](https://img.shields.io/github/last-commit/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/commits/main) [![GitHub Contributors](https://img.shields.io/github/contributors/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs?style=flat&color=blue)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/graphs/contributors)
 
-**🎓 Đồ án chuyên ngành - Đại học Trà Vinh**
+**🎓 Đồ án chuyên ngành - Trường Đại học Trà Vinh**
 - **Giảng viên hướng dẫn:** ThS. Nguyễn Hoàng Duy Thiện
 - **Sinh viên thực hiện:** Trầm Khôi Nguyên  
 - **MSSV:** 110122126
 - **Email:** tramkhoinguyen27122@gmail.com
-- **Năm học:** 2024-2025
+- **Năm học:** 2025-2026
 
 ---
 
@@ -111,21 +111,6 @@ Xây dựng một hệ thống website tìm việc làm hiện đại, tích h�
 ## 🏗️ Kiến trúc hệ thống
 
 ![Kiến trúc hệ thống](thesis/img/kientruchethong.svg)
-
-### Architecture Pattern:
-- **Frontend**: Next.js với App Router (SSR/CSR hybrid)
-- **Backend**: Clean Architecture (Controllers → Services → Repositories)
-- **Database**: MySQL với connection pooling
-- **Communication**: RESTful APIs + WebSocket
-- **Caching**: TanStack Query (Frontend), MySQL Query Cache
-- **File Storage**: Local filesystem với Multer
-- **AI Integration**: Google Gemini API
-
-### Data Flow:
-```
-User Interface → Next.js Router → API Routes → Express Controllers → 
-Services (Business Logic) → Repositories (Data Access) → MySQL Database
-```
 
 ## 🚀 Cài đặt và chạy dự án
 
@@ -370,25 +355,7 @@ Chúng tôi hoan nghênh mọi đóng góp cho dự án!
 ### 🚨 Báo cáo bảo mật:
 Nếu phát hiện lỗ hổng bảo mật, vui lòng email trực tiếp: tramkhoinguyen27122@gmail.com
 
-## 📄 License
 
-Dự án này được cấp phép theo [MIT License](LICENSE).
-
-```
-MIT License
-
-Copyright (c) 2024 Trầm Khôi Nguyên
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-```
 
 ## 🙏 Acknowledgments
 

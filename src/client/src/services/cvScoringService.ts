@@ -69,3 +69,5 @@ export const cvScoringService = {
     return response.data.data.data || [];
   },
 };
+
+
