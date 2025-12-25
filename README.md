@@ -1,6 +1,9 @@
 # 🚀 Jobify - Website tìm kiếm và ứng tuyển việc làm tích hợp đánh giá CV với AI
 
-![Dashboard](thesis/img/Jobify.png)
+<p align="center">
+  <img src="thesis/img/Jobify.png" alt="Dashboard Jobify" width="70%">
+</p>
+
 
 [![GitHub Repo Stars](https://img.shields.io/github/stars/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs?style=social)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/stargazers) [![GitHub Forks](https://img.shields.io/github/forks/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs?style=social)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/network/members) [![GitHub License](https://img.shields.io/github/license/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/blob/main/LICENSE)
 [![GitHub Issues](https://img.shields.io/github/issues/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/issues) [![GitHub Last Commit](https://img.shields.io/github/last-commit/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/commits/main) [![GitHub Contributors](https://img.shields.io/github/contributors/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs?style=flat&color=blue)](https://github.com/khoinguyennn/cn-da22ttb-tramkhoinguyen-jobify-nodejs/graphs/contributors)
