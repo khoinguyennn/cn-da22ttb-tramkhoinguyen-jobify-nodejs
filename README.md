@@ -365,7 +365,7 @@ Nếu phát hiện lỗ hổng bảo mật, vui lòng email trực tiếp: tramk
 ## 🙏 Acknowledgments
 
 - **ThS. Nguyễn Hoàng Duy Thiện** - Giảng viên hướng dẫn
-- **Đại học Trà Vinh** - Cơ sở đào tạo
+- **Trường Đại học Trà Vinh** - Cơ sở đào tạo
 - **Open Source Community** - Các thư viện và tools sử dụng
 - **Google Gemini AI** - AI integration cho CV evaluation
 - **Vercel** - Next.js framework inspiration
@@ -375,7 +375,7 @@ Nếu phát hiện lỗ hổng bảo mật, vui lòng email trực tiếp: tramk
 
 <div align="center">
   <p>Made with ❤️ by <a href="https://github.com/khoinguyennn">Trầm Khôi Nguyên</a></p>
-  <p>🎓 Đại học Trà Vinh - Khoa Kỹ thuật và Công nghệ</p>
+  <p>🎓 Trường Đại học Trà Vinh - Trường Kỹ thuật và Công nghệ - Khoa Công nghệ thông tin</p>
   
   [![GitHub](https://img.shields.io/badge/GitHub-khoinguyennn-black?style=flat&logo=github)](https://github.com/khoinguyennn)
   [![Email](https://img.shields.io/badge/Email-tramkhoinguyen27122@gmail.com-red?style=flat&logo=gmail)](mailto:tramkhoinguyen27122@gmail.com)
