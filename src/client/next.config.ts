@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
   },
   
   // Disable dev indicators in production
-  devIndicators: process.env.NODE_ENV !== 'production',
+  devIndicators: false,
   
   // Experimental features for better performance
   experimental: {
