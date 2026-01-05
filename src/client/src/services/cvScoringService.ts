@@ -7,6 +7,7 @@ export interface CVScoringRequest {
 
 export interface CVScoringResult {
   score: number;
+  summary: string;
   suggestions: string[];
   analysis: {
     strengths: string[];
@@ -69,6 +70,14 @@ export const cvScoringService = {
     return response.data.data.data || [];
   },
 };
+
+
+
+
+
+
+
+
 
 
 

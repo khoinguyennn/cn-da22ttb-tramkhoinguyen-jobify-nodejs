@@ -391,6 +391,7 @@ export interface CVScoringRequest {
 
 export interface CVScoringResult {
   score: number;
+  summary: string;
   suggestions: string[];
   analysis: {
     strengths: string[];

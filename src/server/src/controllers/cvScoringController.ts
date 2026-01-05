@@ -59,6 +59,10 @@ export class CVScoringController {
    *                       type: integer
    *                       example: 85
    *                       description: Điểm số từ 0-100
+   *                     summary:
+   *                       type: string
+   *                       example: "CV có cấu trúc tốt và kinh nghiệm phù hợp với vị trí ứng tuyển."
+   *                       description: Tóm tắt đánh giá CV
    *                     suggestions:
    *                       type: array
    *                       items:

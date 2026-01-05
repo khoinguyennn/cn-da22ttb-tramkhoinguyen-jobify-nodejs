@@ -476,6 +476,21 @@ export default function CVEvaluationPage() {
                 </CardContent>
               </Card>
 
+              {/* Summary Section */}
+              <Card className="border border-white-200 bg-white-50">
+                <CardContent className="p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-900">Tóm tắt đánh giá</h4>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed">
+                    {evaluationResult.summary}
+                  </p>
+                </CardContent>
+              </Card>
+
               {/* Analysis Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Strengths */}
@@ -532,7 +547,7 @@ export default function CVEvaluationPage() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {evaluationResult.analysis.matchingSkills.map((skill, index) => (
-                        <Badge key={index} className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                        <Badge key={index} className="bg-blue-100 text-blue-800 hover:bg-blue-100 px-3 py-2 text-sm">
                           {skill}
                         </Badge>
                       ))}
@@ -551,7 +566,7 @@ export default function CVEvaluationPage() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {evaluationResult.analysis.missingSkills.map((skill, index) => (
-                        <Badge key={index} className="bg-red-100 text-red-800 hover:bg-red-100">
+                        <Badge key={index} className="bg-red-100 text-red-800 hover:bg-red-100 px-3 py-2 text-sm">
                           {skill}
                         </Badge>
                       ))}
