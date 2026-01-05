@@ -1283,7 +1283,18 @@ export default function UserProfilePage() {
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <Facebook className="w-4 h-4" />
-                    <span className="text-sm">{userProfile?.linkSocial || 'Chưa cập nhật'}</span>
+                    {userProfile?.linkSocial ? (
+                      <a 
+                        href={userProfile.linkSocial.startsWith('http') ? userProfile.linkSocial : `https://${userProfile.linkSocial}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-purple-600 hover:text-purple-800 hover:underline"
+                      >
+                        {userProfile.linkSocial}
+                      </a>
+                    ) : (
+                      <span className="text-sm">Chưa cập nhật</span>
+                    )}
                   </div>
                 </div>
               </CardContent>

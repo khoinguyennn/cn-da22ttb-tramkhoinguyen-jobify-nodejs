@@ -204,15 +204,20 @@ export default function ApplicationsList({ page = 1, limit = 10 }: ApplicationsL
                       e.stopPropagation();
                       handleCancelApplication(application);
                     }}
-                    disabled={cancelApplicationMutation.isPending}
-                    className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    disabled={cancelApplicationMutation.isPending || application.status !== 1}
+                    className={`flex items-center gap-1 ${
+                      application.status !== 1
+                        ? 'text-gray-400 hover:text-gray-400 hover:bg-gray-50 border-gray-200 cursor-not-allowed' 
+                        : 'text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200'
+                    }`}
+                    title={application.status !== 1 ? 'Chỉ có thể hủy ứng tuyển khi chưa được xem' : 'Hủy ứng tuyển'}
                   >
                     {cancelApplicationMutation.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Trash2 className="w-4 h-4" />
                     )}
-                    Hủy ứng tuyển
+                    {application.status !== 1 ? 'Không thể hủy' : 'Hủy ứng tuyển'}
                   </Button>
                 </div>
               </CardContent>

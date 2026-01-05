@@ -137,6 +137,34 @@ export default function CompanyDetailPage() {
     }
   }, [isAuthenticated, userType, company?.id, companyId, router]);
 
+  // Share functions
+  const handleShareFacebook = () => {
+    const url = encodeURIComponent(window.location.href);
+    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+  };
+
+  const handleShareEmail = () => {
+    const subject = encodeURIComponent(`Công ty ${companyData?.nameCompany} - Cơ hội việc làm tuyệt vời!`);
+    const body = encodeURIComponent(
+      `Tôi muốn chia sẻ với bạn về công ty ${companyData?.nameCompany}.\n\n` +
+      `${companyData?.nameCompany} đang tuyển dụng ${companyJobs.length} vị trí công việc.\n\n` +
+      `Xem chi tiết tại: ${window.location.href}\n\n` +
+      `Được chia sẻ từ Jobify - Nền tảng tìm việc hàng đầu.`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const handleShareTwitter = () => {
+    const text = encodeURIComponent(
+      `Khám phá cơ hội việc làm tại ${companyData?.nameCompany}! 💼\n` +
+      `${companyJobs.length} vị trí đang tuyển dụng.`
+    );
+    const url = encodeURIComponent(window.location.href);
+    const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+  };
+
   // Format job data for display
   const formatSalary = (min?: number, max?: number) => {
     if (!min && !max) return "Thỏa thuận";
@@ -516,17 +544,33 @@ export default function CompanyDetailPage() {
                 
                 <h3 className="font-semibold text-gray-900 mb-4">Chia sẻ</h3>
                 <div className="flex gap-3">
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 p-0" title="Chia sẻ lên Facebook">
+                  <Button 
+                    size="sm" 
+                    className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 p-0" 
+                    title="Chia sẻ lên Facebook"
+                    onClick={handleShareFacebook}
+                  >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                     </svg>
                   </Button>
-                  <Button size="sm" variant="outline" className="w-10 h-10 p-0 hover:bg-gray-100" title="Gửi qua Email">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="w-10 h-10 p-0 hover:bg-gray-100" 
+                    title="Gửi qua Email"
+                    onClick={handleShareEmail}
+                  >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
                   </Button>
-                  <Button size="sm" className="bg-black hover:bg-gray-800 text-white w-10 h-10 p-0" title="Chia sẻ lên X">
+                  <Button 
+                    size="sm" 
+                    className="bg-black hover:bg-gray-800 text-white w-10 h-10 p-0" 
+                    title="Chia sẻ lên X"
+                    onClick={handleShareTwitter}
+                  >
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                     </svg>

@@ -351,6 +351,34 @@ export default function CompanyProfilePage() {
   
   // Company follower count
   const { data: followerCount } = useCompanyFollowerCount(companyData?.id);
+
+  // Share functions
+  const handleShareFacebook = () => {
+    const url = encodeURIComponent(window.location.href);
+    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+  };
+
+  const handleShareEmail = () => {
+    const subject = encodeURIComponent(`Công ty ${companyData?.nameCompany} - Cơ hội việc làm tuyệt vời!`);
+    const body = encodeURIComponent(
+      `Tôi muốn chia sẻ với bạn về công ty ${companyData?.nameCompany}.\n\n` +
+      `${companyData?.nameCompany} đang tuyển dụng ${companyJobs.length} vị trí công việc.\n\n` +
+      `Xem chi tiết tại: ${window.location.href}\n\n` +
+      `Được chia sẻ từ Jobify - Nền tảng tìm việc hàng đầu.`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const handleShareTwitter = () => {
+    const text = encodeURIComponent(
+      `Khám phá cơ hội việc làm tại ${companyData?.nameCompany}! 💼\n` +
+      `${companyJobs.length} vị trí đang tuyển dụng.`
+    );
+    const url = encodeURIComponent(window.location.href);
+    const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+  };
   
   // Job management hooks
   const deleteJobMutation = useDeleteJob();
@@ -363,7 +391,8 @@ export default function CompanyProfilePage() {
     title: '',
     description: '',
     onConfirm: () => {},
-    variant: 'default' as 'default' | 'destructive'
+    variant: 'default' as 'default' | 'destructive',
+    confirmText: 'Xác nhận'
   });
 
   // Update activeTab when URL changes
@@ -685,13 +714,32 @@ export default function CompanyProfilePage() {
   };
 
   const handleDeleteJob = (jobId: number) => {
-    setConfirmDialog({
-      open: true,
-      title: 'Xóa công việc',
-      description: 'Bạn có chắc chắn muốn xóa vĩnh viễn công việc này? Hành động này không thể hoàn tác.',
-      onConfirm: () => confirmDeleteJob(jobId),
-      variant: 'destructive'
-    });
+    // Tìm job để kiểm tra số ứng viên
+    const job = companyJobs.find(j => j.id === jobId);
+    
+    if (job && job.appliedCount > 0) {
+      // Nếu đã có ứng viên, hiển thị thông báo không thể xóa
+      setConfirmDialog({
+        open: true,
+        title: 'Không thể xóa công việc',
+        description: `Bài tuyển dụng đã có ${job.appliedCount} ứng viên, không thể xóa. Bạn có thể ngừng tuyển dụng để ẩn công việc này.`,
+        onConfirm: () => {
+          setConfirmDialog({ ...confirmDialog, open: false });
+        },
+        variant: 'default',
+        confirmText: 'Đóng'
+      });
+    } else {
+      // Nếu chưa có ứng viên, cho phép xóa
+      setConfirmDialog({
+        open: true,
+        title: 'Xóa công việc',
+        description: 'Bạn có chắc chắn muốn xóa vĩnh viễn công việc này? Hành động này không thể hoàn tác.',
+        onConfirm: () => confirmDeleteJob(jobId),
+        variant: 'destructive',
+        confirmText: 'Xóa'
+      });
+    }
   };
 
   const handleStopRecruiting = (jobId: number) => {
@@ -700,7 +748,8 @@ export default function CompanyProfilePage() {
       title: 'Ngừng tuyển dụng',
       description: 'Bạn có chắc chắn muốn ngừng tuyển dụng cho công việc này? Bạn có thể khôi phục lại sau.',
       onConfirm: () => confirmStopRecruiting(jobId),
-      variant: 'default'
+      variant: 'default',
+      confirmText: 'Ngừng tuyển dụng'
     });
   };
 
@@ -710,7 +759,8 @@ export default function CompanyProfilePage() {
       title: 'Khôi phục tuyển dụng',
       description: 'Bạn có chắc chắn muốn khôi phục tuyển dụng cho công việc này?',
       onConfirm: () => confirmRestoreJob(jobId),
-      variant: 'default'
+      variant: 'default',
+      confirmText: 'Khôi phục'
     });
   };
 
@@ -1317,13 +1367,29 @@ export default function CompanyProfilePage() {
                 
                 <h3 className="font-semibold text-gray-900 mb-4">Chia sẻ</h3>
                 <div className="flex gap-3">
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 p-0" title="Chia sẻ lên Facebook">
+                  <Button 
+                    size="sm" 
+                    className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 p-0" 
+                    title="Chia sẻ lên Facebook"
+                    onClick={handleShareFacebook}
+                  >
                     <Facebook className="w-4 h-4" />
                   </Button>
-                  <Button size="sm" variant="outline" className="w-10 h-10 p-0 hover:bg-gray-100" title="Gửi qua Email">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="w-10 h-10 p-0 hover:bg-gray-100" 
+                    title="Gửi qua Email"
+                    onClick={handleShareEmail}
+                  >
                     <Mail className="w-4 h-4" />
                   </Button>
-                  <Button size="sm" className="bg-black hover:bg-gray-800 text-white w-10 h-10 p-0" title="Chia sẻ lên X">
+                  <Button 
+                    size="sm" 
+                    className="bg-black hover:bg-gray-800 text-white w-10 h-10 p-0" 
+                    title="Chia sẻ lên X"
+                    onClick={handleShareTwitter}
+                  >
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                     </svg>
@@ -1362,7 +1428,7 @@ export default function CompanyProfilePage() {
         description={confirmDialog.description}
         onConfirm={confirmDialog.onConfirm}
         variant={confirmDialog.variant}
-        confirmText={confirmDialog.variant === 'destructive' ? 'Xóa' : 'Xác nhận'}
+        confirmText={confirmDialog.confirmText}
       />
     </div>
   );
