@@ -161,7 +161,7 @@ export class CVScoringService {
 
     return {
       score: Math.round(finalScore),
-      summary: `CV được đánh giá ${finalScore >= 80 ? 'xuất sắc' : finalScore >= 60 ? 'tốt' : finalScore >= 40 ? 'khá' : 'cần cải thiện'} với mức độ phù hợp cho vị trí ${job.nameJob}.`,
+      summary: `⚠️ AI đang bảo trì - Phân tích cơ bản: CV được đánh giá ${finalScore >= 80 ? 'xuất sắc' : finalScore >= 60 ? 'tốt' : finalScore >= 40 ? 'khá' : 'cần cải thiện'} với mức độ phù hợp cho vị trí ${job.nameJob}.`,
       suggestions,
       analysis,
       jobMatch: {

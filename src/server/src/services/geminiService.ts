@@ -199,8 +199,8 @@ Hãy phân tích kỹ và trả về kết quả dưới dạng JSON với cấu
 
       // Convert sang CVScoringResult format
       return {
-        score: Math.min(Math.max(aiResult.score || 60, 0), 100),
-        summary: aiResult.summary || 'CV này được đánh giá dựa trên mức độ phù hợp với vị trí ứng tuyển.',
+        score: Math.min(Math.max(aiResult.score !== undefined ? aiResult.score : 60, 0), 100),
+        summary: aiResult.summary || (aiResult.score === 0 ? 'CV này không phù hợp với vị trí ứng tuyển do thiếu nhiều thông tin quan trọng.' : 'CV này được đánh giá dựa trên mức độ phù hợp với vị trí ứng tuyển.'),
         suggestions: Array.isArray(aiResult.suggestions) ? aiResult.suggestions : [
           'Cải thiện mô tả kinh nghiệm với số liệu cụ thể',
           'Thêm kỹ năng chuyên môn phù hợp với vị trí',
@@ -335,7 +335,7 @@ Hãy phân tích kỹ và trả về kết quả dưới dạng JSON với cấu
   private getFallbackResponse(job: JobWithDetails): CVScoringResult {
     return {
       score: 75,
-      summary: 'Đây là phân tích tự động dựa trên cấu trúc CV và mức độ phù hợp cơ bản với vị trí ứng tuyển.',
+      summary: '⚠️ AI đang bảo trì - Đây là phân tích tự động cơ bản dựa trên cấu trúc CV và mức độ phù hợp với vị trí ứng tuyển.',
       suggestions: [
         'AI đang xử lý phân tích chi tiết, vui lòng thử lại',
         'Cải thiện mô tả kinh nghiệm làm việc với số liệu cụ thể',
